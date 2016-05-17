@@ -16,9 +16,8 @@ try {
         throw new UserException('Data folder not set.');
     }
     $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
-    $config['parameters']['data_dir'] = $arguments['data'];
-    $app = new Application($config, $logger);
-    $app->run();
+    $app = new Application($logger);
+    $app->run($config);
 } catch(UserException $e) {
     $logger->log('error', $e->getMessage(), (array) $e->getData());
     exit(1);
@@ -34,5 +33,4 @@ try {
     exit(2);
 }
 
-$logger->log('info', "Extractor finished successfully.");
 exit(0);
