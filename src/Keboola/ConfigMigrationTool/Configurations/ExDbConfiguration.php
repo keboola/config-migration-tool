@@ -32,7 +32,7 @@ class ExDbConfiguration
         );
     }
 
-    private function getTableAttributeValue($table, $name)
+    public function getTableAttributeValue($table, $name)
     {
         foreach ($table['attributes'] as $attribute) {
             if ($attribute['name'] == $name) {

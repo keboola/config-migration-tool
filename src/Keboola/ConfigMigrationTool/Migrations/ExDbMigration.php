@@ -17,7 +17,7 @@ class ExDbMigration implements MigrationInterface
 {
     public function execute($config)
     {
-        $sapiClient = new Client(['token' => $config['parameters']['adminToken']]);
+        $sapiClient = new Client(['token' => $config['parameters']['token']]);
         $components = new Components($sapiClient);
 
         $buckets = $sapiClient->listBuckets();

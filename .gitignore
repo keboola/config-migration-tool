@@ -3,4 +3,3 @@ vendor/
 .idea/
 composer.phar
 runtests.sh
-tests/data/
