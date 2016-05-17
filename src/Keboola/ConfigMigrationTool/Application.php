@@ -8,15 +8,38 @@
 
 namespace Keboola\ConfigMigrationTool;
 
+use Keboola\ConfigMigrationTool\Migrations\MigrationInterface;
+
 class Application
 {
-    public function __construct($config, $logger)
-    {
+    private $logger;
 
+    public function __construct($logger)
+    {
+        $this->logger = $logger;
     }
 
-    public function run()
+    public function run($config)
     {
+        $migration = $this->getMigration($config['component']);
+        $migration->execute($config);
+    }
 
+    /**
+     * @param $component
+     * @return MigrationInterface
+     */
+    private function getMigration($component)
+    {
+        $componentNameArr = explode('-', $component);
+
+        /** @var MigrationInterface $migrationClass */
+        $migrationClass = sprintf(
+            '\\Keboola\\ConfigMigrationTool\\Migrations\\%s%sMigration',
+            ucfirst($componentNameArr[0]),
+            ucfirst($componentNameArr[1])
+        );
+
+        return new $migrationClass();
     }
 }

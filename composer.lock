@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "51bff5a6b0c48f58bf229dcf35eeb77e",
-    "content-hash": "1e15f3fc0149438e88ab53a279095f0f",
+    "hash": "8ee550882afc0f5e3081a7e3d4c5d2b4",
+    "content-hash": "2f77b8e352b1890bb6418af964314ab4",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -291,16 +291,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "4.7.0",
+            "version": "4.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "c4f2ed3ab35ae91ddcf4e6e6805ba224f142abc7"
+                "reference": "c9bb10ab69bc88e10769dd30ede980ebf374e884"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/c4f2ed3ab35ae91ddcf4e6e6805ba224f142abc7",
-                "reference": "c4f2ed3ab35ae91ddcf4e6e6805ba224f142abc7",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/c9bb10ab69bc88e10769dd30ede980ebf374e884",
+                "reference": "c9bb10ab69bc88e10769dd30ede980ebf374e884",
                 "shasum": ""
             },
             "require": {
@@ -328,7 +328,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2016-03-11 09:42:21"
+            "time": "2016-05-12 08:00:35"
         },
         {
             "name": "monolog/monolog",
