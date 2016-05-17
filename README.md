@@ -8,10 +8,9 @@ Take all tables from sys.c-ex-db bucket and converts them to JSON based configur
 ### Example Configuration
 
 ``` yaml
-
-    parameters:
-      component: 'ex-db'
-      projectId: 395
-      token: *INSERT_SAPI_TOKEN_HERE*
+parameters:
+  component: 'ex-db'
+  projectId: 395
+  token: *INSERT_SAPI_TOKEN_HERE*
 ```
 
