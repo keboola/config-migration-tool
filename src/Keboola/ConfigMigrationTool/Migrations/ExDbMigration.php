@@ -17,7 +17,7 @@ class ExDbMigration implements MigrationInterface
 {
     public function execute($config)
     {
-        $sapiClient = new Client(['token' => $config['parameters']['token']]);
+        $sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
         $components = new Components($sapiClient);
 
         $buckets = $sapiClient->listBuckets();

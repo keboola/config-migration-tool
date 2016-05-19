@@ -21,7 +21,7 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
     {
         $config = $this->getConfig();
 
-        $sapiClient = new Client(['token' => $config['parameters']['token']]);
+        $sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
         $exDbConfiguration = new ExDbConfiguration();
         $components = new Components($sapiClient);
 
@@ -86,7 +86,6 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
     private function getConfig()
     {
         $config = Yaml::parse(file_get_contents(__DIR__ . '/../../../data/ex-db/config.yml'));
-        $config['parameters']['token'] = getenv('EX_DB_TOKEN');
         return $config;
     }
 }
