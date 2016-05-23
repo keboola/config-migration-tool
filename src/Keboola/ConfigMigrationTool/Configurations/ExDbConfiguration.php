@@ -16,6 +16,7 @@ class ExDbConfiguration
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId($table));
+        $configuration->setConfigurationId($this->getTableAttributeValue($table, 'accountId'));
         $configuration->setName($this->getTableAttributeValue($table, 'name'));
         $configuration->setDescription($this->getTableAttributeValue($table, 'desc'));
         $configuration->setConfiguration($this->createConfiguration($table, $data));
