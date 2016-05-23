@@ -24,7 +24,7 @@ class ExDbMigration implements MigrationInterface
         $this->logger = $logger;
     }
 
-    public function execute($config)
+    public function execute()
     {
         $sapiClient = $this->getSapiClient();
         $components = $this->getComponentsClient($sapiClient);
@@ -48,7 +48,7 @@ class ExDbMigration implements MigrationInterface
         return $createdConfigurations;
     }
 
-    public function status($config)
+    public function status()
     {
         $tables = $this->getConfigurationTables($this->getSapiClient());
         return array_map(function ($item) {

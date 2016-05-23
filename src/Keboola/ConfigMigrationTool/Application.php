@@ -22,18 +22,18 @@ class Application
 
     public function run($config)
     {
-        $migration = $this->getMigration($config['component']);
-        $migration->execute($config);
+        $migration = $this->getMigration($config['parameters']['component']);
+        $migration->execute();
     }
 
     public function action($config)
     {
         $action = $config['action'];
-        $migration = $this->getMigration($config['component']);
+        $migration = $this->getMigration($config['parameters']['component']);
         if (!method_exists($migration, $action)) {
             throw new UserException(sprintf("Action %s doesn't exist", $action));
         }
-        return $migration->$action($config);
+        return $migration->$action();
     }
 
     /**
