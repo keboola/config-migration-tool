@@ -11,4 +11,6 @@ namespace Keboola\ConfigMigrationTool\Migrations;
 interface MigrationInterface
 {
     public function execute($config);
+
+    public function status($config);
 }

@@ -8,6 +8,7 @@
 
 namespace Keboola\ConfigMigrationTool;
 
+use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migrations\MigrationInterface;
 
 class Application
@@ -25,6 +26,16 @@ class Application
         $migration->execute($config);
     }
 
+    public function action($config)
+    {
+        $action = $config['action'];
+        $migration = $this->getMigration($config['component']);
+        if (!method_exists($migration, $action)) {
+            throw new UserException(sprintf("Action %s doesn't exist", $action));
+        }
+        return $migration->$action($config);
+    }
+
     /**
      * @param $component
      * @return MigrationInterface
@@ -40,6 +51,6 @@ class Application
             ucfirst($componentNameArr[1])
         );
 
-        return new $migrationClass();
+        return new $migrationClass($this->logger);
     }
 }

@@ -17,7 +17,12 @@ try {
     }
     $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
     $app = new Application($logger);
-    $app->run($config);
+
+    if (isset($config['action']) && $config['action'] != 'run') {
+        echo json_encode($app->action($config));
+    } else {
+        $app->run($config);
+    }
 } catch(UserException $e) {
     $logger->log('error', $e->getMessage(), (array) $e->getData());
     exit(1);

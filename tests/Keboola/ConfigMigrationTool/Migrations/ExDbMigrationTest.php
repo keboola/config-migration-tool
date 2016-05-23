@@ -13,6 +13,7 @@ use Keboola\ConfigMigrationTool\Configurations\ExDbConfiguration;
 use Keboola\ConfigMigrationTool\Migrations\ExDbMigration;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
+use Monolog\Logger;
 use Symfony\Component\Yaml\Yaml;
 
 class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
@@ -40,7 +41,7 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
             }
         }
 
-        $migration = new ExDbMigration();
+        $migration = new ExDbMigration(new Logger(APP_NAME));
         $createdConfigurations = $migration->execute($config);
 
         $atLeastOneConfigurationHasTables = false;
@@ -70,6 +71,20 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
             $components->deleteConfiguration('keboola.ex-db-' . $oldCfg['driver'], $newConfiguration['id']);
         }
         $this->assertTrue($atLeastOneConfigurationHasTables);
+    }
+
+    public function testStatus()
+    {
+        $config = $this->getConfig();
+
+        $migration = new ExDbMigration(new Logger(APP_NAME));
+        $status = $migration->status($config);
+
+        $this->assertNotEmpty($status);
+        $this->assertArrayHasKey('configId', $status[0]);
+        $this->assertArrayHasKey('configName', $status[0]);
+        $this->assertArrayHasKey('tableId', $status[0]);
+        $this->assertArrayHasKey('status', $status[0]);
     }
 
     private function findConfigurationByName($configurations, $name)
