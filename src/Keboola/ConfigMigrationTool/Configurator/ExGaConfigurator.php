@@ -1,22 +1,21 @@
 <?php
-
 /**
  * Created by PhpStorm.
  * User: miroslavcillik
- * Date: 17/05/16
- * Time: 12:28
+ * Date: 23/05/16
+ * Time: 12:47
  */
-namespace Keboola\ConfigMigrationTool\Configurations;
+
+namespace Keboola\ConfigMigrationTool\Configurator;
 
 use Keboola\StorageApi\Options\Components\Configuration;
 
-class ExDbConfiguration
+class ExGaConfigurator
 {
     public function configure($table, $data)
     {
         $configuration = new Configuration();
-        $configuration->setComponentId($this->getComponentId($table));
-        $configuration->setConfigurationId($this->getTableAttributeValue($table, 'accountId'));
+        $configuration->setComponentId($this->getComponentId());
         $configuration->setName($this->getTableAttributeValue($table, 'name'));
         $configuration->setDescription($this->getTableAttributeValue($table, 'desc'));
         $configuration->setConfiguration($this->createConfiguration($table, $data));
@@ -24,13 +23,9 @@ class ExDbConfiguration
         return $configuration;
     }
 
-    public function getComponentId($table)
+    public function getComponentId()
     {
-        return sprintf(
-            'keboola.%s-%s',
-            'ex-db',
-            $this->getTableAttributeValue($table, 'db.driver')
-        );
+        return 'keboola.ex-google-analytics-v4';
     }
 
     public function getTableAttributeValue($table, $name)
@@ -48,22 +43,23 @@ class ExDbConfiguration
     {
         $configuration = [
             'parameters' => [
-                'db' => [
-                    'host' => $this->getTableAttributeValue($table, 'db.host'),
-                    'port' => $this->getTableAttributeValue($table, 'db.port'),
-                    'database' => $this->getTableAttributeValue($table, 'db.database'),
-                    'user' => $this->getTableAttributeValue($table, 'db.user'),
-                    'password' => $this->getTableAttributeValue($table, 'db.password'),
-                ],
+                'outputBucket' => 'in.c-ex-google-analytics-' . $this->getTableAttributeValue($table, 'id'),
+                'profiles' => [
+                    [
+                        'id' => $this->getTableAttributeValue($table, 'db.host'),
+                    ]
+                ]
             ]
         ];
 
         $id = 0;
         foreach ($data as $row) {
-            $configuration['parameters']['tables'][] = [
+            $configuration['parameters']['queries'][] = [
                 'id' => $id,
                 'name' => $row['name'],
-                'query' => $row['query'],
+                'query' => [
+
+                ],
                 'outputTable' => $row['outputTable'],
                 'incremental' => $row['incremental'],
                 'enabled' => $row['enabled']

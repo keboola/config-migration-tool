@@ -9,19 +9,17 @@
 
 namespace Keboola\ConfigMigrationTool\Test;
 
-use Keboola\ConfigMigrationTool\Configurations\ExDbConfiguration;
-use Keboola\ConfigMigrationTool\Migrations\ExDbMigration;
+use Keboola\ConfigMigrationTool\Helper\TableHelper;
+use Keboola\ConfigMigrationTool\Migration\ExDbMigration;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Monolog\Logger;
-use Symfony\Component\Yaml\Yaml;
 
 class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
 {
     public function testExecute()
     {
         $sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
-        $exDbConfiguration = new ExDbConfiguration();
         $components = new Components($sapiClient);
 
         $buckets = $sapiClient->listBuckets();
@@ -32,9 +30,16 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         foreach ($sysBuckets as $sysBucket) {
             $tables = $sapiClient->listTables($sysBucket['id']);
             foreach ($tables as $table) {
+                //reset migration status
+                try {
+                    $sapiClient->deleteTableAttribute($table['id'], 'migrationStatus');
+                } catch (\Exception $e) {
+                    // do nothing, migrationStatus not set
+                }
+                $attributes = TableHelper::formatAttributes($table['attributes']);
                 $oldConfigs[] = [
-                    'name' => $exDbConfiguration->getTableAttributeValue($table, 'name'),
-                    'driver' => $exDbConfiguration->getTableAttributeValue($table, 'db.driver'),
+                    'name' => $attributes['name'],
+                    'driver' => $attributes['db.driver'],
                 ];
             }
         }

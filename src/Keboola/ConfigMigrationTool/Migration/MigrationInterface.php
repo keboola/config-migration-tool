@@ -6,7 +6,7 @@
  * Time: 10:47
  */
 
-namespace Keboola\ConfigMigrationTool\Migrations;
+namespace Keboola\ConfigMigrationTool\Migration;
 
 interface MigrationInterface
 {
