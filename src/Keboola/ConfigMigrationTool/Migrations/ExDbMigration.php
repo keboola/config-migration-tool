@@ -56,6 +56,7 @@ class ExDbMigration implements MigrationInterface
             return [
                 'configId' => $attributes['accountId'],
                 'configName' => $attributes['name'],
+                'componentId' => sprintf('keboola.ex-db-%s', $attributes['db.driver']),
                 'tableId' => $item['id'],
                 'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'
             ];

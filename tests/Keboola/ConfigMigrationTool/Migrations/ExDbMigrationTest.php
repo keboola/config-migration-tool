@@ -20,8 +20,6 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
 {
     public function testExecute()
     {
-        $config = $this->getConfig();
-
         $sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
         $exDbConfiguration = new ExDbConfiguration();
         $components = new Components($sapiClient);
@@ -42,7 +40,7 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         }
 
         $migration = new ExDbMigration(new Logger(APP_NAME));
-        $createdConfigurations = $migration->execute($config);
+        $createdConfigurations = $migration->execute();
 
         $atLeastOneConfigurationHasTables = false;
         foreach ($oldConfigs as $oldCfg) {
@@ -75,14 +73,13 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
 
     public function testStatus()
     {
-        $config = $this->getConfig();
-
         $migration = new ExDbMigration(new Logger(APP_NAME));
-        $status = $migration->status($config);
+        $status = $migration->status();
 
         $this->assertNotEmpty($status);
         $this->assertArrayHasKey('configId', $status[0]);
         $this->assertArrayHasKey('configName', $status[0]);
+        $this->assertArrayHasKey('componentId', $status[0]);
         $this->assertArrayHasKey('tableId', $status[0]);
         $this->assertArrayHasKey('status', $status[0]);
     }
@@ -96,11 +93,5 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         }
 
         return false;
-    }
-
-    private function getConfig()
-    {
-        $config = Yaml::parse(file_get_contents(__DIR__ . '/../../../data/ex-db/config.yml'));
-        return $config;
     }
 }
