@@ -54,10 +54,22 @@ class ExDbConfigurator
                 'name' => $row['name'],
                 'query' => $row['query'],
                 'outputTable' => $row['outputTable'],
-                'incremental' => $row['incremental'],
-                'enabled' => $row['enabled']
+                'incremental' => boolval($row['incremental']),
+                'enabled' => boolval($row['enabled'])
             ];
             $id++;
+        }
+
+        if ($attributes['db.driver'] == 'mysql') {
+            if (isset($attributes['db.ssl.ca'])) {
+                $configuration['parameters']['db']['ssl']['ca'] = $attributes['db.ssl.ca'];
+            }
+            if (isset($attributes['db.ssl.key'])) {
+                $configuration['parameters']['db']['ssl']['key'] = $attributes['db.ssl.key'];
+            }
+            if (isset($attributes['db.ssl.cert'])) {
+                $configuration['parameters']['db']['ssl']['cert'] = $attributes['db.ssl.cert'];
+            }
         }
 
         return $configuration;

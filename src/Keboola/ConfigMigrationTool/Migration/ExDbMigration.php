@@ -34,7 +34,7 @@ class ExDbMigration implements MigrationInterface
         $createdConfigurations = [];
         foreach ($tables as $table) {
             $attributes = TableHelper::formatAttributes($table['attributes']);
-            if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] == 'success') {
+            if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
                 try {
                     $tableData = $sapiClient::parseCsv($sapiClient->exportTable($table['id']));
                     $createdConfigurations[] = $components->addConfiguration(
@@ -44,6 +44,8 @@ class ExDbMigration implements MigrationInterface
                 } catch (\Exception $e) {
                     $sapiClient->setTableAttribute($table['id'], 'migrationStatus', 'error');
                     $this->logger->error("Error occured during migration", ['message' => $e->getMessage()]);
+
+                    throw $e;
                 }
             }
         }
