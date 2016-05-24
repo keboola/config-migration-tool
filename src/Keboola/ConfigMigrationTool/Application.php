@@ -9,7 +9,7 @@
 namespace Keboola\ConfigMigrationTool;
 
 use Keboola\ConfigMigrationTool\Exception\UserException;
-use Keboola\ConfigMigrationTool\Migrations\MigrationInterface;
+use Keboola\ConfigMigrationTool\Migration\MigrationInterface;
 
 class Application
 {
@@ -46,7 +46,7 @@ class Application
 
         /** @var MigrationInterface $migrationClass */
         $migrationClass = sprintf(
-            '\\Keboola\\ConfigMigrationTool\\Migrations\\%s%sMigration',
+            '\\Keboola\\ConfigMigrationTool\\Migration\\%s%sMigration',
             ucfirst($componentNameArr[0]),
             ucfirst($componentNameArr[1])
         );
