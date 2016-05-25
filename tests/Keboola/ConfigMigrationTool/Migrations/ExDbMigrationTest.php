@@ -62,7 +62,7 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('host', $newConfiguration['configuration']['parameters']['db']);
             $this->assertArrayHasKey('port', $newConfiguration['configuration']['parameters']['db']);
             $this->assertArrayHasKey('user', $newConfiguration['configuration']['parameters']['db']);
-            $this->assertArrayHasKey('password', $newConfiguration['configuration']['parameters']['db']);
+            $this->assertArrayHasKey('#password', $newConfiguration['configuration']['parameters']['db']);
 
             if ($oldCfg['driver'] == 'mysql') {
                 $this->assertArrayHasKey('key', $newConfiguration['configuration']['parameters']['db']['ssl']);

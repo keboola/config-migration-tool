@@ -13,6 +13,7 @@ use Keboola\ConfigMigrationTool\Configurator\ExDbConfigurator;
 use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
 
 class ExDbMigration implements MigrationInterface
@@ -27,9 +28,7 @@ class ExDbMigration implements MigrationInterface
     public function execute()
     {
         $sapiClient = $this->getSapiClient();
-        $components = $this->getComponentsClient($sapiClient);
         $tables = $this->getConfigurationTables($sapiClient);
-        $configurator = new ExDbConfigurator();
 
         $createdConfigurations = [];
         foreach ($tables as $table) {
@@ -37,14 +36,14 @@ class ExDbMigration implements MigrationInterface
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
                 try {
                     $tableData = $sapiClient::parseCsv($sapiClient->exportTable($table['id']));
-                    $createdConfigurations[] = $components->addConfiguration(
-                        $configurator->configure($attributes, $tableData)
-                    );
+
+                    $safe = $this->configurationSaver($sapiClient);
+                    $createdConfigurations[] = $safe($attributes, $tableData);
+
                     $sapiClient->setTableAttribute($table['id'], 'migrationStatus', 'success');
                 } catch (\Exception $e) {
                     $sapiClient->setTableAttribute($table['id'], 'migrationStatus', 'error');
                     $this->logger->error("Error occured during migration", ['message' => $e->getMessage()]);
-
                     throw $e;
                 }
             }
@@ -91,5 +90,45 @@ class ExDbMigration implements MigrationInterface
     private function getComponentsClient($sapiClient)
     {
         return new Components($sapiClient);
+    }
+
+    private function configurationSaver($sapiClient)
+    {
+        $components = $this->getComponentsClient($sapiClient);
+        $encrypt = $this->configurationEncryptor();
+
+        return function ($attributes, $tableData) use ($components, $encrypt) {
+            $configurator = new ExDbConfigurator();
+            $configuration = $configurator->create($attributes);
+            $components->addConfiguration($configuration);
+            $configuration = $configurator->configure($configuration, $attributes, $tableData);
+
+            return $encrypt($configuration);
+        };
+    }
+
+    private function configurationEncryptor()
+    {
+        return function(Configuration $configuration) {
+            $client = new \GuzzleHttp\Client([
+                'base_uri' => 'https://syrup.keboola.com/docker/',
+            ]);
+            $response = $client->put(sprintf(
+                '%s/configs/%s',
+                $configuration->getComponentId(),
+                $configuration->getConfigurationId()
+            ), [
+                'headers' => [
+                    'X-StorageApi-Token' => getenv('KBC_TOKEN')
+                ],
+                'form_params' => [
+                    'configuration' => \GuzzleHttp\json_encode($configuration->getConfiguration())
+                ]
+            ]);
+
+//            var_dump($response->getBody()->getContents());
+
+            return \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
+        };
     }
 }

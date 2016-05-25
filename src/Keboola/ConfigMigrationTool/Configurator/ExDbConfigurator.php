@@ -12,18 +12,25 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 class ExDbConfigurator
 {
-    public function configure($attributes, $data)
+    /**
+     * @param $attributes
+     * @return Configuration
+     */
+    public function create($attributes)
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId($attributes));
         $configuration->setConfigurationId($attributes['accountId']);
         $configuration->setName($attributes['name']);
         $configuration->setDescription(isset($attributes['desc'])?$attributes['desc']:'');
-        $configuration->setConfiguration($this->createConfiguration($attributes, $data));
 
         return $configuration;
     }
 
+    /**
+     * @param $attributes
+     * @return string
+     */
     public function getComponentId($attributes)
     {
         return sprintf(
@@ -31,6 +38,18 @@ class ExDbConfigurator
             'ex-db',
             $attributes['db.driver']
         );
+    }
+
+    /**
+     * @param Configuration $configuration
+     * @param $attributes
+     * @param $data
+     * @return Configuration
+     */
+    public function configure(Configuration $configuration, $attributes, $data)
+    {
+        $configuration->setConfiguration($this->createConfiguration($attributes, $data));
+        return $configuration;
     }
 
     private function createConfiguration($attributes, $data)
@@ -42,7 +61,7 @@ class ExDbConfigurator
                     'port' => $attributes['db.port'],
                     'database' => $attributes['db.database'],
                     'user' => $attributes['db.user'],
-                    'password' => $attributes['db.password']
+                    '#password' => $attributes['db.password']
                 ],
             ]
         ];
