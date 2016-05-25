@@ -41,18 +41,11 @@ class ExDbConfigurator
     }
 
     /**
-     * @param Configuration $configuration
      * @param $attributes
      * @param $data
-     * @return Configuration
+     * @return array
      */
-    public function configure(Configuration $configuration, $attributes, $data)
-    {
-        $configuration->setConfiguration($this->createConfiguration($attributes, $data));
-        return $configuration;
-    }
-
-    private function createConfiguration($attributes, $data)
+    public function createConfiguration($attributes, $data)
     {
         $configuration = [
             'parameters' => [

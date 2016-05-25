@@ -38,13 +38,16 @@ class ExDbMigration implements MigrationInterface
                     $tableData = $sapiClient::parseCsv($sapiClient->exportTable($table['id']));
 
                     $safe = $this->configurationSaver($sapiClient);
-                    $createdConfigurations[] = $safe($attributes, $tableData);
+                    /** @var Configuration $configuration */
+                    $configuration = $safe($attributes, $tableData);
 
+                    $this->updateOrchestrations($configuration->getComponentId());
+
+                    $createdConfigurations[] = $configuration;
                     $sapiClient->setTableAttribute($table['id'], 'migrationStatus', 'success');
                 } catch (\Exception $e) {
                     $sapiClient->setTableAttribute($table['id'], 'migrationStatus', 'error');
                     $this->logger->error("Error occured during migration", ['message' => $e->getMessage()]);
-                    throw $e;
                 }
             }
         }
@@ -70,7 +73,7 @@ class ExDbMigration implements MigrationInterface
     private function getConfigurationTables(Client $sapiClient)
     {
         $buckets = $sapiClient->listBuckets();
-        $sysBuckets = array_filter($buckets, function($bucket) {
+        $sysBuckets = array_filter($buckets, function ($bucket) {
             return $bucket['stage'] == Client::STAGE_SYS && strstr($bucket['name'], 'ex-db');
         });
 
@@ -92,6 +95,10 @@ class ExDbMigration implements MigrationInterface
         return new Components($sapiClient);
     }
 
+    /**
+     * @param $sapiClient
+     * @return \Closure
+     */
     private function configurationSaver($sapiClient)
     {
         $components = $this->getComponentsClient($sapiClient);
@@ -101,19 +108,22 @@ class ExDbMigration implements MigrationInterface
             $configurator = new ExDbConfigurator();
             $configuration = $configurator->create($attributes);
             $components->addConfiguration($configuration);
-            $configuration = $configurator->configure($configuration, $attributes, $tableData);
+            $configuration->setConfiguration($configurator->createConfiguration($attributes, $tableData));
 
             return $encrypt($configuration);
         };
     }
 
+    /**
+     * @return \Closure
+     */
     private function configurationEncryptor()
     {
         return function(Configuration $configuration) {
             $client = new \GuzzleHttp\Client([
                 'base_uri' => 'https://syrup.keboola.com/docker/',
             ]);
-            $response = $client->put(sprintf(
+            $client->put(sprintf(
                 '%s/configs/%s',
                 $configuration->getComponentId(),
                 $configuration->getConfigurationId()
@@ -126,9 +136,47 @@ class ExDbMigration implements MigrationInterface
                 ]
             ]);
 
-//            var_dump($response->getBody()->getContents());
-
-            return \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
+            return $configuration;
         };
+    }
+
+    private function updateOrchestrations($componentId)
+    {
+        $client = new \GuzzleHttp\Client([
+            'base_uri' => 'https://syrup.keboola.com/orchestrator/',
+        ]);
+        $response = $client->get('orchestrations',[
+            'headers' => [
+                'X-StorageApi-Token' => getenv('KBC_TOKEN')
+            ]
+        ]);
+
+        $orchestrations = \GuzzleHttp\json_decode($response->getBody(),true);
+
+        foreach ($orchestrations as $orchestration) {
+            $response = $client->get(sprintf('orchestrations/%s/tasks', $orchestration['id']), [
+                'headers' => [
+                    'X-StorageApi-Token' => getenv('KBC_TOKEN')
+                ]
+            ]);
+            $tasks = \GuzzleHttp\json_decode($response->getBody(),true);
+            foreach ($tasks as $task) {
+                if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], 'ex-db'))) {
+                    $task['componentUrl'] = str_replace(
+                        'ex-db',
+                        $componentId,
+                        $tasks['componentUrl']
+                    );
+                } else if (isset($task['component']) && ('ex-db' == $task['component'])) {
+                    $task['component'] = $componentId;
+                }
+            }
+            $client->put(sprintf('orchestrations/%s/tasks', $orchestration['id'], [
+                'headers' => [
+                    'X-StorageApi-Token' => getenv('KBC_TOKEN')
+                ],
+                'json' => $tasks
+            ]));
+        }
     }
 }
