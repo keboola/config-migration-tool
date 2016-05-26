@@ -45,7 +45,7 @@ class ExDbConfigurator
      * @param $data
      * @return array
      */
-    public function createConfiguration($attributes, $data)
+    public function configure($attributes, $data)
     {
         $configuration = [
             'parameters' => [

@@ -11,9 +11,11 @@ namespace Keboola\ConfigMigrationTool\Test;
 
 use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Migration\ExDbMigration;
+use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\Csv\CsvFile;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
 
 class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
@@ -56,36 +58,92 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         foreach ($oldConfigs as $oldCfg) {
             $newConfiguration = $this->findConfigurationByName($createdConfigurations, $oldCfg['name']);
             $this->assertNotFalse($newConfiguration);
-            $this->assertEquals($oldCfg['name'], $newConfiguration['name']);
-            $this->assertArrayHasKey('parameters', $newConfiguration['configuration']);
-            $this->assertArrayHasKey('db', $newConfiguration['configuration']['parameters']);
-            $this->assertArrayHasKey('host', $newConfiguration['configuration']['parameters']['db']);
-            $this->assertArrayHasKey('port', $newConfiguration['configuration']['parameters']['db']);
-            $this->assertArrayHasKey('user', $newConfiguration['configuration']['parameters']['db']);
-            $this->assertArrayHasKey('#password', $newConfiguration['configuration']['parameters']['db']);
+            $this->assertEquals($oldCfg['name'], $newConfiguration->getName());
+            $this->assertArrayHasKey('parameters', $newConfiguration->getConfiguration());
+            $parameters = $newConfiguration->getConfiguration()['parameters'];
+            $this->assertArrayHasKey('db', $parameters);
+            $this->assertArrayHasKey('host', $parameters['db']);
+            $this->assertArrayHasKey('port', $parameters['db']);
+            $this->assertArrayHasKey('user', $parameters['db']);
+            $this->assertArrayHasKey('#password', $parameters['db']);
 
             if ($oldCfg['driver'] == 'mysql') {
-                $this->assertArrayHasKey('key', $newConfiguration['configuration']['parameters']['db']['ssl']);
-                $this->assertEquals('sslkey', $newConfiguration['configuration']['parameters']['db']['ssl']['key']);
-                $this->assertArrayHasKey('cert', $newConfiguration['configuration']['parameters']['db']['ssl']);
-                $this->assertEquals('sslcert', $newConfiguration['configuration']['parameters']['db']['ssl']['cert']);
-                $this->assertArrayHasKey('ca', $newConfiguration['configuration']['parameters']['db']['ssl']);
-                $this->assertEquals('sslca', $newConfiguration['configuration']['parameters']['db']['ssl']['ca']);
+                $this->assertArrayHasKey('key', $parameters['db']['ssl']);
+                $this->assertEquals('sslkey', $parameters['db']['ssl']['key']);
+                $this->assertArrayHasKey('cert', $parameters['db']['ssl']);
+                $this->assertEquals('sslcert', $parameters['db']['ssl']['cert']);
+                $this->assertArrayHasKey('ca', $parameters['db']['ssl']);
+                $this->assertEquals('sslca', $parameters['db']['ssl']['ca']);
             }
 
-            if (!empty($newConfiguration['configuration']['parameters']['tables'])) {
+            if (!empty($parameters['tables'])) {
                 $atLeastOneConfigurationHasTables = true;
-                $this->assertArrayHasKey('id', $newConfiguration['configuration']['parameters']['tables'][0]);
-                $this->assertArrayHasKey('name', $newConfiguration['configuration']['parameters']['tables'][0]);
-                $this->assertArrayHasKey('query', $newConfiguration['configuration']['parameters']['tables'][0]);
-                $this->assertArrayHasKey('outputTable', $newConfiguration['configuration']['parameters']['tables'][0]);
-                $this->assertArrayHasKey('incremental', $newConfiguration['configuration']['parameters']['tables'][0]);
-                $this->assertInternalType('boolean', $newConfiguration['configuration']['parameters']['tables'][0]['incremental']);
-                $this->assertArrayHasKey('enabled', $newConfiguration['configuration']['parameters']['tables'][0]);
-                $this->assertInternalType('boolean', $newConfiguration['configuration']['parameters']['tables'][0]['enabled']);
+                $this->assertArrayHasKey('id', $parameters['tables'][0]);
+                $this->assertArrayHasKey('name', $parameters['tables'][0]);
+                $this->assertArrayHasKey('query', $parameters['tables'][0]);
+                $this->assertArrayHasKey('outputTable', $parameters['tables'][0]);
+                $this->assertArrayHasKey('incremental', $parameters['tables'][0]);
+                $this->assertInternalType('boolean', $parameters['tables'][0]['incremental']);
+                $this->assertArrayHasKey('enabled', $parameters['tables'][0]);
+                $this->assertInternalType('boolean', $parameters['tables'][0]['enabled']);
             }
         }
         $this->assertTrue($atLeastOneConfigurationHasTables);
+    }
+
+    public function testOrchestrationUpdate()
+    {
+        $oldComponentId = 'ex-db';
+        $newComponentId = 'keboola.ex-db-mysql';
+        $orchestratorService = new OrchestratorService();
+        // create orchestration
+        $orchestration = $orchestratorService->request('post', 'orchestrations', [
+            'json' => [
+                "name" => "Ex DB Migration Test Orchestrator",
+                "tasks" => [
+                    [
+                        "component" => "ex-db",
+                        "action" => "run",
+                        "continueOnFailure" => false,
+                        "timeoutMinutes" => null,
+                        "active" => true
+                    ]
+                ]
+            ]
+        ]);
+
+        // test affected orchestrations
+        $affectedOrchestrations = $orchestratorService->getAffectedOrchestrations($oldComponentId);
+        $this->assertNotEmpty($affectedOrchestrations);
+        $orchestrationIsBetweenAffected = false;
+        foreach ($affectedOrchestrations as $affected) {
+            if ($affected['id'] == $orchestration['id']) {
+                $orchestrationIsBetweenAffected = true;
+            }
+        }
+        $this->assertTrue($orchestrationIsBetweenAffected);
+
+        // test update orchestration
+        $updatedOrchestrations = $orchestratorService->updateOrchestrations($oldComponentId, $newComponentId);
+        $this->assertNotEmpty($updatedOrchestrations);
+        $orchestrationIsUpdated = false;
+        foreach ($updatedOrchestrations as $updated) {
+            // is updated?
+            if ($updated['id'] == $orchestration['id']) {
+                $orchestrationIsUpdated = true;
+            }
+            // get tasks
+            $tasks = $orchestratorService->getTasks($updated['id']);
+            foreach ($tasks as $task) {
+                if (isset($task['component'])) {
+                    $this->assertEquals($newComponentId, $task['component']);
+                }
+            }
+        }
+        $this->assertTrue($orchestrationIsUpdated);
+
+        // cleanup
+        $orchestratorService->request('delete', sprintf('orchestrations/%s', $orchestration['id']));
     }
 
     public function testStatus()
@@ -103,8 +161,9 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
 
     private function findConfigurationByName($configurations, $name)
     {
+        /** @var Configuration $configuration */
         foreach ($configurations as $configuration) {
-            if ($configuration['name'] == $name) {
+            if ($configuration->getName() == $name) {
                 return $configuration;
             }
         }
