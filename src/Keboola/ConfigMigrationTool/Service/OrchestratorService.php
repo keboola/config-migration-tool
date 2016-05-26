@@ -34,7 +34,10 @@ class OrchestratorService
             foreach ($tasks as $task) {
                 if ((isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], $oldComponentId)))
                 || (isset($task['component']) && ($oldComponentId == $task['component']))) {
-                    $affected[] = $orchestration;
+                    $affected[] = [
+                        'id' => $orchestration['id'],
+                        'name' => $orchestration['name']
+                    ];
                 }
             }
         }
