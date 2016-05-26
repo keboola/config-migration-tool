@@ -152,11 +152,12 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         $status = $migration->status();
 
         $this->assertNotEmpty($status);
-        $this->assertArrayHasKey('configId', $status[0]);
-        $this->assertArrayHasKey('configName', $status[0]);
-        $this->assertArrayHasKey('componentId', $status[0]);
-        $this->assertArrayHasKey('tableId', $status[0]);
-        $this->assertArrayHasKey('status', $status[0]);
+        $this->assertArrayHasKey('configId', $status['configurations'][0]);
+        $this->assertArrayHasKey('configName', $status['configurations'][0]);
+        $this->assertArrayHasKey('componentId', $status['configurations'][0]);
+        $this->assertArrayHasKey('tableId', $status['configurations'][0]);
+        $this->assertArrayHasKey('status', $status['configurations'][0]);
+        $this->assertArrayHasKey('orchestrations', $status);
     }
 
     private function findConfigurationByName($configurations, $name)
