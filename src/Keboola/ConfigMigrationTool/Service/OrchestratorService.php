@@ -9,13 +9,17 @@
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
+use Monolog\Logger;
 
 class OrchestratorService
 {
     private $client;
 
-    public function __construct()
+    private $logger;
+
+    public function __construct(Logger $logger)
     {
+        $this->logger = $logger;
         $this->client = new Client([
             'base_uri' => 'https://syrup.keboola.com/orchestrator/',
             'headers' => [
@@ -32,7 +36,7 @@ class OrchestratorService
         foreach ($orchestrations as $orchestration) {
             $tasks = $this->getTasks($orchestration['id']);
             foreach ($tasks as $task) {
-                if ((isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], $oldComponentId)))
+                if ((isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId . '/')))
                 || (isset($task['component']) && ($oldComponentId == $task['component']))) {
                     $affected[] = [
                         'id' => $orchestration['id'],
@@ -52,21 +56,36 @@ class OrchestratorService
         $updatedOrchestrations = [];
         foreach ($orchestrations as $orchestration) {
             $tasks = $this->getTasks($orchestration['id']);
-            foreach ($tasks as $task) {
-                if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], $oldComponentId))) {
+
+            $update = false;
+            foreach ($tasks as &$task) {
+                if (empty($task['actionParameters'])) {
+                    // no config provided
+                    $this->logger->error("Orchestration task has no config in actionParameters. Migrate it manually", [
+                        'orchestrationId' => $orchestration['id'],
+                        'taskId' => $task['id']
+                    ]);
+                    continue;
+                }
+                if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))) {
                     $task['componentUrl'] = str_replace(
                         $oldComponentId,
                         $newComponentId,
                         $task['componentUrl']
                     );
+                    $update = true;
                 } else if (isset($task['component']) && ($oldComponentId == $task['component'])) {
                     $task['component'] = $newComponentId;
+                    $update = true;
                 }
             }
-            $this->request('put', sprintf('orchestrations/%s/tasks', $orchestration['id'], [
-                'json' => $tasks
-            ]));
-            $updatedOrchestrations[] = $orchestration;
+
+            if ($update) {
+                $this->request('put', sprintf('orchestrations/%s/tasks', $orchestration['id']), [
+                    'json' => $tasks
+                ]);
+                $updatedOrchestrations[] = $orchestration;
+            }
         }
 
         return $updatedOrchestrations;

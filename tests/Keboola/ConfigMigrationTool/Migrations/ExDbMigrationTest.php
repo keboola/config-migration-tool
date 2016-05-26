@@ -34,31 +34,42 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         $testConfigs[] = $this->createOldConfig($sapiClient, 'mysql');
         $testConfigs[] = $this->createOldConfig($sapiClient, 'pgsql');
         $testConfigs[] = $this->createOldConfig($sapiClient, 'oracle');
+        $emptyConfig = $this->createOldConfigEmpty($sapiClient);
+        $testConfigs[] = $emptyConfig;
 
         $oldConfigs = [];
         foreach ($testConfigs as $tableId) {
             $table = $sapiClient->getTable($tableId);
             $attributes = TableHelper::formatAttributes($table['attributes']);
+            $driver = isset($attributes['db.driver'])?$attributes['db.driver']:'mysql';
             //cleanup
             try {
-                $components->deleteConfiguration('keboola.ex-db-' . $attributes['db.driver'], $attributes['accountId']);
+                $components->deleteConfiguration('keboola.ex-db-' . $driver, $attributes['accountId']);
                 $sapiClient->deleteTableAttribute($table['id'], 'migrationStatus');
-            } catch (\Exception $e) { }
+            } catch (\Exception $e) {
+                // do nothing
+            }
             $oldConfigs[] = [
+                'accountId' => $attributes['accountId'],
                 'name' => $attributes['name'],
-                'driver' => $attributes['db.driver'],
+                'driver' => $driver
             ];
         }
 
         $migration = new ExDbMigration(new Logger(APP_NAME));
         $createdConfigurations = $migration->execute();
         $this->assertNotEmpty($createdConfigurations);
+        $this->assertCount(4, $createdConfigurations);
 
         $atLeastOneConfigurationHasTables = false;
         foreach ($oldConfigs as $oldCfg) {
             $newConfiguration = $this->findConfigurationByName($createdConfigurations, $oldCfg['name']);
             $this->assertNotFalse($newConfiguration);
             $this->assertEquals($oldCfg['name'], $newConfiguration->getName());
+            if ($oldCfg['accountId'] == 'testConfigEmpty') {
+                // empty config
+                continue;
+            }
             $this->assertArrayHasKey('parameters', $newConfiguration->getConfiguration());
             $parameters = $newConfiguration->getConfiguration()['parameters'];
             $this->assertArrayHasKey('db', $parameters);
@@ -95,7 +106,7 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
     {
         $oldComponentId = 'ex-db';
         $newComponentId = 'keboola.ex-db-mysql';
-        $orchestratorService = new OrchestratorService();
+        $orchestratorService = new OrchestratorService(new Logger(APP_NAME));
         // create orchestration
         $orchestration = $orchestratorService->request('post', 'orchestrations', [
             'json' => [
@@ -104,6 +115,9 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
                     [
                         "component" => "ex-db",
                         "action" => "run",
+                        "actionParameters" => [
+                            "config" => "testing"
+                        ],
                         "continueOnFailure" => false,
                         "timeoutMinutes" => null,
                         "active" => true
@@ -134,10 +148,13 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
             }
             // get tasks
             $tasks = $orchestratorService->getTasks($updated['id']);
+            $this->assertNotEmpty($tasks);
             foreach ($tasks as $task) {
                 if (isset($task['component'])) {
                     $this->assertEquals($newComponentId, $task['component']);
                 }
+                $this->assertNotEmpty($task['actionParameters']);
+                $this->assertEquals('testing', $task['actionParameters']['config']);
             }
         }
         $this->assertTrue($orchestrationIsUpdated);
@@ -182,7 +199,7 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
 
         $sapiClient->setTableAttribute($tableId, 'accountId', 'testConfig' . $driver);
         $sapiClient->setTableAttribute($tableId, 'name', 'testConfig' . $driver);
-        $sapiClient->setTableAttribute($tableId, 'desc', 'db-ex migration test account - MySql with SSL');
+        $sapiClient->setTableAttribute($tableId, 'desc', 'db-ex migration test account ' . $driver);
         $sapiClient->setTableAttribute($tableId, 'db.host', '127.0.0.1');
         $sapiClient->setTableAttribute($tableId, 'db.port', '3306');
         $sapiClient->setTableAttribute($tableId, 'db.user', 'root');
@@ -195,6 +212,21 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
             $sapiClient->setTableAttribute($tableId, 'db.ssl.cert', 'sslcert');
             $sapiClient->setTableAttribute($tableId, 'db.ssl.ca', 'sslca');
         }
+
+        return $tableId;
+    }
+
+    private function createOldConfigEmpty(Client $sapiClient)
+    {
+        $tableId = $sapiClient->createTable(
+            'sys.c-ex-db',
+            uniqid('test'),
+            new CsvFile(ROOT_PATH . 'tests/data/ex-db/test.csv')
+        );
+
+        $sapiClient->setTableAttribute($tableId, 'accountId', 'testConfigEmpty');
+        $sapiClient->setTableAttribute($tableId, 'name', 'testConfigEmpty');
+        $sapiClient->setTableAttribute($tableId, 'desc', 'db-ex migration test account - empty');
 
         return $tableId;
     }

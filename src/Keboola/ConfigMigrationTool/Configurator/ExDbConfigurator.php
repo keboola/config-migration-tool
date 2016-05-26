@@ -47,6 +47,10 @@ class ExDbConfigurator
      */
     public function configure($attributes, $data)
     {
+        // configuration can be empty
+        if (!isset($attributes['db.host'])) {
+            return [];
+        }
         $configuration = [
             'parameters' => [
                 'db' => [
