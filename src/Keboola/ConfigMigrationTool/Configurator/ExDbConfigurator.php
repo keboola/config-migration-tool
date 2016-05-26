@@ -36,7 +36,7 @@ class ExDbConfigurator
         return sprintf(
             'keboola.%s-%s',
             'ex-db',
-            $attributes['db.driver']
+            isset($attributes['db.driver'])?$attributes['db.driver']:'mysql'
         );
     }
 
