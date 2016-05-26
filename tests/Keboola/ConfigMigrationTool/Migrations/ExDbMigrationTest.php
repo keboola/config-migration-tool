@@ -127,11 +127,12 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         ]);
 
         // test affected orchestrations
-        $affectedOrchestrations = $orchestratorService->getAffectedOrchestrations($oldComponentId);
+        $affectedOrchestrations = $orchestratorService->getOrchestrations($oldComponentId, 'keboola.ex-db-');
         $this->assertNotEmpty($affectedOrchestrations);
         $orchestrationIsBetweenAffected = false;
         foreach ($affectedOrchestrations as $affected) {
             if ($affected['id'] == $orchestration['id']) {
+                $this->assertTrue($affected['hasOld']);
                 $orchestrationIsBetweenAffected = true;
             }
         }
@@ -154,10 +155,18 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
                     $this->assertEquals($newComponentId, $task['component']);
                 }
                 $this->assertNotEmpty($task['actionParameters']);
-                $this->assertEquals('testing', $task['actionParameters']['config']);
             }
         }
         $this->assertTrue($orchestrationIsUpdated);
+
+        // check affected orchestration after migration
+        $affectedOrchestrations = $orchestratorService->getOrchestrations($oldComponentId, 'keboola.ex-db-');
+        $this->assertNotEmpty($affectedOrchestrations);
+        foreach ($affectedOrchestrations as $affected) {
+            if ($affected['id'] == $orchestration['id']) {
+                $this->assertTrue($affected['hasNew']);
+            }
+        }
 
         // cleanup
         $orchestratorService->request('delete', sprintf('orchestrations/%s', $orchestration['id']));

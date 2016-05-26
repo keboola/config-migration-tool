@@ -28,25 +28,38 @@ class OrchestratorService
         ]);
     }
 
-    public function getAffectedOrchestrations($oldComponentId)
+    public function getOrchestrations($oldComponentId, $newComponentId)
     {
-        $affected = [];
+        $result = [];
         $orchestrations = $this->request('get', 'orchestrations');
 
         foreach ($orchestrations as $orchestration) {
+            $hasOld = false;
+            $hasNew = false;
             $tasks = $this->getTasks($orchestration['id']);
             foreach ($tasks as $task) {
                 if ((isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId . '/')))
                 || (isset($task['component']) && ($oldComponentId == $task['component']))) {
-                    $affected[] = [
-                        'id' => $orchestration['id'],
-                        'name' => $orchestration['name']
-                    ];
+                    $hasOld = true;
                 }
+
+                if ((isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $newComponentId)))
+                    || (isset($task['component']) && (false !== strstr($task['component'], $newComponentId)))) {
+                    $hasNew = true;
+                }
+            }
+
+            if ($hasNew || $hasOld) {
+                $result[] = [
+                    'id' => $orchestration['id'],
+                    'name' => $orchestration['name'],
+                    'hasOld' => $hasOld,
+                    'hasNew' => $hasNew
+                ];
             }
         }
 
-        return $affected;
+        return $result;
     }
 
     public function updateOrchestrations($oldComponentId, $newComponentId)

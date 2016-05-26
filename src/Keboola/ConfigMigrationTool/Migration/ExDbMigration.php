@@ -85,7 +85,7 @@ class ExDbMigration implements MigrationInterface
                 },
                 $tables
             ),
-            'orchestrations' => $orchestratorService->getAffectedOrchestrations('ex-db')
+            'orchestrations' => $orchestratorService->getOrchestrations('ex-db', 'keboola.ex-db-')
         ];
     }
 }
