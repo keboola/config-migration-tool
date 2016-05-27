@@ -73,10 +73,18 @@ class OrchestratorService
 
             $update = false;
             foreach ($tasks as &$task) {
-                if (
-                    isset($task['actionParameters']['config'])
-                    && ($task['actionParameters']['config'] == $newConfiguration->getConfigurationId())
-                ) {
+                $config = null;
+                if (isset($task['actionParameters']['config'])
+                    && ($task['actionParameters']['config'] == $newConfiguration->getConfigurationId())) {
+                    $config = $task['actionParameters']['config'];
+                } elseif (isset($task['actionParameters']['account'])
+                    && ($task['actionParameters']['account'] == $newConfiguration->getConfigurationId())) {
+                    $config = $task['actionParameters']['account'];
+                    unset($task['actionParameters']['account']);
+                    $task['actionParameters']['config'] = $config;
+                }
+
+                if ($config !== null) {
                     if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))) {
                         $task['componentUrl'] = str_replace(
                             $oldComponentId,

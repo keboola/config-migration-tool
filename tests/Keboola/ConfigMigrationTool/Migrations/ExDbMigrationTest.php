@@ -121,6 +121,16 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
                         "continueOnFailure" => false,
                         "timeoutMinutes" => null,
                         "active" => true
+                    ],
+                    [
+                        "component" => "ex-db",
+                        "action" => "run",
+                        "actionParameters" => [
+                            "account" => "testing2"
+                        ],
+                        "continueOnFailure" => false,
+                        "timeoutMinutes" => null,
+                        "active" => true
                     ]
                 ]
             ]
@@ -139,12 +149,19 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($orchestrationIsBetweenAffected);
 
         // test update orchestration
-        $configuration = new Configuration();
-        $configuration->setComponentId($newComponentId);
-        $configuration->setConfigurationId('testing');
-        $configuration->setName('Testing');
+        $updatedOrchestrations = [];
+        foreach (['testing', 'testing2'] as $configId) {
+            $configuration = new Configuration();
+            $configuration->setComponentId($newComponentId);
+            $configuration->setConfigurationId($configId);
+            $configuration->setName($configId);
 
-        $updatedOrchestrations = $orchestratorService->updateOrchestrations($oldComponentId, $configuration);
+            $updatedOrchestrations = array_merge(
+                $orchestratorService->updateOrchestrations($oldComponentId, $configuration),
+                $updatedOrchestrations
+            );
+        }
+
         $this->assertNotEmpty($updatedOrchestrations);
         $orchestrationIsUpdated = false;
         foreach ($updatedOrchestrations as $updated) {
@@ -159,7 +176,7 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
                 if (isset($task['component'])) {
                     $this->assertEquals($newComponentId, $task['component']);
                 }
-                $this->assertNotEmpty($task['actionParameters']);
+                $this->assertNotEmpty($task['actionParameters']['config']);
             }
         }
         $this->assertTrue($orchestrationIsUpdated);
