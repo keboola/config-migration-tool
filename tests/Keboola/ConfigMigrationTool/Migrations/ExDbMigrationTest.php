@@ -139,7 +139,12 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($orchestrationIsBetweenAffected);
 
         // test update orchestration
-        $updatedOrchestrations = $orchestratorService->updateOrchestrations($oldComponentId, $newComponentId);
+        $configuration = new Configuration();
+        $configuration->setComponentId($newComponentId);
+        $configuration->setConfigurationId('testing');
+        $configuration->setName('Testing');
+
+        $updatedOrchestrations = $orchestratorService->updateOrchestrations($oldComponentId, $configuration);
         $this->assertNotEmpty($updatedOrchestrations);
         $orchestrationIsUpdated = false;
         foreach ($updatedOrchestrations as $updated) {

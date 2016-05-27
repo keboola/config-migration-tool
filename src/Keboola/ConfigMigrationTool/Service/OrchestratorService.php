@@ -9,6 +9,7 @@
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
+use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
 
 class OrchestratorService
@@ -62,7 +63,7 @@ class OrchestratorService
         return $result;
     }
 
-    public function updateOrchestrations($oldComponentId, $newComponentId)
+    public function updateOrchestrations($oldComponentId, Configuration $newConfiguration)
     {
         $orchestrations = $this->request('get', 'orchestrations');
 
@@ -72,7 +73,7 @@ class OrchestratorService
 
             $update = false;
             foreach ($tasks as &$task) {
-                if (empty($task['actionParameters'])) {
+                if (empty($task['actionParameters']['config'])) {
                     // no config provided
                     $this->logger->error("Orchestration task has no config in actionParameters. Migrate it manually", [
                         'orchestrationId' => $orchestration['id'],
@@ -80,16 +81,19 @@ class OrchestratorService
                     ]);
                     continue;
                 }
-                if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))) {
-                    $task['componentUrl'] = str_replace(
-                        $oldComponentId,
-                        $newComponentId,
-                        $task['componentUrl']
-                    );
-                    $update = true;
-                } else if (isset($task['component']) && ($oldComponentId == $task['component'])) {
-                    $task['component'] = $newComponentId;
-                    $update = true;
+
+                if ($task['actionParameters']['config'] == $newConfiguration->getConfigurationId()) {
+                    if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))) {
+                        $task['componentUrl'] = str_replace(
+                            $oldComponentId,
+                            $newConfiguration->getComponentId(),
+                            $task['componentUrl']
+                        );
+                        $update = true;
+                    } else if (isset($task['component']) && ($oldComponentId == $task['component'])) {
+                        $task['component'] = $newConfiguration->getComponentId();
+                        $update = true;
+                    }
                 }
             }
 
