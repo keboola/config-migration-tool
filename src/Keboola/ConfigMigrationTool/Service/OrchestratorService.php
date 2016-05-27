@@ -73,7 +73,10 @@ class OrchestratorService
 
             $update = false;
             foreach ($tasks as &$task) {
-                if ($task['actionParameters']['config'] == $newConfiguration->getConfigurationId()) {
+                if (
+                    isset($task['actionParameters']['config'])
+                    && ($task['actionParameters']['config'] == $newConfiguration->getConfigurationId())
+                ) {
                     if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))) {
                         $task['componentUrl'] = str_replace(
                             $oldComponentId,
@@ -89,15 +92,6 @@ class OrchestratorService
             }
 
             if ($update) {
-                if (empty($task['actionParameters']['config'])) {
-                    // no config provided
-                    $this->logger->warning("Orchestration task has no config in actionParameters. Migrate it manually", [
-                        'orchestrationId' => $orchestration['id'],
-                        'taskId' => $task['id']
-                    ]);
-                    continue;
-                }
-
                 $this->request('put', sprintf('orchestrations/%s/tasks', $orchestration['id']), [
                     'json' => $tasks
                 ]);
