@@ -11,9 +11,11 @@ namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Configurator\ExDbConfigurator;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
+use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
+use Keboola\StorageApi\ClientException;
 use Monolog\Logger;
 
 class ExDbMigration implements MigrationInterface
@@ -48,6 +50,11 @@ class ExDbMigration implements MigrationInterface
 
                     $createdConfigurations[] = $configuration;
                     $sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'success');
+                } catch (ClientException $e) {
+                    $sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
+                    throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
+                        'tableId' => $table['id']
+                    ]);
                 } catch (\Exception $e) {
                     $sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
