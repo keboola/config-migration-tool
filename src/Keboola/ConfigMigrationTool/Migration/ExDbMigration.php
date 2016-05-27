@@ -46,7 +46,17 @@ class ExDbMigration implements MigrationInterface
                     $configuration->setConfiguration($configurator->configure($attributes, $tableData));
                     $sapiService->encryptConfiguration($configuration);
 
+                    $this->logger->info(sprintf(
+                        "Configuration '%s' has been migrated",
+                        $configuration->getName()
+                    ));
+
                     $orchestratorService->updateOrchestrations('ex-db', $configuration);
+
+                    $this->logger->info(sprintf(
+                        "Orchestration task for configuration '%s' has been updated",
+                        $configuration->getName()
+                    ));
 
                     $createdConfigurations[] = $configuration;
                     $sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'success');
