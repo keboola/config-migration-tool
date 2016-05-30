@@ -10,7 +10,7 @@ namespace Keboola\ConfigMigrationTool\Configurator;
 
 use Keboola\StorageApi\Options\Components\Configuration;
 
-class ExGaConfigurator
+class ExGoogleAnalyticsConfigurator
 {
     public function configure($table, $data)
     {

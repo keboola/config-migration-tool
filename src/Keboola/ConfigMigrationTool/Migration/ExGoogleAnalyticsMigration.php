@@ -8,12 +8,11 @@
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
-
-use Keboola\ConfigMigrationTool\Configurator\ExGaConfigurator;
+use Keboola\ConfigMigrationTool\Configurator\ExGoogleAnalyticsConfigurator;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 
-class ExGaMigration implements MigrationInterface
+class ExGoogleAnalyticsMigration implements MigrationInterface
 {
 
     public function execute()
@@ -29,7 +28,7 @@ class ExGaMigration implements MigrationInterface
 
             //@todo: migrate tokens to OAuth Bundle
 
-            $configurator = new ExGaConfigurator();
+            $configurator = new ExGoogleAnalyticsConfigurator();
             $response = $components->addConfiguration($configurator->configure($table, $tableData));
 
             $createdConfigurations[] = $response;

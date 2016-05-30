@@ -8,7 +8,10 @@ use Symfony\Component\Yaml\Yaml;
 
 require_once(dirname(__FILE__) . "/bootstrap.php");
 
-$logger = new Logger(APP_NAME);
+$logger = new Logger(APP_NAME, [
+    new \Keboola\ConfigMigrationTool\Logger\InfoHandler(),
+    new \Monolog\Handler\StreamHandler('php://stderr', Logger::NOTICE)
+]);
 
 try {
     $arguments = getopt("d::", ["data::"]);
