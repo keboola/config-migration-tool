@@ -67,7 +67,7 @@ class ExDbConfigurator
         foreach ($data as $row) {
             $configuration['parameters']['tables'][] = [
                 'id' => $id,
-                'name' => $row['name'],
+                'name' => empty($row['name'])?'untitled':$row['name'],
                 'query' => $row['query'],
                 'outputTable' => $row['outputTable'],
                 'incremental' => boolval($row['incremental']),
