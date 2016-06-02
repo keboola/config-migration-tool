@@ -95,6 +95,8 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
                 $this->assertArrayHasKey('outputTable', $parameters['tables'][0]);
                 $this->assertArrayHasKey('incremental', $parameters['tables'][0]);
                 $this->assertInternalType('boolean', $parameters['tables'][0]['incremental']);
+                $this->assertArrayHasKey('primaryKey', $parameters['tables'][0]);
+                $this->assertInternalType('array', $parameters['tables'][0]['primaryKey']);
                 $this->assertArrayHasKey('enabled', $parameters['tables'][0]);
                 $this->assertInternalType('boolean', $parameters['tables'][0]['enabled']);
             }

@@ -12,13 +12,13 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 class ExGoogleAnalyticsConfigurator
 {
-    public function configure($table, $data)
+    public function create($attributes)
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId());
-        $configuration->setName($this->getTableAttributeValue($table, 'name'));
-        $configuration->setDescription($this->getTableAttributeValue($table, 'desc'));
-        $configuration->setConfiguration($this->createConfiguration($table, $data));
+        $configuration->setConfigurationId($attributes['id']);
+        $configuration->setName($attributes['accountName']);
+        $configuration->setDescription($attributes['description']);
 
         return $configuration;
     }
@@ -39,34 +39,68 @@ class ExGoogleAnalyticsConfigurator
         return null;
     }
 
-    private function createConfiguration($table, $data)
+    public function configure($attributes, $data)
     {
+        $outputBucket = 'in.c-ex-google-analytics-' . $attributes['id'];
         $configuration = [
             'parameters' => [
-                'outputBucket' => 'in.c-ex-google-analytics-' . $this->getTableAttributeValue($table, 'id'),
+                'outputBucket' => $outputBucket,
                 'profiles' => [
                     [
-                        'id' => $this->getTableAttributeValue($table, 'db.host'),
+                        'id' => $attributes['id']
                     ]
                 ]
             ]
         ];
 
+        $oldConfiguration = json_decode($attributes['configuration'], true);
+        /**
+         *  {
+         *      "users":{
+         *          "name":"users",
+         *          "metrics":["users","sessions"],
+         *          "dimensions":["date"],
+         *          "filters":""
+         *      }
+         * }
+         */
+
         $id = 0;
-        foreach ($data as $row) {
+        foreach ($oldConfiguration as $row) {
             $configuration['parameters']['queries'][] = [
                 'id' => $id,
                 'name' => $row['name'],
-                'query' => [
-
-                ],
-                'outputTable' => $row['outputTable'],
-                'incremental' => $row['incremental'],
+                'query' => $this->buildQuery($attributes['id'], $row),
+                'outputTable' => $this->getOutputTable($outputBucket, $row['name']),
+                'incremental' => true,
                 'enabled' => $row['enabled']
             ];
             $id++;
         }
 
         return $configuration;
+    }
+
+    private function buildQuery($profileId, $row)
+    {
+        return [
+            'metrics' => array_map(function ($item) {
+                    return ['expression' => $item];
+                }, $row['metrics']),
+            'dimensions' => array_map(function ($item) {
+                return ['name' => $item];
+            }, $row['dimensions']),
+            'filtersExpression' => $row['filters'],
+            'viewId' => $profileId,
+            'dateRanges' => [
+                'startDate' => '-4 days',
+                'endDate' => '-1 day'
+            ],
+        ];
+    }
+
+    private function getOutputTable($outputBucket, $name)
+    {
+        return $outputBucket . '.' . $name;
     }
 }

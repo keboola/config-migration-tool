@@ -71,6 +71,7 @@ class ExDbConfigurator
                 'query' => $row['query'],
                 'outputTable' => $row['outputTable'],
                 'incremental' => boolval($row['incremental']),
+                'primaryKey' => explode(',', $row['primaryKey']),
                 'enabled' => boolval($row['enabled'])
             ];
             $id++;

@@ -8,9 +8,11 @@
 
 namespace Keboola\ConfigMigrationTool\Test;
 
+use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Migration\ExGoogleAnalyticsMigration;
+use Keboola\Csv\CsvFile;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\Components;
+use Monolog\Logger;
 
 class ExGoogleAnalyticsMigrationTest extends \PHPUnit_Framework_TestCase
 {
@@ -18,42 +20,65 @@ class ExGoogleAnalyticsMigrationTest extends \PHPUnit_Framework_TestCase
     {
         $sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
 
-        $migration = new ExGoogleAnalyticsMigration();
-
-        $oldConfigs = [];
-
         $tables = $sapiClient->listTables('sys.c-ex-google-analytics');
         foreach ($tables as $table) {
-            //@todo
+            if (false !== strstr($table['id'], 'migrationtest')) {
+                $sapiClient->dropTable($table['id']);
+            }
+        }
+
+        $testTables = [];
+        $testTables[] = $this->createOldConfig($sapiClient);
+        $testTables[] = $this->createOldConfig($sapiClient);
+        $testTables[] = $this->createOldConfig($sapiClient);
+
+        $oldConfigs = [];
+        foreach ($testTables as $tableId) {
+            $table = $sapiClient->getTable($tableId);
+            $attributes = TableHelper::formatAttributes($table['attributes']);
+
+            $oldConfigs[] = [
+                'id' => $attributes['id'],
+                'accountName' => $attributes['accountName']
+            ];
         }
 
         //@todo
+        $migration = new ExGoogleAnalyticsMigration($this->getLogger());
+        $createdConfigurations = $migration->execute();
+
+        var_dump($createdConfigurations);
     }
 
-    private function createOldConfig(Client $sapiClient, $driver)
+    private function createOldConfig(Client $sapiClient)
     {
+        $id = uniqid('migrationtest');
+
         $tableId = $sapiClient->createTable(
             'sys.c-ex-google-analytics',
-            uniqid('migration-test'),
+            $id,
             new CsvFile(ROOT_PATH . 'tests/data/ex-google-analytics/test.csv')
         );
 
-        $sapiClient->setTableAttribute($tableId, 'accountId', 'testConfig' . $driver);
-        $sapiClient->setTableAttribute($tableId, 'name', 'testConfig' . $driver);
-        $sapiClient->setTableAttribute($tableId, 'desc', 'db-ex migration test account ' . $driver);
-        $sapiClient->setTableAttribute($tableId, 'db.host', '127.0.0.1');
-        $sapiClient->setTableAttribute($tableId, 'db.port', '3306');
-        $sapiClient->setTableAttribute($tableId, 'db.user', 'root');
-        $sapiClient->setTableAttribute($tableId, 'db.password', '123456');
-        $sapiClient->setTableAttribute($tableId, 'db.database', 'test');
-        $sapiClient->setTableAttribute($tableId, 'db.driver', $driver);
-
-        if ($driver == 'mysql') {
-            $sapiClient->setTableAttribute($tableId, 'db.ssl.key', 'sslkey');
-            $sapiClient->setTableAttribute($tableId, 'db.ssl.cert', 'sslcert');
-            $sapiClient->setTableAttribute($tableId, 'db.ssl.ca', 'sslca');
-        }
+        $sapiClient->setTableAttribute($tableId, 'id', $id);
+        $sapiClient->setTableAttribute($tableId, 'accountName', $id);
+        $sapiClient->setTableAttribute($tableId, 'description', 'Migrate this account');
+        $sapiClient->setTableAttribute($tableId, 'outputBucket', 'migrationtest');
+        $sapiClient->setTableAttribute($tableId, 'googleId', getenv('GOOGLE_ACCOUNT_ID'));
+        $sapiClient->setTableAttribute($tableId, 'googleName', 'Some User Name');
+        $sapiClient->setTableAttribute($tableId, 'email', getenv('GOOGLE_ACCOUNT_EMAIL'));
+        $sapiClient->setTableAttribute($tableId, 'owner', getenv('GOOGLE_ACCOUNT_EMAIL'));
+        $sapiClient->setTableAttribute($tableId, 'accessToken', getenv('GOOGLE_ACCESS_TOKEN'));
+        $sapiClient->setTableAttribute($tableId, 'refreshToken', getenv('GOOGLE_REFRESH_TOKEN'));
 
         return $tableId;
+    }
+
+    private function getLogger()
+    {
+        return new Logger(APP_NAME, [
+            new \Keboola\ConfigMigrationTool\Logger\InfoHandler(),
+            new \Monolog\Handler\StreamHandler('php://stderr', Logger::NOTICE)
+        ]);
     }
 }
