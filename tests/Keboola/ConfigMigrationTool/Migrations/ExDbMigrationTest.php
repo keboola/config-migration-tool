@@ -11,65 +11,57 @@ namespace Keboola\ConfigMigrationTool\Test;
 
 use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Migration\ExDbMigration;
+use Keboola\ConfigMigrationTool\Service\ExDbService;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\Csv\CsvFile;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ListConfigurationRowsOptions;
 use Monolog\Logger;
 
 class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
 {
+    /** @var Client */
+    private $sapiClient;
+
+    /** @var Components */
+    private $components;
+
+    public function setUp()
+    {
+        $this->sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
+        $this->components = new Components($this->sapiClient);
+    }
+
     public function testExecute()
     {
-        $sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
-        $components = new Components($sapiClient);
-
-        $tables = $sapiClient->listTables('sys.c-ex-db');
+        $tables = $this->sapiClient->listTables('sys.c-ex-db');
         foreach ($tables as $table) {
-            $sapiClient->dropTable($table['id']);
+            $this->sapiClient->dropTable($table['id']);
+        }
+
+        $componentCfgs = $this->components->getComponentConfigurations('ex-db');
+        foreach ($componentCfgs as $cfg) {
+            $this->components->deleteConfiguration('ex-db', $cfg['id']);
         }
 
         $testConfigs = [];
-        $testConfigs[] = $this->createOldConfig($sapiClient, 'mysql');
-        $testConfigs[] = $this->createOldConfig($sapiClient, 'pgsql');
-        $testConfigs[] = $this->createOldConfig($sapiClient, 'oracle');
-        $emptyConfig = $this->createOldConfigEmpty($sapiClient);
-        $testConfigs[] = $emptyConfig;
-
-        $oldConfigs = [];
-        foreach ($testConfigs as $tableId) {
-            $table = $sapiClient->getTable($tableId);
-            $attributes = TableHelper::formatAttributes($table['attributes']);
-            $driver = isset($attributes['db.driver'])?$attributes['db.driver']:'mysql';
-            //cleanup
-            try {
-                $components->deleteConfiguration('keboola.ex-db-' . $driver, $attributes['accountId']);
-                $sapiClient->deleteTableAttribute($table['id'], 'migrationStatus');
-            } catch (\Exception $e) {
-                // do nothing
-            }
-            $oldConfigs[] = [
-                'accountId' => $attributes['accountId'],
-                'name' => $attributes['name'],
-                'driver' => $driver
-            ];
-        }
+        $testConfigs[] = $this->createOldConfig('mysql');
+        $testConfigs[] = $this->createOldConfig('pgsql');
+        $testConfigs[] = $this->createOldConfig('oracle');
 
         $migration = new ExDbMigration(new Logger(APP_NAME));
         $createdConfigurations = $migration->execute();
         $this->assertNotEmpty($createdConfigurations);
-        $this->assertCount(4, $createdConfigurations);
+        $this->assertCount(3, $createdConfigurations);
 
         $atLeastOneConfigurationHasTables = false;
-        foreach ($oldConfigs as $oldCfg) {
+        foreach ($testConfigs as $oldCfg) {
             $newConfiguration = $this->findConfigurationByName($createdConfigurations, $oldCfg['name']);
             $this->assertNotFalse($newConfiguration);
             $this->assertEquals($oldCfg['name'], $newConfiguration->getName());
-            if ($oldCfg['accountId'] == 'testConfigEmpty') {
-                // empty config
-                continue;
-            }
+
             $this->assertArrayHasKey('parameters', $newConfiguration->getConfiguration());
             $parameters = $newConfiguration->getConfiguration()['parameters'];
             $this->assertArrayHasKey('db', $parameters);
@@ -222,45 +214,58 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         return false;
     }
 
-    private function createOldConfig(Client $sapiClient, $driver)
+    private function createOldConfig($driver)
     {
-        $tableId = $sapiClient->createTable(
-            'sys.c-ex-db',
-            uniqid('test'),
-            new CsvFile(ROOT_PATH . 'tests/data/ex-db/test.csv')
-        );
+        $exDbService = new ExDbService(new Logger(APP_NAME));
+        $cfgId = uniqid('test');
+        $config = $exDbService->request('post', 'configs', [
+            'json' =>  [
+                'id' => $cfgId,
+                'name' => $cfgId,
+                'description' => 'db-ex migration test account ' . $driver
+            ]
+        ]);
+        $config['driver'] = $driver;
 
-        $sapiClient->setTableAttribute($tableId, 'accountId', 'testConfig' . $driver);
-        $sapiClient->setTableAttribute($tableId, 'name', 'testConfig' . $driver);
-        $sapiClient->setTableAttribute($tableId, 'desc', 'db-ex migration test account ' . $driver);
-        $sapiClient->setTableAttribute($tableId, 'db.host', '127.0.0.1');
-        $sapiClient->setTableAttribute($tableId, 'db.port', '3306');
-        $sapiClient->setTableAttribute($tableId, 'db.user', 'root');
-        $sapiClient->setTableAttribute($tableId, 'db.password', '123456');
-        $sapiClient->setTableAttribute($tableId, 'db.database', 'test');
-        $sapiClient->setTableAttribute($tableId, 'db.driver', $driver);
+        $exDbService->request('post', sprintf('configs/%s/queries', $config['id']), [
+            'json' => [
+                'name' => 'testQuery',
+                'query' => 'SELECT * FROM test',
+                'outputTable' => 'in.c-main.test',
+                'incremental' => 0,
+                'primaryKey' => 'id',
+                'enabled' => 1
+            ]
+        ]);
+
+        $body = [
+            'host' => 'localhost',
+            'driver' => $driver,
+            'database' => 'test',
+            'user' => 'test',
+            'password' => 'migrationTest123',
+            'port' => 1234
+        ];
 
         if ($driver == 'mysql') {
-            $sapiClient->setTableAttribute($tableId, 'db.ssl.key', 'sslkey');
-            $sapiClient->setTableAttribute($tableId, 'db.ssl.cert', 'sslcert');
-            $sapiClient->setTableAttribute($tableId, 'db.ssl.ca', 'sslca');
+            $body['ssl'] = [
+                'ca' => 'sslca',
+                'key' => 'sslkey',
+                'cert' => 'sslcert'
+            ];
         }
 
-        return $tableId;
-    }
+        $exDbService->request('post', sprintf('configs/%s/credentials', $config['id']), [
+            'json' => $body
+        ]);
 
-    private function createOldConfigEmpty(Client $sapiClient)
-    {
-        $tableId = $sapiClient->createTable(
-            'sys.c-ex-db',
-            uniqid('test'),
-            new CsvFile(ROOT_PATH . 'tests/data/ex-db/test.csv')
-        );
+        $configuration = new Configuration();
+        $configuration->setComponentId('ex-db');
+        $configuration->setConfigurationId($cfgId);
+        $configuration->setName($cfgId);
+        $configuration->setDescription("blabla");
+        $this->components->addConfiguration($configuration);
 
-        $sapiClient->setTableAttribute($tableId, 'accountId', 'testConfigEmpty');
-        $sapiClient->setTableAttribute($tableId, 'name', 'testConfigEmpty');
-        $sapiClient->setTableAttribute($tableId, 'desc', 'db-ex migration test account - empty');
-
-        return $tableId;
+        return $config;
     }
 }

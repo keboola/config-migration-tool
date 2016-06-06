@@ -16,12 +16,12 @@ class ExDbConfigurator
      * @param $attributes
      * @return Configuration
      */
-    public function create($attributes)
+    public function create($attributes, $name)
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId($attributes));
         $configuration->setConfigurationId($attributes['accountId']);
-        $configuration->setName($attributes['name']);
+        $configuration->setName($name);
         $configuration->setDescription(isset($attributes['desc'])?$attributes['desc']:'');
 
         return $configuration;
@@ -41,30 +41,30 @@ class ExDbConfigurator
     }
 
     /**
-     * @param $attributes
-     * @param $data
+     * @param $credentials
+     * @param $queries
      * @return array
      */
-    public function configure($attributes, $data)
+    public function configure($credentials, $queries)
     {
         // configuration can be empty
-        if (!isset($attributes['db.host'])) {
+        if (!isset($credentials['host'])) {
             return [];
         }
         $configuration = [
             'parameters' => [
                 'db' => [
-                    'host' => $attributes['db.host'],
-                    'port' => $attributes['db.port'],
-                    'database' => $attributes['db.database'],
-                    'user' => $attributes['db.user'],
-                    '#password' => $attributes['db.password']
+                    'host' => $credentials['host'],
+                    'port' => $credentials['port'],
+                    'database' => $credentials['database'],
+                    'user' => $credentials['user'],
+                    '#password' => $credentials['password']
                 ],
             ]
         ];
 
         $id = 0;
-        foreach ($data as $row) {
+        foreach ($queries as $row) {
             $configuration['parameters']['tables'][] = [
                 'id' => $id,
                 'name' => empty($row['name'])?'untitled':$row['name'],
@@ -77,15 +77,9 @@ class ExDbConfigurator
             $id++;
         }
 
-        if ($attributes['db.driver'] == 'mysql') {
-            if (isset($attributes['db.ssl.ca'])) {
-                $configuration['parameters']['db']['ssl']['ca'] = $attributes['db.ssl.ca'];
-            }
-            if (isset($attributes['db.ssl.key'])) {
-                $configuration['parameters']['db']['ssl']['key'] = $attributes['db.ssl.key'];
-            }
-            if (isset($attributes['db.ssl.cert'])) {
-                $configuration['parameters']['db']['ssl']['cert'] = $attributes['db.ssl.cert'];
+        if ($credentials['driver'] == 'mysql') {
+            if (isset($credentials['ssl'])) {
+                $configuration['parameters']['db']['ssl'] = $credentials['ssl'];
             }
         }
 

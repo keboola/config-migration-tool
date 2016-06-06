@@ -50,6 +50,11 @@ class StorageApiService
         return Client::parseCsv($this->client->exportTable($tableId));
     }
 
+    public function getConfiguration($componentId, $configurationId)
+    {
+        return $this->components->getConfiguration($componentId, $configurationId);
+    }
+
     public function createConfiguration(Configuration $configuration)
     {
         return $this->components->addConfiguration($configuration);

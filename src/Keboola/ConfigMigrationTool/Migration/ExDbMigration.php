@@ -13,6 +13,7 @@ use Keboola\ConfigMigrationTool\Configurator\ExDbConfigurator;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Helper\TableHelper;
+use Keboola\ConfigMigrationTool\Service\ExDbService;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\ClientException;
@@ -32,18 +33,26 @@ class ExDbMigration implements MigrationInterface
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
         $configurator = new ExDbConfigurator();
-        $tables = $sapiService->getConfigurationTables('ex-db');
+        $exDbService = new ExDbService($this->logger);
+//        $tables = $sapiService->getConfigurationTables('ex-db');
+
+        $oldDbConfigs = $exDbService->getConfigs();
 
         $createdConfigurations = [];
-        foreach ($tables as $table) {
-            $attributes = TableHelper::formatAttributes($table['attributes']);
+        foreach ($oldDbConfigs as $oldConfig) {
+            $sysTableId = 'sys.c-ex-db.' . $oldConfig['id'];
+            $sysTable = $sapiService->getClient()->getTable($sysTableId);
+            $attributes = TableHelper::formatAttributes($sysTable['attributes']);
+
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
                 try {
-                    $tableData = $sapiService->exportTable($table['id']);
+                    $credentials = $exDbService->getCredentials($oldConfig['id']);
+                    $queries = $exDbService->getQueries($oldConfig['id']);
+                    $componentCfg = $sapiService->getConfiguration('ex-db', $attributes['accountId']);
 
-                    $configuration = $configurator->create($attributes);
+                    $configuration = $configurator->create($attributes, $componentCfg['name']);
                     $sapiService->createConfiguration($configuration);
-                    $configuration->setConfiguration($configurator->configure($attributes, $tableData));
+                    $configuration->setConfiguration($configurator->configure($credentials, $queries));
                     $sapiService->encryptConfiguration($configuration);
 
                     $this->logger->info(sprintf(
@@ -59,16 +68,16 @@ class ExDbMigration implements MigrationInterface
                     ));
 
                     $createdConfigurations[] = $configuration;
-                    $sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'success');
+                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'success');
                 } catch (ClientException $e) {
-                    $sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
+                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'tableId' => $table['id']
+                        'tableId' => $sysTableId
                     ]);
                 } catch (\Exception $e) {
-                    $sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
+                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'tableId' => $table['id']
+                        'tableId' => $sysTableId
                     ]);
                 }
             }
