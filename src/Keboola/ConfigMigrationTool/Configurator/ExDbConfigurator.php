@@ -80,6 +80,7 @@ class ExDbConfigurator
         if ($credentials['driver'] == 'mysql') {
             if (isset($credentials['ssl'])) {
                 $configuration['parameters']['db']['ssl'] = $credentials['ssl'];
+                $configuration['parameters']['db']['ssl']['enabled'] = true;
             }
         }
 
