@@ -31,12 +31,17 @@ class OAuthService
         return \GuzzleHttp\json_decode($response->getBody()->getContents());
     }
 
-    public function createCredentials($componentId)
+    public function createCredentials($componentId, $account)
     {
-        //@todo: implement post credentials in oauth bundle ?
-
         $response = $this->client->post(sprintf('credentials/%s', $componentId), [
-            'json' => []
+            'json' => [
+                "id" => $account['id'],
+                "authorizedFor" => $account['email'],
+                "data" => [
+                    "access_token" => $account['accessToken'],
+                    "refresh_token" => $account['refreshToken']
+                ]
+            ]
         ]);
 
         return \GuzzleHttp\json_decode($response->getBody()->getContents());

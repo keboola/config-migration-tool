@@ -9,15 +9,12 @@
 
 namespace Keboola\ConfigMigrationTool\Test;
 
-use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Migration\ExDbMigration;
 use Keboola\ConfigMigrationTool\Service\ExDbService;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
-use Keboola\Csv\CsvFile;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
-use Keboola\StorageApi\Options\Components\ListConfigurationRowsOptions;
 use Monolog\Logger;
 
 class ExDbMigrationTest extends \PHPUnit_Framework_TestCase

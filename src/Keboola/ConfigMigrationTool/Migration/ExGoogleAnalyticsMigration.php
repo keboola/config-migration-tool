@@ -12,6 +12,7 @@ use Keboola\ConfigMigrationTool\Configurator\ExGoogleAnalyticsConfigurator;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Helper\TableHelper;
+use Keboola\ConfigMigrationTool\Service\ExGoogleAnalyticsService;
 use Keboola\ConfigMigrationTool\Service\OAuthService;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
@@ -33,8 +34,9 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
         $oauthService = new OAuthService();
-
         $configurator = new ExGoogleAnalyticsConfigurator();
+        $googleAnalyticsService = new ExGoogleAnalyticsService($this->logger);
+
         $tables = $sapiService->getConfigurationTables('ex-google-analytics');
 
         $createdConfigurations = [];
@@ -42,13 +44,12 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
             $attributes = TableHelper::formatAttributes($table['attributes']);
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
                 try {
-                    $tableData = $sapiService->exportTable($table['id']);
+                    $account = $googleAnalyticsService->getAccount($attributes['id']);
+                    $oauthService->createCredentials('keboola.ex-google-analytics-v4', $account);
 
-                    $credentials = $oauthService->createCredentials('keboola.ex-google-analytics-v4');
-
-                    $configuration = $configurator->create($attributes);
+                    $configuration = $configurator->create($account);
                     $sapiService->createConfiguration($configuration);
-                    $configuration->setConfiguration($configurator->configure($attributes, $tableData));
+                    $configuration->setConfiguration($configurator->configure($account));
                     $sapiService->encryptConfiguration($configuration);
 
                     $this->logger->info(sprintf(
@@ -56,7 +57,7 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
                         $configuration->getName()
                     ));
 
-                    $orchestratorService->updateOrchestrations('ex-db', $configuration);
+                    $orchestratorService->updateOrchestrations('ex-google-analytics', $configuration);
 
                     $this->logger->info(sprintf(
                         "Orchestration task for configuration '%s' has been updated",

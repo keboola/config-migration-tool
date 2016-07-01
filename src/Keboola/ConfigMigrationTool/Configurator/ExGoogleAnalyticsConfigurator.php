@@ -39,43 +39,34 @@ class ExGoogleAnalyticsConfigurator
         return null;
     }
 
-    public function configure($attributes, $data)
+    public function configure($account)
     {
-        $outputBucket = 'in.c-ex-google-analytics-' . $attributes['id'];
+        $outputBucket = 'in.c-ex-google-analytics-' . $account['id'];
         $configuration = [
             'parameters' => [
-                'outputBucket' => $outputBucket,
-                'profiles' => [
-                    [
-                        'id' => $attributes['id']
-                    ]
-                ]
+                'outputBucket' => $outputBucket
             ]
         ];
 
-        $oldConfiguration = json_decode($attributes['configuration'], true);
-        /**
-         *  {
-         *      "users":{
-         *          "name":"users",
-         *          "metrics":["users","sessions"],
-         *          "dimensions":["date"],
-         *          "filters":""
-         *      }
-         * }
-         */
+        // queries
+        $oldConfiguration = json_decode($account['configuration'], true);
 
         $id = 0;
         foreach ($oldConfiguration as $row) {
             $configuration['parameters']['queries'][] = [
                 'id' => $id,
                 'name' => $row['name'],
-                'query' => $this->buildQuery($attributes['id'], $row),
+                'query' => $this->buildQuery($account['id'], $row),
                 'outputTable' => $this->getOutputTable($outputBucket, $row['name']),
                 'incremental' => true,
                 'enabled' => $row['enabled']
             ];
             $id++;
+        }
+
+        // profiles
+        foreach ($account['items'] as $profile) {
+            $configuration['parameters']['profiles'][] = ['id' => $profile['googleId']];
         }
 
         return $configuration;
