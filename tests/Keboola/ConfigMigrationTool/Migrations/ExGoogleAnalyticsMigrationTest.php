@@ -8,7 +8,6 @@
 
 namespace Keboola\ConfigMigrationTool\Test;
 
-use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Migration\ExGoogleAnalyticsMigration;
 use Monolog\Logger;
 
@@ -17,7 +16,6 @@ class ExGoogleAnalyticsMigrationTest extends ExGoogleAnalyticsTest
     public function testExecute()
     {
         $testConfigIds = $this->createOldConfigs();
-
         $migration = new ExGoogleAnalyticsMigration($this->getLogger());
         $createdConfigurations = $migration->execute();
 

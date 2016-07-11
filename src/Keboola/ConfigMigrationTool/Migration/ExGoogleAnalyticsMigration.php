@@ -49,7 +49,8 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
 
                     $configuration = $configurator->create($account);
                     $sapiService->createConfiguration($configuration);
-                    $configuration->setConfiguration($configurator->configure($account));
+                    $cfg = $configurator->configure($account);
+                    $configuration->setConfiguration($cfg);
                     $sapiService->encryptConfiguration($configuration);
 
                     $this->logger->info(sprintf(

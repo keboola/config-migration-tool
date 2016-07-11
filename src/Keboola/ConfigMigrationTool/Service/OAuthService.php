@@ -17,9 +17,10 @@ class OAuthService
     public function __construct()
     {
         $this->client = new Client([
-            'base_uri' => 'http://syrup.keboola.com/oauth-v2/',
+            'base_uri' => 'https://syrup.keboola.com/oauth-v2/',
             'headers' => [
-                'X-StorageApi-Token' => getenv('KBC_TOKEN')
+                'X-StorageApi-Token' => getenv('KBC_TOKEN'),
+//                'Content-Type' => 'application/json'
             ]
         ]);
     }
@@ -34,14 +35,14 @@ class OAuthService
     public function createCredentials($componentId, $account)
     {
         $response = $this->client->post(sprintf('credentials/%s', $componentId), [
-            'json' => [
+            'body' => \GuzzleHttp\json_encode([
                 "id" => $account['id'],
                 "authorizedFor" => $account['email'],
                 "data" => [
                     "access_token" => $account['accessToken'],
                     "refresh_token" => $account['refreshToken']
                 ]
-            ]
+            ])
         ]);
 
         return \GuzzleHttp\json_decode($response->getBody()->getContents());

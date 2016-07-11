@@ -20,7 +20,7 @@ class ExGoogleAnalyticsService
     /** @var Logger */
     private $logger;
 
-    /** @var  */
+    /** @var AesEncryptor */
     private $encryptor;
 
     public function __construct(Logger $logger)

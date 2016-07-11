@@ -43,30 +43,40 @@ class ExGoogleAnalyticsConfigurator
     {
         $outputBucket = 'in.c-ex-google-analytics-' . $account['id'];
         $configuration = [
+            'authorization' => [
+                'oauth_api' => ['id' => $account['id']]
+            ],
             'parameters' => [
                 'outputBucket' => $outputBucket
             ]
         ];
 
         // queries
-        $oldConfiguration = json_decode($account['configuration'], true);
+        $oldConfiguration = $account['configuration'];
 
         $id = 0;
-        foreach ($oldConfiguration as $row) {
+        foreach ($oldConfiguration as $name => $row) {
             $configuration['parameters']['queries'][] = [
                 'id' => $id,
-                'name' => $row['name'],
+                'name' => $name,
                 'query' => $this->buildQuery($account['id'], $row),
-                'outputTable' => $this->getOutputTable($outputBucket, $row['name']),
+                'outputTable' => $name,
                 'incremental' => true,
-                'enabled' => $row['enabled']
+                'enabled' => true
             ];
             $id++;
         }
 
         // profiles
         foreach ($account['items'] as $profile) {
-            $configuration['parameters']['profiles'][] = ['id' => $profile['googleId']];
+            $configuration['parameters']['profiles'][] = [
+                'id' => $profile['googleId'],
+                'accountId' => $profile['accountId'],
+                'accountName' => $profile['accountName'],
+                'name' => $profile['name'],
+                'webPropertyId' => $profile['webPropertyId'],
+                'webPropertyName' => $profile['webPropertyName']
+            ];
         }
 
         return $configuration;
@@ -81,12 +91,13 @@ class ExGoogleAnalyticsConfigurator
             'dimensions' => array_map(function ($item) {
                 return ['name' => $item];
             }, $row['dimensions']),
-            'filtersExpression' => $row['filters'],
+            'filtersExpression' => empty($row['filters'])?[]:$row['filters'],
+            'segments' => empty($row['segment'])?[]:[['segmentId' => $row['segment']]],
             'viewId' => $profileId,
-            'dateRanges' => [
+            'dateRanges' => [[
                 'startDate' => '-4 days',
                 'endDate' => '-1 day'
-            ],
+            ]],
         ];
     }
 

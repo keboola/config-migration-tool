@@ -9,6 +9,7 @@
 namespace Keboola\ConfigMigrationTool\Test;
 
 use Keboola\Csv\CsvFile;
+use Keboola\Encryption\AesEncryptor;
 use Keboola\StorageApi\Client;
 
 class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
@@ -16,9 +17,13 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
     /** @var Client */
     protected $sapiClient;
 
+    /** @var AesEncryptor */
+    protected $encryptor;
+
     public function setUp()
     {
         $this->sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
+        $this->encryptor = new AesEncryptor(getenv('GOOGLE_KEY'));
 
         // cleanup
         $tables = $this->sapiClient->listTables('sys.c-ex-google-analytics');
@@ -47,8 +52,11 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
         $this->sapiClient->setTableAttribute($tableId, 'googleName', 'Some User Name');
         $this->sapiClient->setTableAttribute($tableId, 'email', getenv('GOOGLE_ACCOUNT_EMAIL'));
         $this->sapiClient->setTableAttribute($tableId, 'owner', getenv('GOOGLE_ACCOUNT_EMAIL'));
-        $this->sapiClient->setTableAttribute($tableId, 'accessToken', getenv('GOOGLE_ACCESS_TOKEN'));
-        $this->sapiClient->setTableAttribute($tableId, 'refreshToken', getenv('GOOGLE_REFRESH_TOKEN'));
+        $accessToken = base64_encode($this->encryptor->encrypt(getenv('GOOGLE_ACCESS_TOKEN')));
+        $this->sapiClient->setTableAttribute($tableId, 'accessToken', $accessToken);
+        $refreshToken = base64_encode($this->encryptor->encrypt(getenv('GOOGLE_REFRESH_TOKEN')));
+        $this->sapiClient->setTableAttribute($tableId, 'refreshToken', $refreshToken);
+        $this->sapiClient->setTableAttribute($tableId, 'configuration', $this->createQueriesConfig());
 
         return $id;
     }
@@ -61,5 +69,10 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
         $testTables[] = $this->createOldConfig();
 
         return $testTables;
+    }
+
+    protected function createQueriesConfig()
+    {
+        return '{"Users":{"metrics":["users"],"dimensions":["sourceMedium"]},"OrganicTraffic":{"name":"OrganicTraffic","metrics":["users","sessions"],"dimensions":["date"],"filters":["ga:timeOnPage>10"],"segment":"gaid::-5"}}';
     }
 }
