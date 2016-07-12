@@ -59,7 +59,7 @@ class ExGoogleAnalyticsConfigurator
             $configuration['parameters']['queries'][] = [
                 'id' => $id,
                 'name' => $name,
-                'query' => $this->buildQuery($account['id'], $row),
+                'query' => $this->buildQuery($account['items'], $row),
                 'outputTable' => $name,
                 'incremental' => true,
                 'enabled' => true
@@ -82,27 +82,24 @@ class ExGoogleAnalyticsConfigurator
         return $configuration;
     }
 
-    private function buildQuery($profileId, $row)
+    private function buildQuery($profiles, $row)
     {
+        $firstProfile = array_shift($profiles);
+
         return [
-            'metrics' => array_map(function ($item) {
-                    return ['expression' => $item];
+            'metrics' => array_map(function ($metric) {
+                    return ['expression' => 'ga:' . $metric];
                 }, $row['metrics']),
-            'dimensions' => array_map(function ($item) {
-                return ['name' => $item];
+            'dimensions' => array_map(function ($dimension) {
+                return ['name' => 'ga:' . $dimension];
             }, $row['dimensions']),
             'filtersExpression' => empty($row['filters'])?[]:$row['filters'],
             'segments' => empty($row['segment'])?[]:[['segmentId' => $row['segment']]],
-            'viewId' => $profileId,
+            'viewId' => empty($row['profile'])?$firstProfile['googleId']:$row['profile'],
             'dateRanges' => [[
                 'startDate' => '-4 days',
                 'endDate' => '-1 day'
             ]],
         ];
-    }
-
-    private function getOutputTable($outputBucket, $name)
-    {
-        return $outputBucket . '.' . $name;
     }
 }
