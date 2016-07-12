@@ -7,7 +7,23 @@ Tool for migrating users configurations in SYS buckets to [Storage API component
 Take all tables from sys.c-ex-db bucket and converts them to JSON based configurations in SAPI.
 Orchestration tasks are also updated to use the new extractors.
 
-## Google Analytics Migration
+### Example Configuration
+
+``` yaml
+parameters:
+  component: 'ex-db'  
+```
+
+## Google Analytics Extractor Migration
+Migrate Google Analytics Extractor configs form sys.c-ex-google-analytics bucket to JSON configurations in SAPI.
+
+### Example Configuration
+
+``` yaml
+parameters:
+  component: 'ex-google-analytics'  
+```
+
 Some things are quite different in Google Analytics V4 API. 
 Therefor not everything is migrated automatically, because that will cause more confusion then benefit.
 Users has to take care of following:

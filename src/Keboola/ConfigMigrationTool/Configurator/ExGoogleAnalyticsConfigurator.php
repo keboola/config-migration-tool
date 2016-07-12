@@ -61,7 +61,6 @@ class ExGoogleAnalyticsConfigurator
                 'name' => $name,
                 'query' => $this->buildQuery($account['items'], $row),
                 'outputTable' => $name,
-                'incremental' => true,
                 'enabled' => true
             ];
             $id++;
@@ -86,20 +85,57 @@ class ExGoogleAnalyticsConfigurator
     {
         $firstProfile = array_shift($profiles);
 
-        return [
+        $query = [
             'metrics' => array_map(function ($metric) {
-                    return ['expression' => 'ga:' . $metric];
-                }, $row['metrics']),
+                return ['expression' => 'ga:' . $metric];
+            }, $row['metrics']),
             'dimensions' => array_map(function ($dimension) {
                 return ['name' => 'ga:' . $dimension];
             }, $row['dimensions']),
-            'filtersExpression' => empty($row['filters'])?[]:$row['filters'],
-            'segments' => empty($row['segment'])?[]:[['segmentId' => $row['segment']]],
             'viewId' => empty($row['profile'])?$firstProfile['googleId']:$row['profile'],
             'dateRanges' => [[
                 'startDate' => '-4 days',
                 'endDate' => '-1 day'
-            ]],
+            ]]
         ];
+
+        if (!empty($row['filters'])) {
+            $query['filtersExpression'] = array_shift($row['filters']);
+        }
+
+        if (!empty($row['segment'])) {
+            $query['segments'] = [['segmentId' => $row['segment']]];
+            // in V4 ga:segment dimension must be set, when using segments
+            if (false === array_search('segment', $row['dimensions'])) {
+                $query['dimensions'][] = ['name' => 'ga:segment'];
+            }
+        }
+
+        $this->validateQuery($query);
+
+        return $query;
+    }
+
+    private function validateQuery($query)
+    {
+        if (empty($query['metrics'])) {
+            throw new \Exception("Query Configuration is not valid. At least one metric must be set.");
+        }
+
+        if (empty($query['dimensions'])) {
+            throw new \Exception("Query Configuration is not valid. At least one dimension must be set.");
+        }
+
+        if (empty($query['viewId'])) {
+            throw new \Exception("Query Configuration is not valid. ViewId must bew set.");
+        }
+
+        if (array_key_exists('segments', $query)) {
+            if (empty($query['segments'])) {
+                throw new \Exception("Query Configuration is not valid. Segments must not be empty");
+            }
+        }
+
+        return true;
     }
 }

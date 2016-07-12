@@ -18,8 +18,6 @@ class ExGoogleAnalyticsMigrationTest extends ExGoogleAnalyticsTest
         $testConfigIds = $this->createOldConfigs();
         $migration = new ExGoogleAnalyticsMigration($this->getLogger());
         $createdConfigurations = $migration->execute();
-
-        var_dump($createdConfigurations);
     }
 
     private function getLogger()

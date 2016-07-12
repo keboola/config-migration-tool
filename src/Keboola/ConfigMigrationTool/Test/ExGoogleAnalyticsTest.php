@@ -73,6 +73,6 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
 
     protected function createQueriesConfig()
     {
-        return '{"Users":{"metrics":["users"],"dimensions":["sourceMedium"]},"OrganicTraffic":{"name":"OrganicTraffic","metrics":["users","sessions"],"dimensions":["date"],"filters":["ga:timeOnPage>10"],"segment":"gaid::-5"}}';
+        return '{"Users":{"metrics":["users"],"dimensions":["sourceMedium"]},"OrganicTraffic":{"name":"OrganicTraffic","metrics":["users","sessions"],"dimensions":["date","segment"],"filters":["ga:timeOnPage>10"],"segment":"gaid::-5"}}';
     }
 }
