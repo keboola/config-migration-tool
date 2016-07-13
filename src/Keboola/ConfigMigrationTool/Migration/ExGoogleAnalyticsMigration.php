@@ -86,6 +86,25 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
 
     public function status()
     {
-        // TODO: Implement status() method.
+        $sapiService = new StorageApiService();
+        $orchestratorService = new OrchestratorService($this->logger);
+
+        $tables = $sapiService->getConfigurationTables('ex-google-analytics');
+        return [
+            'configurations' => array_map(
+                function ($item) {
+                    $attributes = TableHelper::formatAttributes($item['attributes']);
+                    return [
+                        'configId' => $attributes['id'],
+                        'configName' => $attributes['accountName'],
+                        'componentId' => 'keboola.ex-google-analytics-v4',
+                        'tableId' => $item['id'],
+                        'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'
+                    ];
+                },
+                $tables
+            ),
+            'orchestrations' => $orchestratorService->getOrchestrations('ex-db', 'keboola.ex-db-')
+        ];
     }
 }

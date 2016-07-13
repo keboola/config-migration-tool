@@ -80,4 +80,9 @@ class StorageApiService
 
         return $configuration;
     }
+
+    public function deleteConfiguration($componentId, $configurationId)
+    {
+        $this->components->deleteConfiguration($componentId, $configurationId);
+    }
 }
