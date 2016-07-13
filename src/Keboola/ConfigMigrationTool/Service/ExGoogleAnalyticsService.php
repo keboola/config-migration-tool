@@ -9,7 +9,6 @@
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
-use Keboola\Encryption\AesEncryptor;
 use Monolog\Logger;
 
 class ExGoogleAnalyticsService
@@ -20,9 +19,6 @@ class ExGoogleAnalyticsService
     /** @var Logger */
     private $logger;
 
-    /** @var AesEncryptor */
-    private $encryptor;
-
     public function __construct(Logger $logger)
     {
         $this->logger = $logger;
@@ -32,7 +28,6 @@ class ExGoogleAnalyticsService
                 'X-StorageApi-Token' => getenv('KBC_TOKEN')
             ]
         ]);
-        $this->encryptor = new AesEncryptor(getenv('GOOGLE_KEY'));
     }
 
     public function getConfigs()
@@ -42,9 +37,7 @@ class ExGoogleAnalyticsService
 
     public function getAccount($id)
     {
-        $account = $this->request('get', 'account/' . $id);
-        $account['accessToken'] = $this->decrypt($account['accessToken']);
-        $account['refreshToken'] = $this->decrypt($account['refreshToken']);
+        $account = $this->request('get', sprintf('account/%s/decrypt', $id));
         return $account;
     }
 
@@ -57,10 +50,5 @@ class ExGoogleAnalyticsService
     {
         $response = $this->client->request($method, $uri, $options);
         return \GuzzleHttp\json_decode($response->getBody(),true);
-    }
-
-    private function decrypt($data)
-    {
-        return $this->encryptor->decrypt(base64_decode($data));
     }
 }

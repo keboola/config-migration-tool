@@ -9,7 +9,6 @@
 namespace Keboola\ConfigMigrationTool\Test;
 
 use Keboola\Csv\CsvFile;
-use Keboola\Encryption\AesEncryptor;
 use Keboola\StorageApi\Client;
 
 class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
@@ -17,13 +16,9 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
     /** @var Client */
     protected $sapiClient;
 
-    /** @var AesEncryptor */
-    protected $encryptor;
-
     public function setUp()
     {
         $this->sapiClient = new Client(['token' => getenv('KBC_TOKEN')]);
-        $this->encryptor = new AesEncryptor(getenv('GOOGLE_KEY'));
 
         // cleanup
         $tables = $this->sapiClient->listTables('sys.c-ex-google-analytics');
@@ -52,11 +47,17 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
         $this->sapiClient->setTableAttribute($tableId, 'googleName', 'Some User Name');
         $this->sapiClient->setTableAttribute($tableId, 'email', getenv('GOOGLE_ACCOUNT_EMAIL'));
         $this->sapiClient->setTableAttribute($tableId, 'owner', getenv('GOOGLE_ACCOUNT_EMAIL'));
-        $accessToken = base64_encode($this->encryptor->encrypt(getenv('GOOGLE_ACCESS_TOKEN')));
-        $this->sapiClient->setTableAttribute($tableId, 'accessToken', $accessToken);
-        $refreshToken = base64_encode($this->encryptor->encrypt(getenv('GOOGLE_REFRESH_TOKEN')));
-        $this->sapiClient->setTableAttribute($tableId, 'refreshToken', $refreshToken);
-        $this->sapiClient->setTableAttribute($tableId, 'configuration', $this->createQueriesConfig());
+        $this->sapiClient->setTableAttribute($tableId, 'accessToken', getenv('GOOGLE_ACCESS_TOKEN'));
+        $this->sapiClient->setTableAttribute($tableId, 'refreshToken', getenv('GOOGLE_REFRESH_TOKEN'));
+
+        $queries = $this->createQueriesConfig();
+        if (rand(0,9) >= 5) {
+            $queriesArr = json_decode($queries, true);
+            $queriesArr['Users']['profile'] = 69127714;
+            $queries = json_encode($queriesArr);
+        }
+
+        $this->sapiClient->setTableAttribute($tableId, 'configuration', $queries);
 
         return $id;
     }
@@ -64,9 +65,9 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
     protected function createOldConfigs()
     {
         $testTables = [];
-        $testTables[] = $this->createOldConfig();
-        $testTables[] = $this->createOldConfig();
-        $testTables[] = $this->createOldConfig();
+        for ($i=0;$i<5;$i++) {
+            $testTables[] = $this->createOldConfig();
+        }
 
         return $testTables;
     }

@@ -59,7 +59,7 @@ class ExGoogleAnalyticsConfigurator
             $configuration['parameters']['queries'][] = [
                 'id' => $id,
                 'name' => $name,
-                'query' => $this->buildQuery($account['items'], $row),
+                'query' => $this->buildQuery($row),
                 'outputTable' => $name,
                 'enabled' => true
             ];
@@ -81,10 +81,8 @@ class ExGoogleAnalyticsConfigurator
         return $configuration;
     }
 
-    private function buildQuery($profiles, $row)
+    private function buildQuery($row)
     {
-        $firstProfile = array_shift($profiles);
-
         $query = [
             'metrics' => array_map(function ($metric) {
                 return ['expression' => 'ga:' . $metric];
@@ -92,7 +90,7 @@ class ExGoogleAnalyticsConfigurator
             'dimensions' => array_map(function ($dimension) {
                 return ['name' => 'ga:' . $dimension];
             }, $row['dimensions']),
-            'viewId' => empty($row['profile'])?$firstProfile['googleId']:$row['profile'],
+            'viewId' => empty($row['profile'])?null:$row['profile'],
             'dateRanges' => [[
                 'startDate' => '-4 days',
                 'endDate' => '-1 day'
@@ -124,10 +122,6 @@ class ExGoogleAnalyticsConfigurator
 
         if (empty($query['dimensions'])) {
             throw new \Exception("Query Configuration is not valid. At least one dimension must be set.");
-        }
-
-        if (empty($query['viewId'])) {
-            throw new \Exception("Query Configuration is not valid. ViewId must bew set.");
         }
 
         if (array_key_exists('segments', $query)) {
