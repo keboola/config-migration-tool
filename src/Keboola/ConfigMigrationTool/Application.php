@@ -43,12 +43,15 @@ class Application
     private function getMigration($component)
     {
         $componentNameArr = explode('-', $component);
+        $componentName = '';
+        foreach ($componentNameArr as $c) {
+            $componentName .= ucfirst($c);
+        }
 
         /** @var MigrationInterface $migrationClass */
         $migrationClass = sprintf(
-            '\\Keboola\\ConfigMigrationTool\\Migration\\%s%sMigration',
-            ucfirst($componentNameArr[0]),
-            ucfirst($componentNameArr[1])
+            '\\Keboola\\ConfigMigrationTool\\Migration\\%sMigration',
+            $componentName
         );
 
         return new $migrationClass($this->logger);
