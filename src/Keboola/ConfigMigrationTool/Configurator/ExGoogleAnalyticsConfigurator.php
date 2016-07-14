@@ -12,13 +12,13 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 class ExGoogleAnalyticsConfigurator
 {
-    public function create($attributes)
+    public function create($account)
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId());
-        $configuration->setConfigurationId($attributes['id']);
-        $configuration->setName($attributes['accountName']);
-        $configuration->setDescription($attributes['description']);
+        $configuration->setConfigurationId($account['id']);
+        $configuration->setName($account['accountNamePretty']);
+        $configuration->setDescription($account['description']);
 
         return $configuration;
     }

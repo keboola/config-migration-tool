@@ -60,6 +60,6 @@ class OAuthService
             return $credentials;
         }
 
-        return $this->createCredentials($componentId, $account['id']);
+        return $this->createCredentials($componentId, $account);
     }
 }

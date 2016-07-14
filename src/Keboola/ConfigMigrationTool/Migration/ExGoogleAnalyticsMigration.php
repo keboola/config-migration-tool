@@ -44,11 +44,19 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
             $attributes = TableHelper::formatAttributes($table['attributes']);
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
                 try {
+                    // get Account from old GA EX
                     $account = $googleAnalyticsService->getAccount($attributes['id']);
                     $oauthService->obtainCredentials('keboola.ex-google-analytics-v4', $account);
 
+                    // get old Configuration from SAPI
+                    $oldSapiConfig = $sapiService->getConfiguration('ex-google-analytics', $account['id']);
+                    $account['accountNamePretty'] = $oldSapiConfig['name'];
+
+                    // create new Configuration in SAPI
                     $configuration = $configurator->create($account);
                     $sapiService->createConfiguration($configuration);
+
+                    // create and store encrypted parameters
                     $cfg = $configurator->configure($account);
                     $configuration->setConfiguration($cfg);
                     $sapiService->encryptConfiguration($configuration);
@@ -58,6 +66,7 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
                         $configuration->getName()
                     ));
 
+                    // update orchestrations
                     $orchestratorService->updateOrchestrations('ex-google-analytics', $configuration);
 
                     $this->logger->info(sprintf(
