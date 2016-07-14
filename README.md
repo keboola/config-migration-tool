@@ -44,6 +44,7 @@ After migration, all queries will have default date range:
 GA V4 supports V3 filters expression so there is no problem in migrations. 
 In the future we will also add support for `dimensionFilterClauses` and `metricFilterClauses`.
 
-
-
+### Segments
+If **segment** is defined in the query configuration, **segment** dimension will be added to the query during migration. 
+This is because the new extractor supports multiple segments per query.
 

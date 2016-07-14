@@ -20,7 +20,6 @@ class OAuthService
             'base_uri' => 'https://syrup.keboola.com/oauth-v2/',
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN'),
-//                'Content-Type' => 'application/json'
             ]
         ]);
     }
@@ -48,4 +47,19 @@ class OAuthService
         return \GuzzleHttp\json_decode($response->getBody()->getContents());
     }
 
+    public function obtainCredentials($componentId, $account)
+    {
+        // try to get credentials first
+        $credentials = null;
+        try {
+            $credentials = $this->getCredentials($componentId, $account['id']);
+        } catch (\Exception $e) {
+        }
+
+        if ($credentials !== null) {
+            return $credentials;
+        }
+
+        return $this->createCredentials($componentId, $account['id']);
+    }
 }

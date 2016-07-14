@@ -45,7 +45,7 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
                 try {
                     $account = $googleAnalyticsService->getAccount($attributes['id']);
-                    $oauthService->createCredentials('keboola.ex-google-analytics-v4', $account);
+                    $oauthService->obtainCredentials('keboola.ex-google-analytics-v4', $account);
 
                     $configuration = $configurator->create($account);
                     $sapiService->createConfiguration($configuration);
