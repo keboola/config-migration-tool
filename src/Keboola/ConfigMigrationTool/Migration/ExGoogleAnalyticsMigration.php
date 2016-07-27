@@ -113,7 +113,7 @@ class ExGoogleAnalyticsMigration implements MigrationInterface
                 },
                 $tables
             ),
-            'orchestrations' => $orchestratorService->getOrchestrations('ex-db', 'keboola.ex-db-')
+            'orchestrations' => $orchestratorService->getOrchestrations('ex-google-analytics', 'keboola.ex-google-analytics-v4')
         ];
     }
 }
