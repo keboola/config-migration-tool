@@ -42,6 +42,10 @@ class ExGoogleAnalyticsConfigurator
     public function configure($account)
     {
         $outputBucket = 'in.c-ex-google-analytics-' . $account['id'];
+        if (!empty($account['outputBucket'])) {
+            $outputBucket = $account['outputBucket'];
+        }
+
         $configuration = [
             'authorization' => [
                 'oauth_api' => ['id' => $account['id']]
