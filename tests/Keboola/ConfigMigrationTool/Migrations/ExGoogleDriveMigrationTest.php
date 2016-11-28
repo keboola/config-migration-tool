@@ -9,51 +9,45 @@
 namespace Keboola\ConfigMigrationTool\Test;
 
 use Keboola\ConfigMigrationTool\Migration\ExGoogleAnalyticsMigration;
+use Keboola\ConfigMigrationTool\Migration\ExGoogleDriveMigration;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
 
-class ExGoogleAnalyticsMigrationTest extends ExGoogleAnalyticsTest
+class ExGoogleDriveMigrationTest extends ExGoogleDriveTest
 {
     public function testExecute()
     {
         $testConfigIds = $this->createOldConfigs();
         $sapiService = new StorageApiService();
-        $migration = new ExGoogleAnalyticsMigration($this->getLogger());
+        $migration = new ExGoogleDriveMigration($this->getLogger());
         $createdConfigurations = $migration->execute();
 
         /** @var Configuration $configuration */
         foreach ($createdConfigurations as $configuration) {
             $this->assertContains($configuration->getConfigurationId(), $testConfigIds);
-            $this->assertEquals('keboola.ex-google-analytics-v4', $configuration->getComponentId());
+            $this->assertEquals('keboola.ex-google-drive', $configuration->getComponentId());
             $config = $configuration->getConfiguration();
             $this->assertArrayHasKey('authorization', $config);
             $this->assertArrayHasKey('parameters', $config);
             $parameters = $config['parameters'];
-            $this->assertArrayHasKey('outputBucket', $parameters);
-            $this->assertArrayHasKey('queries', $parameters);
-            $queries = $parameters['queries'];
+            $this->assertArrayHasKey('sheets', $parameters);
+            $sheets = $parameters['sheets'];
 
-            foreach ($queries as $query) {
-                $this->assertArrayHasKey('id', $query);
-                $this->assertArrayHasKey('name', $query);
-                $this->assertArrayHasKey('query', $query);
-                $this->assertArrayHasKey('outputTable', $query);
-                $this->assertArrayHasKey('enabled', $query);
-                $this->assertArrayHasKey('metrics', $query['query']);
-                $metric = $query['query']['metrics'][0];
-                $this->assertArrayHasKey('expression', $metric);
-                $this->assertArrayHasKey('query', $query);
-                $this->assertArrayHasKey('dimensions', $query['query']);
-                $dimension = $query['query']['dimensions'][0];
-                $this->assertArrayHasKey('name', $dimension);
-                $this->assertArrayHasKey('viewId', $query['query']);
-                $this->assertArrayHasKey('dateRanges', $query['query']);
+            foreach ($sheets as $sheet) {
+                $this->assertArrayHasKey('id', $sheet);
+                $this->assertArrayHasKey('fileId', $sheet);
+                $this->assertArrayHasKey('fileTitle', $sheet);
+                $this->assertArrayHasKey('sheetId', $sheet);
+                $this->assertArrayHasKey('sheetTitle', $sheet);
+                $this->assertArrayHasKey('outputTable', $sheet);
+                $this->assertArrayHasKey('enabled', $sheet);
+                $this->assertArrayHasKey('header', $sheet);
             }
 
             // clear created configurations
-            $sapiService->deleteConfiguration('keboola.ex-google-analytics-v4', $configuration->getConfigurationId());
+            $sapiService->deleteConfiguration('keboola.ex-google-drive', $configuration->getConfigurationId());
             $key = array_search($configuration->getConfigurationId(), $testConfigIds);
             unset($testConfigIds[$key]);
         }
@@ -64,16 +58,16 @@ class ExGoogleAnalyticsMigrationTest extends ExGoogleAnalyticsTest
 
     public function testOrchestrationUpdate()
     {
-        $oldComponentId = 'ex-google-analytics';
-        $newComponentId = 'keboola.ex-google-analytics-v4';
+        $oldComponentId = 'ex-google-drive';
+        $newComponentId = 'keboola.ex-google-drive';
         $orchestratorService = new OrchestratorService($this->getLogger());
         // create orchestration
         $orchestration = $orchestratorService->request('post', 'orchestrations', [
             'json' => [
-                "name" => "Ex GA Migration Test Orchestrator",
+                "name" => "Ex Google Drive Migration Test Orchestrator",
                 "tasks" => [
                     [
-                        "component" => "ex-google-analytics",
+                        "component" => $oldComponentId,
                         "action" => "run",
                         "actionParameters" => [
                             "config" => "testing"
@@ -83,7 +77,7 @@ class ExGoogleAnalyticsMigrationTest extends ExGoogleAnalyticsTest
                         "active" => true
                     ],
                     [
-                        "component" => "ex-google-analytics",
+                        "component" => $oldComponentId,
                         "action" => "run",
                         "actionParameters" => [
                             "account" => "testing2",
