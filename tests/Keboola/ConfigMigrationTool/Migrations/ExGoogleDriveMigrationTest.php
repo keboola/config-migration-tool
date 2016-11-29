@@ -90,9 +90,7 @@ class ExGoogleDriveMigrationTest extends ExGoogleDriveTest
                         "component" => $oldComponentId,
                         "action" => "run",
                         "actionParameters" => [
-                            "account" => "testing2",
-                            "since" => "-30 days",
-                            "until" => "-2 days"
+                            "account" => "testing2"
                         ],
                         "continueOnFailure" => false,
                         "timeoutMinutes" => null,

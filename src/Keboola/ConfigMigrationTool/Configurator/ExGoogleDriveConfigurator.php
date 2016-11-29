@@ -82,7 +82,7 @@ class ExGoogleDriveConfigurator
     {
         $processorConfig['definition'] = ['component' => 'keboola.processor.transpose'];
         $parameters = [
-            'filename' => $sheet['googleId'] . "_" . $sheet['sheetId'] . "_out.csv",
+            'filename' => $sheet['googleId'] . "_" . $sheet['sheetId'] . ".csv",
             'header_rows_count' => 1,
             'header_sanitize' => true
         ];
