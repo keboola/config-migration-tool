@@ -71,35 +71,42 @@ class ExGoogleDriveConfigurator
             ];
 
             if (isset($sheetCfg['header']) || isset($sheetCfg['transformation']['transpose'])) {
-                $configuration['processor'] = $this->configureProcessor($sheet, $sheetCfg);
+                $configuration['processors']['after'][] = $this->configureProcessors($sheet, $sheetCfg);
             }
         }
 
         return $configuration;
     }
 
-    private function configureProcessor($sheet, $config)
+    private function configureProcessors($sheet, $config)
     {
-        $processorConfig = [
-            "filename" => $sheet['fileId'] . "_" . $sheet['sheetId'] . "_out.csv",
-            "header_sanitize" => true
+        $processorConfig['definition'] = ['component' => 'keboola.processor.transpose'];
+        $parameters = [
+            'filename' => $sheet['googleId'] . "_" . $sheet['sheetId'] . "_out.csv",
+            'header_rows_count' => 1,
+            'header_sanitize' => true
         ];
 
+        if (isset($config['header']['sanitize'])) {
+            $parameters['header_sanitize'] = $config['header']['sanitize'];
+        }
         if (isset($config['header']['rows'])) {
-            $processorConfig["header_rows_count"] = $config['header']['rows'];
+            $parameters['header_rows_count'] = $config['header']['rows'];
         }
         if (isset($config['header']['columns'])) {
-            $processorConfig["header_column_names"] = $config['header']['columns'];
+            $parameters['header_column_names'] = $config['header']['columns'];
         }
         if (isset($config['header']['transpose']['row'])) {
-            $processorConfig["header_transpose_row"] = $config['header']['transpose']['row'];
+            $parameters['header_transpose_row'] = $config['header']['transpose']['row'];
         }
         if (isset($config['header']['transpose']['name'])) {
-            $processorConfig["header_transpose_column_name"] = $config['header']['transpose']['name'];
+            $parameters['header_transpose_column_name'] = $config['header']['transpose']['name'];
         }
         if (isset($config['transform']['transpose']['from'])) {
-            $processorConfig["transpose_from_column"] = $config['transform']['transpose']['from'];
+            $parameters['transpose_from_column'] = $config['transform']['transpose']['from'];
         }
+
+        $processorConfig['parameters'] = $parameters;
 
         return $processorConfig;
     }

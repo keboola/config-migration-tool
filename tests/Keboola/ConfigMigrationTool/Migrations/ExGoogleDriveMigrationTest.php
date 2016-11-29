@@ -14,11 +14,15 @@ use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
+use Symfony\Component\Yaml\Yaml;
 
 class ExGoogleDriveMigrationTest extends ExGoogleDriveTest
 {
     public function testExecute()
     {
+        $expectedConfig = Yaml::parse(file_get_contents(
+            ROOT_PATH . '/tests/data/ex-google-drive/expected-config.yml'
+        ));
         $testConfigIds = $this->createOldConfigs();
         $sapiService = new StorageApiService();
         $migration = new ExGoogleDriveMigration($this->getLogger());
@@ -33,6 +37,7 @@ class ExGoogleDriveMigrationTest extends ExGoogleDriveTest
             $this->assertArrayHasKey('parameters', $config);
             $parameters = $config['parameters'];
             $this->assertArrayHasKey('sheets', $parameters);
+            $this->assertArrayHasKey('outputBucket', $parameters);
             $sheets = $parameters['sheets'];
 
             foreach ($sheets as $sheet) {
@@ -45,6 +50,11 @@ class ExGoogleDriveMigrationTest extends ExGoogleDriveTest
                 $this->assertArrayHasKey('enabled', $sheet);
                 $this->assertArrayHasKey('header', $sheet);
             }
+
+            unset($config['authorization']);
+            unset($config['parameters']['outputBucket']);
+
+            $this->assertEquals($expectedConfig, $config);
 
             // clear created configurations
             $sapiService->deleteConfiguration('keboola.ex-google-drive', $configuration->getConfigurationId());

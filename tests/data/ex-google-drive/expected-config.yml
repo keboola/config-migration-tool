@@ -1,13 +1,11 @@
 parameters:
-  outputBucket: 'in.c-ex-google-drive-cfg1'
-
   sheets:
     -
       id: 0
       fileId: 16xxe5pAH5c9IInD-UUV06Km_rIKVIebQc3wIP4Ui_08
       fileTitle: CZ Sales rep monthly targets NEW
-      sheetId: 1487565058
-      sheetTitle: M Limits - JU nové
+      sheetId: '1487565058'
+      sheetTitle: CM Limits - JU nové
       outputTable: in.c-ex-google-drive-migration-test.1-gp_limits
       enabled: true
       header:
@@ -16,19 +14,19 @@ parameters:
       id: 1
       fileId: 1u9KpsJcG5XOf6sfwbFbJWmjs95XtDBvavDP0LPCAg40
       fileTitle: CZ Customer Support Targets
-      sheetId: 1288168371
+      sheetId: '1288168371'
       sheetTitle: Váhy
       outputTable: in.c-ex-google-drive-migration-test.2-cs_weights
       enabled: true
       header:
-        rows: 2
+        rows: 1
     -
       id: 2
       fileId: 1u9KpsJcG5XOf6sfwbFbJWmjs95XtDBvavDP0LPCAg40
       fileTitle: CZ Customer Support Targets
-      sheetId: 0
+      sheetId: '0'
       sheetTitle: Agent Targets
-      outputTable: in.c-ex-google-drive-migration-test.1-gp_limits
+      outputTable: in.c-ex-google-drive-migration-test.2-cs_agent_targets
       enabled: true
       header:
         rows: 2
@@ -36,13 +34,12 @@ parameters:
       id: 3
       fileId: 1kypu2S8sJ4rGqZ92qu_TVDsXX-jvhrM-_JIyQwCMsvA
       fileTitle: CZ SAL/CM Salaries
-      sheetId: 0
+      sheetId: '0'
       sheetTitle: SR Fixes
-      outputTable: in.c-ex-google-drive-migration-test.1-gp_limits
+      outputTable: in.c-ex-google-drive-migration-test.3-sr_fixes
       enabled: true
       header:
         rows: 2
-
 
 processors: 
   after:
@@ -51,42 +48,39 @@ processors:
         component: keboola.processor.transpose
       parameters:
         filename: 16xxe5pAH5c9IInD-UUV06Km_rIKVIebQc3wIP4Ui_08_1487565058_out.csv
+        header_sanitize: true
         header_rows_count: 2
         header_column_names: [city, priority, target_category]
         header_transpose_row: 1
         header_transpose_column_name: gpLimit
         transpose_from_column: 4
-        header_sanitize: true
     -
       definition:
         component: keboola.processor.transpose
       parameters:
         filename: 1u9KpsJcG5XOf6sfwbFbJWmjs95XtDBvavDP0LPCAg40_1288168371_out.csv
+        header_sanitize: true
         header_rows_count: 1
         header_column_names: [tag, weight]
-        header_sanitize: true
     -
       definition:
         component: keboola.processor.transpose
       parameters:
         filename: 1u9KpsJcG5XOf6sfwbFbJWmjs95XtDBvavDP0LPCAg40_0_out.csv
-        header_rows_count: 1
+        header_sanitize: true
+        header_rows_count: 2
         header_column_names: [agent,ft-pt]
         header_transpose_row: 1
         header_transpose_column_name: month
         transpose_from_column: 3
-        header_sanitize: true
     -
       definition:
         component: keboola.processor.transpose
       parameters:
-        filename: _out.csv
-        header_rows_count:
-        header_column_names:
-        header_transpose_row:
-        header_transpose_column_name:
-        transpose_from_column:
+        filename: 1kypu2S8sJ4rGqZ92qu_TVDsXX-jvhrM-_JIyQwCMsvA_0_out.csv
         header_sanitize: true
-
-
-{""header"":{""rows"":2,""columns"":[""salesman"",""manager"",""job""],""transpose"":{""row"":1,""name"":""month""}},""db"":{""table"":""in.c-ex-google-drive-migration-test.3-sr_fixes""},""transform"":{""transpose"":{""from"":4}}}
+        header_rows_count: 2
+        header_column_names: ["salesman", "manager", "job"]
+        header_transpose_row: 1
+        header_transpose_column_name: month
+        transpose_from_column: 4

@@ -51,7 +51,10 @@ class ExGoogleDriveService
         return $this->request('get', $url);
     }
 
-
+    public function deleteConfig($id)
+    {
+        return $this->request('delete', sprintf('configs/%s', $id));
+    }
 
     public function request($method, $uri, $options = [])
     {
