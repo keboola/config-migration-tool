@@ -53,9 +53,4 @@ class ExGoodDataServiceTest extends ExGoodDataTest
         $this->assertArrayHasKey('title', $result[0]);
         $this->assertArrayHasKey('uri', $result[0]);
     }
-
-    public function testGetProjectsWriters()
-    {
-        //@TODO
-    }
 }

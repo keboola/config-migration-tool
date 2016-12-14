@@ -33,6 +33,12 @@ class ExGoodDataTest extends \PHPUnit_Framework_TestCase
                 }
             }
         }
+
+        foreach ($this->sapiService->getConfigurations('ex-gooddata') as $configuration) {
+            if (substr($configuration['id'], 0, 13) == 'migrationtest') {
+                $this->sapiService->deleteConfiguration('ex-gooddata', $configuration['id']);
+            }
+        }
     }
 
     protected function createOldConfig()

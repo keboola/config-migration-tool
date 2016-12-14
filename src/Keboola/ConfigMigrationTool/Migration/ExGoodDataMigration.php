@@ -16,43 +16,51 @@ use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\ClientException;
 use Monolog\Logger;
 
-class ExDbMigration implements MigrationInterface
+class ExGoodDataMigration implements MigrationInterface
 {
     private $logger;
+    private $sapiService;
+    private $orchestratorService;
+    private $configurator;
+    private $service;
 
     public function __construct(Logger $logger)
     {
         $this->logger = $logger;
+        $this->sapiService = new StorageApiService();
+        $this->orchestratorService = new OrchestratorService($this->logger);
+        $this->configurator = new ExGoodDataConfigurator();
+        $this->service = new ExGoodDataService($this->logger);
+    }
+
+    public function setService(ExGoodDataService $service)
+    {
+        $this->service = $service;
     }
 
     public function execute()
     {
-        $sapiService = new StorageApiService();
-        $orchestratorService = new OrchestratorService($this->logger);
-        $configurator = new ExGoodDataConfigurator();
-        $service = new ExGoodDataService($this->logger);
-
         $createdConfigurations = [];
-        $writers = $service->getProjectsWriters();
-        foreach ($service->getConfigs() as $oldConfig) {
+        $writers = $this->service->getProjectsWriters();
+        foreach ($this->service->getConfigs() as $oldConfig) {
             $sysTableId = 'sys.c-ex-gooddata.' . $oldConfig['id'];
-            $sysTable = $sapiService->getClient()->getTable($sysTableId);
+            $sysTable = $this->sapiService->getClient()->getTable($sysTableId);
             $attributes = TableHelper::formatAttributes($sysTable['attributes']);
 
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
                 try {
-                    $reports = $service->getReports($oldConfig['id']);
+                    $reports = $this->service->getReports($oldConfig['id']);
 
-                    $configuration = $configurator->create($oldConfig);
-                    $sapiService->createConfiguration($configuration);
-                    $configuration->setConfiguration($configurator->configure($writers, $reports));
+                    $configuration = $this->configurator->create($oldConfig);
+                    $this->sapiService->createConfiguration($configuration);
+                    $configuration->setConfiguration($this->configurator->configure($writers, $reports));
 
                     $this->logger->info(sprintf(
                         "Configuration '%s' has been migrated",
                         $configuration->getName()
                     ));
 
-                    $orchestratorService->updateOrchestrations('ex-gooddata', $configuration);
+                    $this->orchestratorService->updateOrchestrations('ex-gooddata', $configuration);
 
                     $this->logger->info(sprintf(
                         "Orchestration task for configuration '%s' has been updated",
@@ -60,14 +68,14 @@ class ExDbMigration implements MigrationInterface
                     ));
 
                     $createdConfigurations[] = $configuration;
-                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'success');
+                    $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'success');
                 } catch (ClientException $e) {
-                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
+                    $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
                         'tableId' => $sysTableId
                     ]);
                 } catch (\Exception $e) {
-                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
+                    $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
                         'tableId' => $sysTableId
                     ]);
@@ -80,10 +88,7 @@ class ExDbMigration implements MigrationInterface
 
     public function status()
     {
-        $sapiService = new StorageApiService();
-        $orchestratorService = new OrchestratorService($this->logger);
-
-        $tables = $sapiService->getConfigurationTables('ex-gooddata');
+        $tables = $this->sapiService->getConfigurationTables('ex-gooddata');
         return [
             'configurations' => array_map(
                 function ($item) {
@@ -98,7 +103,7 @@ class ExDbMigration implements MigrationInterface
                 },
                 $tables
             ),
-            'orchestrations' => $orchestratorService->getOrchestrations('ex-gooddata', 'keboola.ex-gooddata-')
+            'orchestrations' => $this->orchestratorService->getOrchestrations('ex-gooddata', 'keboola.ex-gooddata-')
         ];
     }
 }
