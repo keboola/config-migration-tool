@@ -54,6 +54,7 @@ class ExGooddataMigration implements MigrationInterface
                     $configuration = $this->configurator->create($oldConfig);
                     $this->sapiService->createConfiguration($configuration);
                     $configuration->setConfiguration($this->configurator->configure($writers, $reports));
+                    $this->sapiService->encryptConfiguration($configuration);
 
                     $this->logger->info(sprintf(
                         "Configuration '%s' has been migrated",
