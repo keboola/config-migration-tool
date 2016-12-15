@@ -16,7 +16,7 @@ use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\ClientException;
 use Monolog\Logger;
 
-class ExGoodDataMigration implements MigrationInterface
+class ExGooddataMigration implements MigrationInterface
 {
     private $logger;
     private $sapiService;

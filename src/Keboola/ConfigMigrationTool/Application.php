@@ -54,6 +54,10 @@ class Application
             $componentName
         );
 
+        if (!class_exists($migrationClass)) {
+            throw new UserException("Migration for component $componentName does not exist");
+        }
+
         return new $migrationClass($this->logger);
     }
 }
