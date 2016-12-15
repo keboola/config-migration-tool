@@ -6,7 +6,7 @@
 
 namespace Keboola\ConfigMigrationTool\Test;
 
-use Keboola\ConfigMigrationTool\Migration\ExGoodDataMigration;
+use Keboola\ConfigMigrationTool\Migration\ExGooddataMigration;
 use Keboola\ConfigMigrationTool\Service\ExGoodDataService;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\StorageApi\Client;
@@ -49,7 +49,7 @@ class ExGoodDataMigrationTest extends ExGoodDataTest
         ];
 
 
-        $migration = new ExGoodDataMigration(new Logger(APP_NAME));
+        $migration = new ExGooddataMigration(new Logger(APP_NAME));
         $migration->setService(new ExGoodDataTestService($testConfigs, [$pid => $writerId]));
 
         $createdConfigurations = $migration->execute();
@@ -165,7 +165,7 @@ class ExGoodDataMigrationTest extends ExGoodDataTest
     public function testStatus()
     {
         $config1 = $this->createOldConfig();
-        $migration = new ExGoodDataMigration(new Logger(APP_NAME));
+        $migration = new ExGooddataMigration(new Logger(APP_NAME));
         $status = $migration->status();
 
         $this->assertNotEmpty($status);
