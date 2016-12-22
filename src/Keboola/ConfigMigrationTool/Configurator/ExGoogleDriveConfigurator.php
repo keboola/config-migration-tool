@@ -59,13 +59,14 @@ class ExGoogleDriveConfigurator
         $cnt = 0;
         foreach ($account['items'] as $sheet) {
             $sheetCfg = json_decode($sheet['config'], true);
+            $outputTableArr = explode('.', $sheetCfg['db']['table']);
             $configuration['parameters']['sheets'][] = [
                 'id' => $cnt++,
                 'fileId' => $sheet['googleId'],
                 'fileTitle' => $sheet['title'],
                 'sheetId' => $sheet['sheetId'],
                 'sheetTitle' => $sheet['sheetTitle'],
-                'outputTable' => $sheetCfg['db']['table'],
+                'outputTable' => array_pop($outputTableArr),
                 'header' => ['rows' => $sheetCfg['header']['rows']],
                 'enabled' => true
             ];

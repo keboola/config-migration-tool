@@ -6,7 +6,7 @@ parameters:
       fileTitle: CZ Sales rep monthly targets NEW
       sheetId: '1487565058'
       sheetTitle: CM Limits - JU nové
-      outputTable: in.c-ex-google-drive-migration-test.1-gp_limits
+      outputTable: 1-gp_limits
       enabled: true
       header:
         rows: 2
@@ -16,7 +16,7 @@ parameters:
       fileTitle: CZ Customer Support Targets
       sheetId: '1288168371'
       sheetTitle: Váhy
-      outputTable: in.c-ex-google-drive-migration-test.2-cs_weights
+      outputTable: 2-cs_weights
       enabled: true
       header:
         rows: 1
@@ -26,7 +26,7 @@ parameters:
       fileTitle: CZ Customer Support Targets
       sheetId: '0'
       sheetTitle: Agent Targets
-      outputTable: in.c-ex-google-drive-migration-test.2-cs_agent_targets
+      outputTable: 2-cs_agent_targets
       enabled: true
       header:
         rows: 2
@@ -36,7 +36,7 @@ parameters:
       fileTitle: CZ SAL/CM Salaries
       sheetId: '0'
       sheetTitle: SR Fixes
-      outputTable: in.c-ex-google-drive-migration-test.3-sr_fixes
+      outputTable: 3-sr_fixes
       enabled: true
       header:
         rows: 2
