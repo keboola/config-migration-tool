@@ -35,7 +35,7 @@ class ExGoogleDriveMigration implements MigrationInterface
         $orchestratorService = new OrchestratorService($this->logger);
         $oauthService = new OAuthService();
         $configurator = new ExGoogleDriveConfigurator();
-        $googleAnalyticsService = new ExGoogleDriveService($this->logger);
+        $googleDriveService = new ExGoogleDriveService($this->logger);
 
         $tables = $sapiService->getConfigurationTables('ex-google-drive');
 
@@ -51,7 +51,7 @@ class ExGoogleDriveMigration implements MigrationInterface
 
                 try {
                     // get Account from old GA EX
-                    $account = $googleAnalyticsService->getAccount($attributes['id']);
+                    $account = $googleDriveService->getAccount($attributes['id']);
                     $oauthService->obtainCredentials('keboola.ex-google-drive', $account);
 
                     // get old Configuration from SAPI

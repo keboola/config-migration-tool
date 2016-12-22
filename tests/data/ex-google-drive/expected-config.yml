@@ -48,6 +48,7 @@ processors:
         component: keboola.processor.transpose
       parameters:
         filename: 16xxe5pAH5c9IInD-UUV06Km_rIKVIebQc3wIP4Ui_08_1487565058.csv
+        transpose: true
         header_sanitize: true
         header_rows_count: 2
         header_column_names: [city, priority, target_category]
@@ -59,6 +60,7 @@ processors:
         component: keboola.processor.transpose
       parameters:
         filename: 1u9KpsJcG5XOf6sfwbFbJWmjs95XtDBvavDP0LPCAg40_1288168371.csv
+        transpose: true
         header_sanitize: true
         header_rows_count: 1
         header_column_names: [tag, weight]
@@ -67,6 +69,7 @@ processors:
         component: keboola.processor.transpose
       parameters:
         filename: 1u9KpsJcG5XOf6sfwbFbJWmjs95XtDBvavDP0LPCAg40_0.csv
+        transpose: true
         header_sanitize: true
         header_rows_count: 2
         header_column_names: [agent,ft-pt]
@@ -78,6 +81,7 @@ processors:
         component: keboola.processor.transpose
       parameters:
         filename: 1kypu2S8sJ4rGqZ92qu_TVDsXX-jvhrM-_JIyQwCMsvA_0.csv
+        transpose: true
         header_sanitize: true
         header_rows_count: 2
         header_column_names: ["salesman", "manager", "job"]

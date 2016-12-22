@@ -87,6 +87,9 @@ class ExGoogleDriveConfigurator
             'header_sanitize' => true
         ];
 
+        if (isset($config['transform']['transpose']) || isset($config['header']['columns'])) {
+            $parameters['transpose'] = true;
+        }
         if (isset($config['header']['sanitize'])) {
             $parameters['header_sanitize'] = $config['header']['sanitize'];
         }
