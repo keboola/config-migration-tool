@@ -90,7 +90,7 @@ class ExGoogleDriveConfigurator
 
         if (isset($config['transform']['transpose'])
             || isset($config['header']['columns'])
-            || (isset($config['header']['rows']) && $config['header']['row'] > 1)
+            || (isset($config['header']['rows']) && $config['header']['rows'] > 1)
         ) {
             $parameters['transpose'] = true;
         }
