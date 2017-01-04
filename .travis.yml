@@ -1,12 +1,29 @@
-sudo: false
-language: php
+sudo: required
 
-php:
-- '5.6'
+language: bash
 
-before_script:
-  - composer self-update
-  - composer install --dev
+services:
+  - docker
+
+install:
+  - docker-compose run --rm app composer install -n
+  - docker-compose build app
 
 script:
-  - ./vendor/bin/phpunit
+  - docker-compose run --rm app
+
+after_success:
+  - docker images
+
+after_error:
+  - docker-compose logs
+
+after_failure:
+  - docker-compose logs
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: ./deploy.sh
+  on:
+    tags: true
