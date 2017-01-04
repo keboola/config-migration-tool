@@ -90,10 +90,10 @@ class ExGoogleAnalyticsConfigurator
         $query = [
             'metrics' => array_map(function ($metric) {
                 return ['expression' => 'ga:' . trim($metric)];
-            }, $row['metrics']),
+            }, array_unique($row['metrics'])),
             'dimensions' => array_map(function ($dimension) {
                 return ['name' => 'ga:' . trim($dimension)];
-            }, $row['dimensions']),
+            }, array_unique($row['dimensions'])),
             'viewId' => empty($row['profile'])?null:$row['profile'],
             'dateRanges' => [[
                 'startDate' => '-4 days',
