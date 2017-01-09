@@ -39,15 +39,11 @@ class Application
     /**
      * @param $component
      * @return MigrationInterface
+     * @throws UserException
      */
     private function getMigration($component)
     {
-        $componentNameArr = explode('-', $component);
-        $componentName = '';
-        foreach ($componentNameArr as $c) {
-            $componentName .= ucfirst($c);
-        }
-
+        $componentName = $this->getComponentNameCamelCase($component);
         /** @var MigrationInterface $migrationClass */
         $migrationClass = sprintf(
             '\\Keboola\\ConfigMigrationTool\\Migration\\%sMigration',
@@ -59,5 +55,16 @@ class Application
         }
 
         return new $migrationClass($this->logger);
+    }
+
+    private function getComponentNameCamelCase($component)
+    {
+        $componentNameArr = explode('-', $component);
+        $componentName = '';
+        foreach ($componentNameArr as $c) {
+            $componentName .= ucfirst($c);
+        }
+
+        return $componentName;
     }
 }
