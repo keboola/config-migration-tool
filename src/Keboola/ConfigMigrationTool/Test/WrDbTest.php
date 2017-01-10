@@ -23,27 +23,30 @@ class WrDbTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->sapiService = new StorageApiService();
+        $sapiClient = $this->sapiService->getClient();
         $sysBucketId = 'sys.c-wr-db-mysql-migration';
 
-        if (!$this->sapiService->getClient()->bucketExists($sysBucketId)) {
-            $this->sapiService->getClient()->createBucket('wr-db-mysql-migration', Client::STAGE_SYS, 'Mysql DB Writer');
-            $this->sapiService->getClient()->setBucketAttribute($sysBucketId, 'driver', 'mysql');
-            $this->sapiService->getClient()->setBucketAttribute($sysBucketId, 'writer', 'db');
-            $this->sapiService->getClient()->setBucketAttribute($sysBucketId, 'writerId', 'migration');
-        }
-
-        // cleanup
-        $tables = $this->sapiService->getClient()->listTables('sys.c-wr-db-mysql-migration');
-        foreach ($tables as $table) {
-            $attributes = TableHelper::formatAttributes($table['attributes']);
-            if (false !== strstr($table['id'], 'migrationtest')) {
+        if ($sapiClient->bucketExists($sysBucketId)) {
+            foreach ($sapiClient->listTables('sys.c-wr-db-mysql-migration') as $table) {
+                $attributes = TableHelper::formatAttributes($table['attributes']);
                 $this->sapiService->getClient()->dropTable($table['id']);
                 try {
                     $this->sapiService->deleteConfiguration('wr-db-mysql', $attributes['id']);
                 } catch (\Exception $e) {
                 }
             }
+            $sapiClient->dropBucket($sysBucketId);
         }
+        $sapiClient->createBucket('wr-db-mysql-migration', Client::STAGE_SYS, 'Mysql DB Writer');
+        $sapiClient->setBucketAttribute($sysBucketId, 'driver', 'mysql');
+        $sapiClient->setBucketAttribute($sysBucketId, 'writer', 'db');
+        $sapiClient->setBucketAttribute($sysBucketId, 'writerId', 'migration');
+        $sapiClient->setBucketAttribute($sysBucketId, 'db.database', 'wrdb_test');
+        $sapiClient->setBucketAttribute($sysBucketId, 'db.driver', 'mysql');
+        $sapiClient->setBucketAttribute($sysBucketId, 'db.host', 'hostname');
+        $sapiClient->setBucketAttribute($sysBucketId, 'db.port', '3306');
+        $sapiClient->setBucketAttribute($sysBucketId, 'db.user', 'root');
+        $sapiClient->setBucketAttribute($sysBucketId, 'db.password', 'password');
     }
 
     protected function createOldConfigTables()

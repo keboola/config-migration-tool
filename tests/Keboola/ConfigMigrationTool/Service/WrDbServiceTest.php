@@ -55,8 +55,9 @@ class WrDbServiceTest extends WrDbTest
         $this->createOldConfig();
         $tables = $this->service->getConfigTables('migration');
 
-        $this->assertCount(4, $tables);
+        $this->assertCount(5, $tables);
         $table = array_shift($tables);
+
         $this->assertArrayHasKey('id', $table);
         $this->assertArrayHasKey('bucket', $table);
         $this->assertArrayHasKey('name', $table);
@@ -66,5 +67,23 @@ class WrDbServiceTest extends WrDbTest
         $this->assertEquals('in.c-academy', $table['bucket']);
         $this->assertEquals('vouchers', $table['name']);
         $this->assertNotEmpty($table['columns']);
+    }
+
+    public function testGetCredentials()
+    {
+        $this->createOldConfig();
+        $credentials = $this->service->getCredentials('migration');
+        $this->assertArrayHasKey('database', $credentials);
+        $this->assertEquals('wrdb_test', $credentials['database']);
+        $this->assertArrayHasKey('driver', $credentials);
+        $this->assertEquals('mysql', $credentials['driver']);
+        $this->assertArrayHasKey('host', $credentials);
+        $this->assertEquals('host', $credentials['host']);
+        $this->assertArrayHasKey('password', $credentials);
+        $this->assertEquals('password', $credentials['password']);
+        $this->assertArrayHasKey('port', $credentials);
+        $this->assertEquals('port', $credentials['port']);
+        $this->assertArrayHasKey('user', $credentials);
+        $this->assertEquals('user', $credentials['user']);
     }
 }

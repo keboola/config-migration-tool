@@ -16,13 +16,13 @@ class WrDbConfigurator
      * @param $attributes
      * @return Configuration
      */
-    public function create($attributes, $name)
+    public function create($attributes)
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId($attributes));
-        $configuration->setConfigurationId($attributes['accountId']);
-        $configuration->setName($name);
-        $configuration->setDescription(isset($attributes['desc'])?$attributes['desc']:'');
+        $configuration->setConfigurationId($attributes['writerId']);
+        $configuration->setName($attributes['writerId']);
+        $configuration->setDescription(isset($attributes['description'])?$attributes['description']:'');
 
         return $configuration;
     }
@@ -36,7 +36,7 @@ class WrDbConfigurator
         return sprintf(
             'keboola.%s-%s',
             'wr-db',
-            isset($attributes['db.driver'])?$attributes['db.driver']:'mysql'
+            isset($attributes['driver'])?$attributes['driver']:'mysql'
         );
     }
 
@@ -76,7 +76,7 @@ class WrDbConfigurator
                     'dbName' => $column['dbName'],
                     'type' => $column['type'],
                     'size' => $column['size'],
-                    'nullable' => $column['null'],
+                    'nullable' => boolval($column['null']),
                     'default' => $column['default']
                 ];
             }
