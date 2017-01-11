@@ -64,7 +64,7 @@ class ExGoogleDriveConfigurator
             $outputBucket = $outputTableArr[0] . '.' . $outputTableArr[1];
             $configuration['parameters']['outputBucket'] = $outputBucket;
 
-            $configuration['parameters']['sheets'][] = [
+            $newSheet = [
                 'id' => $cnt++,
                 'fileId' => $sheet['googleId'],
                 'fileTitle' => $sheet['title'],
@@ -74,6 +74,12 @@ class ExGoogleDriveConfigurator
                 'header' => ['rows' => $sheetCfg['header']['rows']],
                 'enabled' => true
             ];
+
+            if (isset($sheetCfg['header']['sanitize'])) {
+                $newSheet['header']['sanitize'] = boolval($sheetCfg['header']['sanitize']);
+            }
+
+            $configuration['parameters']['sheets'][] = $newSheet;
 
             if (isset($sheetCfg['header']) || isset($sheetCfg['transformation']['transpose'])) {
                 $configuration['processors']['after'][] = $this->configureProcessors($sheet, $sheetCfg);
