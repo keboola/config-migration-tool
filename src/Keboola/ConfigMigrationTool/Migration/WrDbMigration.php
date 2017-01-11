@@ -9,10 +9,14 @@
 namespace Keboola\ConfigMigrationTool\Migration;
 
 
+use Keboola\ConfigMigrationTool\Configurator\WrDbConfigurator;
+use Keboola\ConfigMigrationTool\Exception\ApplicationException;
+use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\ConfigMigrationTool\Service\WrDbService;
+use Keboola\StorageApi\ClientException;
 use Monolog\Logger;
 
 class WrDbMigration
@@ -33,25 +37,27 @@ class WrDbMigration
         $orchestratorService = new OrchestratorService($this->logger);
         $configurator = new WrDbConfigurator();
         $wrDbService = new WrDbService($this->driver, $this->logger);
-//        $tables = $sapiService->getConfigurationTables('ex-db');
 
         $oldDbConfigs = $wrDbService->getConfigs();
 
         $createdConfigurations = [];
         foreach ($oldDbConfigs as $oldConfig) {
-            $sysTableId = 'sys.c-wr-db.' . $oldConfig['id'];
-            $sysTable = $sapiService->getClient()->getTable($sysTableId);
-            $attributes = TableHelper::formatAttributes($sysTable['attributes']);
+            $sysBucketId = sprintf('sys.c-wr-db-%s-%s', $this->driver, $oldConfig['id']);
+            $sysBucket = $sapiService->getClient()->getBucket($sysBucketId);
+            $attributes = TableHelper::formatAttributes($sysBucket['attributes']);
 
-            if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
+            if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] !== 'success') {
                 try {
                     $credentials = $wrDbService->getCredentials($oldConfig['id']);
-                    $queries = $wrDbService->getQueries($oldConfig['id']);
-                    $componentCfg = $sapiService->getConfiguration('ex-db', $attributes['accountId']);
+                    $configTables = $wrDbService->getConfigTables($oldConfig['id']);
+                    $componentCfg = $sapiService->getConfiguration(
+                        sprintf('wr-db-%s', $this->driver),
+                        $attributes['writerId']
+                    );
 
                     $configuration = $configurator->create($attributes, $componentCfg['name']);
                     $sapiService->createConfiguration($configuration);
-                    $configuration->setConfiguration($configurator->configure($credentials, $queries));
+                    $configuration->setConfiguration($configurator->configure($credentials, $configTables));
                     $sapiService->encryptConfiguration($configuration);
 
                     $this->logger->info(sprintf(
@@ -59,7 +65,7 @@ class WrDbMigration
                         $configuration->getName()
                     ));
 
-                    $orchestratorService->updateOrchestrations('ex-db', $configuration);
+                    $orchestratorService->updateOrchestrations(sprintf('wr-db-%s', $this->driver), $configuration);
 
                     $this->logger->info(sprintf(
                         "Orchestration task for configuration '%s' has been updated",
@@ -67,16 +73,16 @@ class WrDbMigration
                     ));
 
                     $createdConfigurations[] = $configuration;
-                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'success');
+                    $sapiService->getClient()->setBucketAttribute($sysBucketId, 'migrationStatus', 'success');
                 } catch (ClientException $e) {
-                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
+                    $sapiService->getClient()->setBucketAttribute($sysBucketId, 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'tableId' => $sysTableId
+                        'bucketId' => $sysBucketId
                     ]);
                 } catch (\Exception $e) {
-                    $sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
+                    $sapiService->getClient()->setBucketAttribute($sysBucketId, 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'tableId' => $sysTableId
+                        'bucketId' => $sysBucketId
                     ]);
                 }
             }
@@ -89,28 +95,25 @@ class WrDbMigration
     {
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
+        $oldComponentId = sprintf('wr-db-%s', $this->driver);
+        $newComponentId = sprintf('keboola.wr-db-%s', $this->driver);
 
-        $tables = $sapiService->getConfigurationTables('ex-db');
+        $buckets = $sapiService->getConfigurationBuckets($oldComponentId);
         return [
             'configurations' => array_map(
-                function ($item) {
+                function ($item) use ($oldComponentId, $newComponentId) {
                     $attributes = TableHelper::formatAttributes($item['attributes']);
                     return [
-                        'configId' => $attributes['accountId'],
+                        'configId' => $attributes['id'],
                         'configName' => $attributes['name'],
-                        'componentId' => sprintf(
-                            'keboola.wr-db-%s',
-                            isset($attributes['db.driver'])
-                                ?$attributes['db.driver']
-                                :'mysql'
-                        ),
+                        'componentId' => $newComponentId,
                         'tableId' => $item['id'],
                         'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'
                     ];
                 },
-                $tables
+                $buckets
             ),
-            'orchestrations' => $orchestratorService->getOrchestrations('wr-db', 'keboola.wr-db-')
+            'orchestrations' => $orchestratorService->getOrchestrations($oldComponentId, $newComponentId)
         ];
     }
 }

@@ -14,14 +14,15 @@ class WrDbConfigurator
 {
     /**
      * @param $attributes
+     * @param $prettyName
      * @return Configuration
      */
-    public function create($attributes)
+    public function create($attributes, $prettyName)
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId($attributes));
         $configuration->setConfigurationId($attributes['writerId']);
-        $configuration->setName($attributes['writerId']);
+        $configuration->setName($prettyName);
         $configuration->setDescription(isset($attributes['description'])?$attributes['description']:'');
 
         return $configuration;

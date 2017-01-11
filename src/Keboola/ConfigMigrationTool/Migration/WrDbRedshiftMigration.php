@@ -8,8 +8,10 @@
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
-
-class WrDbRedshiftMigration
+class WrDbRedshiftMigration extends WrDbMigration
 {
-
+    public function __construct($logger)
+    {
+        parent::__construct($logger, 'mysql');
+    }
 }

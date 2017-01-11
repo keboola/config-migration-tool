@@ -32,10 +32,7 @@ class StorageApiService
 
     public function getConfigurationTables($componentId)
     {
-        $buckets = $this->client->listBuckets();
-        $sysBuckets = array_filter($buckets, function ($bucket) use ($componentId) {
-            return $bucket['stage'] == Client::STAGE_SYS && strstr($bucket['name'], $componentId);
-        });
+        $sysBuckets = $this->getConfigurationBuckets($componentId);
 
         $tables = [];
         foreach ($sysBuckets as $sysBucket) {
@@ -43,6 +40,14 @@ class StorageApiService
         }
 
         return $tables;
+    }
+
+    public function getConfigurationBuckets($componentId)
+    {
+        $buckets = $this->client->listBuckets();
+        return array_filter($buckets, function ($bucket) use ($componentId) {
+            return $bucket['stage'] == Client::STAGE_SYS && strstr($bucket['name'], $componentId);
+        });
     }
 
     public function exportTable($tableId)

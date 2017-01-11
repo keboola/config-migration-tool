@@ -38,11 +38,6 @@ class WrDbService
         return $this->request('get', 'configs/' . $id);
     }
 
-//    public function getTables($configId)
-//    {
-//        return $this->request('get', sprintf('%s/tables', $configId));
-//    }
-
     public function getConfigTables($configId)
     {
         return $this->request('get', sprintf('%s/config-tables', $configId));
