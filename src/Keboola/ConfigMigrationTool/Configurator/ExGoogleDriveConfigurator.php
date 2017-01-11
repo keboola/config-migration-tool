@@ -105,7 +105,7 @@ class ExGoogleDriveConfigurator
             $parameters['transpose'] = true;
         }
         if (isset($config['header']['sanitize'])) {
-            $parameters['header_sanitize'] = $config['header']['sanitize'];
+            $parameters['header_sanitize'] = boolval($config['header']['sanitize']);
         }
         if (isset($config['header']['rows'])) {
             $parameters['header_rows_count'] = $config['header']['rows'];
