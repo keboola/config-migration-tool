@@ -15,12 +15,24 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 class WrDbTest extends \PHPUnit_Framework_TestCase
 {
+    protected $driver = 'mysql';
+
     /** @var StorageApiService */
     protected $sapiService;
 
     public function setUp()
     {
-        $this->init('mysql');
+        $this->init($this->driver);
+    }
+
+    protected function getOldComponentId()
+    {
+        return 'wr-db-' . $this->driver;
+    }
+
+    protected function getNewComponentId()
+    {
+        return ($this->driver == 'redshift')?'keboola.wr-redshift-v2':'keboola.wr-db-' . $this->driver;
     }
 
     protected function init($driver)
@@ -28,7 +40,7 @@ class WrDbTest extends \PHPUnit_Framework_TestCase
         $this->sapiService = new StorageApiService();
         $sapiClient = $this->sapiService->getClient();
         $sysBucketId = sprintf('sys.c-wr-db-%s-migration', $driver);
-        $componentId = sprintf('wr-db-%s', $driver);
+        $componentId = $this->getOldComponentId();
 
         if ($sapiClient->bucketExists($sysBucketId)) {
             foreach ($sapiClient->listTables($sysBucketId) as $table) {
@@ -42,6 +54,10 @@ class WrDbTest extends \PHPUnit_Framework_TestCase
         // create config in SAPI
         try {
             $this->sapiService->deleteConfiguration($componentId, 'migration');
+        } catch (\Exception $e) {
+        }
+        try {
+            $this->sapiService->deleteConfiguration($this->getNewComponentId(), 'migration');
         } catch (\Exception $e) {
         }
         $configuration = new Configuration();
@@ -62,18 +78,22 @@ class WrDbTest extends \PHPUnit_Framework_TestCase
         $sapiClient->setBucketAttribute($sysBucketId, 'db.port', '3306');
         $sapiClient->setBucketAttribute($sysBucketId, 'db.user', 'root');
         $sapiClient->setBucketAttribute($sysBucketId, 'db.password', 'password');
+
+        if ($this->driver == 'redshift') {
+            $sapiClient->setBucketAttribute($sysBucketId, 'db.schema', 'public');
+        }
     }
 
-    protected function createOldConfigTables($driver)
+    protected function createOldConfigTables()
     {
-        $sysBucketId = sprintf('sys.c-wr-db-%s-migration', $driver);
+        $sysBucketId = sprintf('sys.c-wr-db-%s-migration', $this->driver);
         $id = uniqid('migrationtest');
 
         $sapiClient = $this->sapiService->getClient();
         $tableId = $sapiClient->createTable(
             $sysBucketId,
             $id,
-            new CsvFile(ROOT_PATH . 'tests/data/wr-db-' . $driver . '/migration-test.csv')
+            new CsvFile(ROOT_PATH . 'tests/data/wr-db-' . $this->driver . '/migration-test.csv')
         );
 
         $sapiClient->setTableAttribute($tableId, 'id', $id);
@@ -85,11 +105,11 @@ class WrDbTest extends \PHPUnit_Framework_TestCase
         return $id;
     }
 
-    protected function createOldConfig($driver = 'mysql')
+    protected function createOldConfig()
     {
         $testTables = [];
         for ($i=0;$i<5;$i++) {
-            $testTables[] = $this->createOldConfigTables($driver);
+            $testTables[] = $this->createOldConfigTables();
         }
 
         return $testTables;

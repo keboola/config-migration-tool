@@ -8,10 +8,19 @@
 
 namespace Keboola\ConfigMigrationTool\Configurator;
 
+use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\StorageApi\Options\Components\Configuration;
 
 class WrDbConfigurator
 {
+    protected $driver;
+
+    public function __construct($driver = 'mysql')
+    {
+        $this->driver = $driver;
+    }
+
+
     /**
      * @param $attributes
      * @param $prettyName
@@ -20,7 +29,7 @@ class WrDbConfigurator
     public function create($attributes, $prettyName)
     {
         $configuration = new Configuration();
-        $configuration->setComponentId($this->getComponentId($attributes));
+        $configuration->setComponentId($this->getComponentId());
         $configuration->setConfigurationId($attributes['writerId']);
         $configuration->setName($prettyName);
         $configuration->setDescription(isset($attributes['description'])?$attributes['description']:'');
@@ -29,22 +38,18 @@ class WrDbConfigurator
     }
 
     /**
-     * @param $attributes
      * @return string
      */
-    public function getComponentId($attributes)
+    public function getComponentId()
     {
-        return sprintf(
-            'keboola.%s-%s',
-            'wr-db',
-            isset($attributes['driver'])?$attributes['driver']:'mysql'
-        );
+        return ($this->driver == 'redshift')?'keboola.wr-redshift-v2':'keboola.wr-db-' . $this->driver;
     }
 
     /**
      * @param $credentials
      * @param $tables
      * @return array
+     * @throws ApplicationException
      */
     public function configure($credentials, $tables)
     {
@@ -52,6 +57,15 @@ class WrDbConfigurator
         if (!isset($credentials['host'])) {
             return [];
         }
+
+        if ($credentials['driver'] !== $this->driver) {
+            throw new ApplicationException(sprintf(
+                "Driver mismatch: expected driver %s, but driver in credentials is %s",
+                $this->driver,
+                $credentials['driver']
+            ));
+        }
+
         $configuration = [
             'parameters' => [
                 'db' => [
@@ -64,6 +78,10 @@ class WrDbConfigurator
                 ],
             ]
         ];
+
+        if ($this->driver == 'redshift' && isset($credentials['schema'])) {
+            $configuration['parameters']['db']['schema'] = $credentials['schema'];
+        }
 
         foreach ($tables as $table) {
             $newTable = [

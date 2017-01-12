@@ -12,6 +12,6 @@ class WrDbOracle extends WrDbMigration
 {
     public function __construct($logger)
     {
-        parent::__construct($logger, 'mysql');
+        parent::__construct($logger, 'oracle');
     }
 }

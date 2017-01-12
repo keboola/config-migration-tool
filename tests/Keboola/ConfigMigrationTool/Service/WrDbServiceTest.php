@@ -78,12 +78,12 @@ class WrDbServiceTest extends WrDbTest
         $this->assertArrayHasKey('driver', $credentials);
         $this->assertEquals('mysql', $credentials['driver']);
         $this->assertArrayHasKey('host', $credentials);
-        $this->assertEquals('host', $credentials['host']);
+        $this->assertEquals('hostname', $credentials['host']);
         $this->assertArrayHasKey('password', $credentials);
         $this->assertEquals('password', $credentials['password']);
         $this->assertArrayHasKey('port', $credentials);
-        $this->assertEquals('port', $credentials['port']);
+        $this->assertEquals('3306', $credentials['port']);
         $this->assertArrayHasKey('user', $credentials);
-        $this->assertEquals('user', $credentials['user']);
+        $this->assertEquals('root', $credentials['user']);
     }
 }

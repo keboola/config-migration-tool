@@ -4,7 +4,7 @@
             "host": "",
             "database": "",
             "schema": "",
-            "password": "",
+            "#password": "",
             "user": "",
             "port": "",
             "driver": "redshift"

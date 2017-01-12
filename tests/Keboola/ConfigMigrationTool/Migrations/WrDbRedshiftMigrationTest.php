@@ -8,7 +8,7 @@
 
 namespace Keboola\ConfigMigrationTool\Test;
 
-class WrDbOracleMigrationTest extends WrDbMysqlMigrationTest
+class WrDbRedshiftMigrationTest extends WrDbMysqlMigrationTest
 {
-    protected $driver = 'oracle';
+    protected $driver = 'redshift';
 }

@@ -3,7 +3,7 @@
         "db": {
             "host": "",
             "database": "",
-            "password": "",
+            "#password": "",
             "user": "",
             "port": "",
             "driver": "mysql"

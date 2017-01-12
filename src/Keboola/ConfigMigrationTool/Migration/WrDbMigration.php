@@ -35,7 +35,7 @@ class WrDbMigration
     {
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
-        $configurator = new WrDbConfigurator();
+        $configurator = new WrDbConfigurator($this->driver);
         $wrDbService = new WrDbService($this->driver, $this->logger);
 
         $oldDbConfigs = $wrDbService->getConfigs();
@@ -96,7 +96,7 @@ class WrDbMigration
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
         $oldComponentId = sprintf('wr-db-%s', $this->driver);
-        $newComponentId = sprintf('keboola.wr-db-%s', $this->driver);
+        $newComponentId = ($this->driver == 'redshift')?'keboola.wr-redshift-v2':'keboola.wr-db-' . $this->driver;
 
         $buckets = $sapiService->getConfigurationBuckets($oldComponentId);
         return [
@@ -104,8 +104,8 @@ class WrDbMigration
                 function ($item) use ($oldComponentId, $newComponentId) {
                     $attributes = TableHelper::formatAttributes($item['attributes']);
                     return [
-                        'configId' => $attributes['id'],
-                        'configName' => $attributes['name'],
+                        'configId' => $attributes['writerId'],
+                        'configName' => $attributes['writerId'],
                         'componentId' => $newComponentId,
                         'tableId' => $item['id'],
                         'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'

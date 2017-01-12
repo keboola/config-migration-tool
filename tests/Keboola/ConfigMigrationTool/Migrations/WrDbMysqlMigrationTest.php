@@ -20,34 +20,49 @@ class WrDbMysqlMigrationTest extends WrDbTest
     public function testExecute()
     {
         $expectedConfig = json_decode(file_get_contents(
-            ROOT_PATH . '/tests/data/wr-db-mysql/expected-config.json'
+            ROOT_PATH . '/tests/data/' . $this->getOldComponentId() . '/expected-config.json'
         ), true);
         $this->createOldConfig();
         $sapiService = new StorageApiService();
-        $migration = new WrDbMigration($this->getLogger());
+        $migration = new WrDbMigration($this->getLogger(), $this->driver);
         $createdConfigurations = $migration->execute();
 
         /** @var Configuration $configuration */
         foreach ($createdConfigurations as $configuration) {
             if ($configuration->getConfigurationId() == 'migration') {
-                $this->assertEquals('keboola.wr-db-mysql', $configuration->getComponentId());
+                $this->assertEquals($this->getNewComponentId(), $configuration->getComponentId());
                 $config = $configuration->getConfiguration();
                 $this->assertArrayHasKey('parameters', $config);
                 $parameters = $config['parameters'];
                 $this->assertArrayHasKey('db', $parameters);
                 $this->assertArrayHasKey('tables', $parameters);
-//                $this->assertEquals($expectedConfig, $config);
+
+                foreach ($expectedConfig['parameters']['db'] as $k => $v) {
+                    $this->assertArrayHasKey($k, $parameters['db']);
+                }
+
+                $table = array_shift($parameters['tables']);
+                $this->assertArrayHasKey('dbName', $table);
+                $this->assertArrayHasKey('export', $table);
+                $this->assertArrayHasKey('tableId', $table);
+                $this->assertArrayHasKey('items', $table);
+
+                $column = array_shift($table['items']);
+                $this->assertArrayHasKey('name', $column);
+                $this->assertArrayHasKey('dbName', $column);
+                $this->assertArrayHasKey('type', $column);
+                $this->assertArrayHasKey('size', $column);
+                $this->assertArrayHasKey('nullable', $column);
+                $this->assertArrayHasKey('default', $column);
             }
 
             // clear created configurations
-            $sapiService->deleteConfiguration('keboola.wr-db-mysql', $configuration->getConfigurationId());
+            $sapiService->deleteConfiguration($this->getNewComponentId(), $configuration->getConfigurationId());
         }
     }
 
     public function testOrchestrationUpdate()
     {
-        $oldComponentId = 'wr-db-mysql';
-        $newComponentId = 'keboola.wr-db-mysql';
         $orchestratorService = new OrchestratorService($this->getLogger());
         // create orchestration
         $orchestration = $orchestratorService->request('post', 'orchestrations', [
@@ -55,7 +70,7 @@ class WrDbMysqlMigrationTest extends WrDbTest
                 "name" => "Wr DB Mysql Migration Test Orchestrator",
                 "tasks" => [
                     [
-                        "component" => $oldComponentId,
+                        "component" => $this->getOldComponentId(),
                         "action" => "run",
                         "actionParameters" => [
                             "config" => "migration"
@@ -69,7 +84,10 @@ class WrDbMysqlMigrationTest extends WrDbTest
         ]);
 
         // test affected orchestrations
-        $affectedOrchestrations = $orchestratorService->getOrchestrations($oldComponentId, $newComponentId);
+        $affectedOrchestrations = $orchestratorService->getOrchestrations(
+            $this->getOldComponentId(),
+            $this->getNewComponentId()
+        );
         $this->assertNotEmpty($affectedOrchestrations);
         $orchestrationIsBetweenAffected = false;
         foreach ($affectedOrchestrations as $affected) {
@@ -84,12 +102,12 @@ class WrDbMysqlMigrationTest extends WrDbTest
         $updatedOrchestrations = [];
 
         $configuration = new Configuration();
-        $configuration->setComponentId($newComponentId);
+        $configuration->setComponentId($this->getNewComponentId());
         $configuration->setConfigurationId('migration');
         $configuration->setName('migration');
 
         $updatedOrchestrations = array_merge(
-            $orchestratorService->updateOrchestrations($oldComponentId, $configuration),
+            $orchestratorService->updateOrchestrations($this->getOldComponentId(), $configuration),
             $updatedOrchestrations
         );
 
@@ -105,7 +123,7 @@ class WrDbMysqlMigrationTest extends WrDbTest
             $this->assertNotEmpty($tasks);
             foreach ($tasks as $task) {
                 if (isset($task['component'])) {
-                    $this->assertEquals($newComponentId, $task['component']);
+                    $this->assertEquals($this->getNewComponentId(), $task['component']);
                 }
                 $this->assertNotEmpty($task['actionParameters']['config']);
             }
@@ -113,7 +131,10 @@ class WrDbMysqlMigrationTest extends WrDbTest
         $this->assertTrue($orchestrationIsUpdated);
 
         // check affected orchestration after migration
-        $affectedOrchestrations = $orchestratorService->getOrchestrations($oldComponentId, $newComponentId);
+        $affectedOrchestrations = $orchestratorService->getOrchestrations(
+            $this->getOldComponentId(),
+            $this->getNewComponentId()
+        );
         $this->assertNotEmpty($affectedOrchestrations);
         foreach ($affectedOrchestrations as $affected) {
             if ($affected['id'] == $orchestration['id']) {
@@ -127,15 +148,18 @@ class WrDbMysqlMigrationTest extends WrDbTest
 
     public function testStatus()
     {
-        $migration = new WrDbMigration($this->getLogger());
+        $migration = new WrDbMigration($this->getLogger(), $this->driver);
         $status = $migration->status();
 
-        $this->assertNotEmpty($status);
-        $this->assertArrayHasKey('configId', $status['configurations'][0]);
-        $this->assertArrayHasKey('configName', $status['configurations'][0]);
-        $this->assertArrayHasKey('componentId', $status['configurations'][0]);
-        $this->assertArrayHasKey('tableId', $status['configurations'][0]);
-        $this->assertArrayHasKey('status', $status['configurations'][0]);
+        foreach ($status['configurations'] as $configuration) {
+            $this->assertNotEmpty($status);
+            $this->assertArrayHasKey('configId', $configuration);
+            $this->assertArrayHasKey('configName', $configuration);
+            $this->assertArrayHasKey('componentId', $configuration);
+            $this->assertArrayHasKey('tableId', $configuration);
+            $this->assertArrayHasKey('status', $configuration);
+        }
+
         $this->assertArrayHasKey('orchestrations', $status);
     }
 
