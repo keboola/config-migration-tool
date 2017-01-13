@@ -76,31 +76,13 @@ class WrDbConfigurator
                     '#password' => $credentials['password'],
                     'driver' => $credentials['driver']
                 ],
-            ]
+                'tables' => $this->configureTables($tables),
+            ],
+            'storage' => $this->configureInputMapping($tables)
         ];
 
         if ($this->driver == 'redshift' && isset($credentials['schema'])) {
             $configuration['parameters']['db']['schema'] = $credentials['schema'];
-        }
-
-        foreach ($tables as $table) {
-            $newTable = [
-                'dbName' => $table['name'],
-                'export' => boolval($table['export']),
-                'tableId' => $table['id']
-            ];
-            foreach ($table['columns'] as $column) {
-                $newTable['items'][] = [
-                    'name' => $column['name'],
-                    'dbName' => $column['dbName'],
-                    'type' => $column['type'],
-                    'size' => $column['size'],
-                    'nullable' => boolval($column['null']),
-                    'default' => $column['default']
-                ];
-            }
-
-            $configuration['parameters']['tables'][] = $newTable;
         }
 
         if ($credentials['driver'] == 'mysql') {
@@ -111,5 +93,39 @@ class WrDbConfigurator
         }
 
         return $configuration;
+    }
+
+    protected function configureTables($tables)
+    {
+        return array_map(function ($table) {
+            return [
+                'dbName' => $table['name'],
+                'export' => boolval($table['export']),
+                'tableId' => $table['id'],
+                'items' => array_map(function ($column) {
+                    return [
+                        'name' => $column['name'],
+                        'dbName' => $column['dbName'],
+                        'type' => $column['type'],
+                        'size' => $column['size'],
+                        'nullable' => boolval($column['null']),
+                        'default' => $column['default']
+                    ];
+                }, $table['columns'])
+            ];
+        }, $tables);
+    }
+
+    protected function configureInputMapping($tables)
+    {
+        return ['input' => ['tables' => array_map(function ($table) {
+            return [
+                'source' => $table['id'],
+                'destination' => $table['id'] . '.csv',
+                'columns' => array_map(function ($column) {
+                    return $column['name'];
+                }, $table['columns'])
+            ];
+        }, $tables)]];
     }
 }

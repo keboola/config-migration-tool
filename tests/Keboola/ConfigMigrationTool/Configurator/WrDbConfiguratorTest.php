@@ -121,5 +121,22 @@ class WrDbConfiguratorTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('size', $column);
         $this->assertArrayHasKey('nullable', $column);
         $this->assertArrayHasKey('default', $column);
+
+        $this->assertArrayHasKey('storage', $result);
+        $this->assertArrayHasKey('input', $result['storage']);
+        $this->assertArrayHasKey('tables', $result['storage']['input']);
+
+        $this->assertNotEmpty($result['storage']['input']['tables']);
+        $inputMappingTable = array_shift($result['storage']['input']['tables']);
+        $this->assertArrayHasKey('source', $inputMappingTable);
+        $this->assertArrayHasKey('destination', $inputMappingTable);
+        $this->assertArrayHasKey('columns', $inputMappingTable);
+
+        $this->assertEquals('in.c-academy.vouchers', $inputMappingTable['source']);
+        $this->assertEquals('in.c-academy.vouchers.csv', $inputMappingTable['destination']);
+        $this->assertContains('id', $inputMappingTable['columns']);
+        $this->assertContains('idUser', $inputMappingTable['columns']);
+        $this->assertContains('value', $inputMappingTable['columns']);
+        $this->assertContains('code', $inputMappingTable['columns']);
     }
 }
