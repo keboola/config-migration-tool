@@ -106,7 +106,7 @@ class WrDbMigration
                     return [
                         'configId' => $attributes['writerId'],
                         'configName' => $attributes['writerId'],
-                        'componentId' => $newComponentId,
+                        'componentId' => $oldComponentId,
                         'tableId' => $item['id'],
                         'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'
                     ];
