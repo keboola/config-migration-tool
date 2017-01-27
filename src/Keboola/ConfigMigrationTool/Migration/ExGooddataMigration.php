@@ -74,14 +74,14 @@ class ExGooddataMigration implements MigrationInterface
                     $createdConfigurations[] = $configuration;
                     $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'success');
                 } catch (\Exception $e) {
-                    $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
+                    $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', "error: {$e->getMessage()}");
                     if ($e instanceof ClientException || $e instanceof UserException) {
-                        throw new UserException("Error occured during migration: " . $e->getMessage(), 400, $e, [
+                        throw new UserException($e->getMessage(), 400, $e, [
                             'tableId' => $sysTableId
                         ]);
                     }
 
-                    throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
+                    throw new ApplicationException($e->getMessage(), 500, $e, [
                         'tableId' => $sysTableId
                     ]);
                 }
