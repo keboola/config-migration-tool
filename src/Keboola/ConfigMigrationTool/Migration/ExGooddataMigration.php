@@ -43,6 +43,9 @@ class ExGooddataMigration implements MigrationInterface
         $createdConfigurations = [];
         $writers = $this->service->getProjectsWriters();
         foreach ($this->service->getConfigs() as $oldConfig) {
+            if (!isset($oldConfig['id'])) {
+                throw new UserException("One of the configuration tables does not contain attribute id");
+            }
             $sysTableId = 'sys.c-ex-gooddata.' . $oldConfig['id'];
             $sysTable = $this->sapiService->getClient()->getTable($sysTableId);
             $attributes = TableHelper::formatAttributes($sysTable['attributes']);
@@ -70,13 +73,14 @@ class ExGooddataMigration implements MigrationInterface
 
                     $createdConfigurations[] = $configuration;
                     $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'success');
-                } catch (ClientException $e) {
-                    $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
-                    throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'tableId' => $sysTableId
-                    ]);
                 } catch (\Exception $e) {
                     $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'error: ' . $e->getMessage());
+                    if ($e instanceof ClientException || $e instanceof UserException) {
+                        throw new UserException("Error occured during migration: " . $e->getMessage(), 400, $e, [
+                            'tableId' => $sysTableId
+                        ]);
+                    }
+
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
                         'tableId' => $sysTableId
                     ]);

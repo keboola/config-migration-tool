@@ -16,7 +16,7 @@ class ExGoodDataConfigurator
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.ex-gooddata');
         $configuration->setConfigurationId($config['id']);
-        $configuration->setName($config['name']);
+        $configuration->setName(isset($config['name']) ? $config['name'] : $config['id']);
         if (!empty($config['description'])) {
             $configuration->setDescription($config['description']);
         }
