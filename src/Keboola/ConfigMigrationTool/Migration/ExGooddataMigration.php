@@ -100,7 +100,7 @@ class ExGooddataMigration implements MigrationInterface
                     $attributes = TableHelper::formatAttributes($item['attributes']);
                     return [
                         'configId' => $attributes['id'],
-                        'configName' => $attributes['name'],
+                        'configName' => isset($attributes['name']) ? $attributes['name'] : $attributes['id'],
                         'componentId' => 'keboola.ex-gooddata',
                         'tableId' => $item['id'],
                         'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'
