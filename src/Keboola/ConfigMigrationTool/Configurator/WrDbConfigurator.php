@@ -118,14 +118,25 @@ class WrDbConfigurator
 
     protected function configureInputMapping($tables)
     {
-        return ['input' => ['tables' => array_map(function ($table) {
-            return [
-                'source' => $table['id'],
-                'destination' => $table['id'] . '.csv',
-                'columns' => array_map(function ($column) {
-                    return $column['name'];
-                }, $table['columns'])
-            ];
-        }, $tables)]];
+        return ['input' => ['tables' => array_map(
+            function ($table) {
+                return [
+                    'source' => $table['id'],
+                    'destination' => $table['id'] . '.csv',
+                    'columns' => array_map(
+                        function ($column) {
+                            return $column['name'];
+                        },
+                        array_filter(
+                            $table['columns'],
+                            function ($column) {
+                                return (strtolower($column['type']) !== 'ignore');
+                            }
+                        )
+                    )
+                ];
+            },
+            $tables
+        )]];
     }
 }

@@ -84,7 +84,7 @@ class WrDbConfiguratorTest extends \PHPUnit_Framework_TestCase
                 [
                     "name" => "code",
                     "dbName" => "code",
-                    "type" => "VARCHAR",
+                    "type" => "IGNORE",
                     "size" => "255",
                     "null" => "",
                     "default" => ""
@@ -137,6 +137,6 @@ class WrDbConfiguratorTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('id', $inputMappingTable['columns']);
         $this->assertContains('idUser', $inputMappingTable['columns']);
         $this->assertContains('value', $inputMappingTable['columns']);
-        $this->assertContains('code', $inputMappingTable['columns']);
+        $this->assertNotContains('code', $inputMappingTable['columns']);
     }
 }
