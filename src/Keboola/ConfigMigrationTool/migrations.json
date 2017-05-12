@@ -1,0 +1,6 @@
+{
+  "ex-adwords-v2": {
+    "destinations": ["keboola.ex-adwords-v201705"],
+    "migration": "KeboolaExAdWords"
+  }
+}

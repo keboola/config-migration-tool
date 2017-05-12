@@ -10,6 +10,8 @@ namespace Keboola\ConfigMigrationTool;
 
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migration\MigrationInterface;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class Application
 {
@@ -22,38 +24,61 @@ class Application
 
     public function run($config)
     {
-        $migration = $this->getMigration($config['parameters']['component']);
+        $migration = $this->getMigration($config);
         $migration->execute();
     }
 
     public function action($config)
     {
         $action = $config['action'];
-        $migration = $this->getMigration($config['parameters']['component']);
+        $migration = $this->getMigration($config);
         if (!method_exists($migration, $action)) {
-            throw new UserException(sprintf("Action %s doesn't exist", $action));
+            throw new UserException("Action '$action' does not exist");
         }
         return $migration->$action();
     }
 
+    public function getMigration($config)
+    {
+        if (isset($config['parameters']['component'])) {
+            return $this->getLegacyMigration($config['parameters']['component']);
+        } elseif (isset($config['parameters']['origin']) && isset($config['parameters']['destination'])) {
+            return $this->getVersionMigration($config['parameters']['origin'], $config['parameters']['destination']);
+        }
+        throw new UserException("Missing parameters 'origin' and 'destination' or 'component'");
+    }
+
+    private function getVersionMigration($origin, $destination)
+    {
+        $jsonDecode = new JsonDecode(true);
+        $config = $jsonDecode->decode(file_get_contents(__DIR__ . '/migrations.json'), JsonEncoder::FORMAT);
+        if (!isset($config[$origin])) {
+            throw new UserException("Origin component '$origin' is not supported");
+        }
+        if (!in_array($destination, $config[$origin]['destinations'])) {
+            throw new UserException("Destination component '$destination' is not supported for origin '$origin'");
+        }
+        return $this->getMigrationClass($config[$origin]['migration']);
+    }
+
+    private function getLegacyMigration($component)
+    {
+        $componentName = $this->getComponentNameCamelCase($component);
+        return $this->getMigrationClass($componentName);
+    }
+
     /**
-     * @param $component
+     * @param $class
      * @return MigrationInterface
      * @throws UserException
      */
-    private function getMigration($component)
+    private function getMigrationClass($class)
     {
-        $componentName = $this->getComponentNameCamelCase($component);
         /** @var MigrationInterface $migrationClass */
-        $migrationClass = sprintf(
-            '\\Keboola\\ConfigMigrationTool\\Migration\\%sMigration',
-            $componentName
-        );
-
+        $migrationClass = sprintf('\\Keboola\\ConfigMigrationTool\\Migration\\%sMigration', $class);
         if (!class_exists($migrationClass)) {
-            throw new UserException("Migration for component $componentName does not exist");
+            throw new UserException("Migration for component $class does not exist");
         }
-
         return new $migrationClass($this->logger);
     }
 
