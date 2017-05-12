@@ -18,7 +18,7 @@ class ExGoodDataServiceTest extends ExGoodDataTest
     public function setUp()
     {
         parent::setUp();
-        $this->service = new ExGoodDataService(new Logger(APP_NAME));
+        $this->service = new ExGoodDataService();
     }
 
     public function testGetConfigs()

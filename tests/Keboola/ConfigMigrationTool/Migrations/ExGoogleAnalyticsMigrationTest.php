@@ -6,11 +6,12 @@
  * Time: 10:36
  */
 
-namespace Keboola\ConfigMigrationTool\Test;
+namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Migration\ExGoogleAnalyticsMigration;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
+use Keboola\ConfigMigrationTool\Test\ExGoogleAnalyticsTest;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
 

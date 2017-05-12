@@ -4,11 +4,12 @@
  * @author Jakub Matejka <jakub@keboola.com>
  */
 
-namespace Keboola\ConfigMigrationTool\Test;
+namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Migration\ExGooddataMigration;
-use Keboola\ConfigMigrationTool\Service\ExGoodDataService;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
+use Keboola\ConfigMigrationTool\Test\ExGoodDataTest;
+use Keboola\ConfigMigrationTool\Test\ExGoodDataTestService;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;

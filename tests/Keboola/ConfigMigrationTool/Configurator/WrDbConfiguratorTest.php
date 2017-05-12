@@ -6,7 +6,7 @@
  * Time: 16:52
  */
 
-namespace Keboola\ConfigMigrationTool\Test;
+namespace Keboola\ConfigMigrationTool\Test\Configurator;
 
 use Keboola\ConfigMigrationTool\Configurator\WrDbConfigurator;
 use Keboola\StorageApi\Options\Components\Configuration;

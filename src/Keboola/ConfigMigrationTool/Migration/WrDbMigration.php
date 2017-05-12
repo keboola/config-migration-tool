@@ -99,7 +99,7 @@ class WrDbMigration
         $buckets = $sapiService->getConfigurationBuckets($oldComponentId);
         return [
             'configurations' => array_map(
-                function ($item) use ($oldComponentId, $newComponentId) {
+                function ($item) use ($oldComponentId) {
                     $attributes = TableHelper::formatAttributes($item['attributes']);
                     return [
                         'configId' => $attributes['writerId'],

@@ -7,7 +7,7 @@
  * Time: 11:10
  */
 
-namespace Keboola\ConfigMigrationTool\Test;
+namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Migration\ExDbMigration;
 use Keboola\ConfigMigrationTool\Service\ExDbService;

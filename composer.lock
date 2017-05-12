@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0b02b9b28d6813c66cde53bdab4dde3c",
+    "content-hash": "e04ced4515903179aecbed56663c8eaa",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1844,6 +1844,45 @@
             ],
             "description": "PHPStan - PHP Static Analysis Tool",
             "time": "2017-02-20T20:45:32+00:00"
+        },
+        {
+            "name": "phpstan/phpstan-guzzle",
+            "version": "0.6.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpstan-guzzle.git",
+                "reference": "79830a767e28e9aedbe4fcab14253a8c973969c4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan-guzzle/zipball/79830a767e28e9aedbe4fcab14253a8c973969c4",
+                "reference": "79830a767e28e9aedbe4fcab14253a8c973969c4",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "~6.0",
+                "php": "~7.0",
+                "phpstan/phpstan": "^0.6.3"
+            },
+            "require-dev": {
+                "consistence/coding-standard": "~0.12.0",
+                "phing/phing": "^2.13.0",
+                "phpunit/phpunit": "^5.7|^6.0",
+                "satooshi/php-coveralls": "dev-master",
+                "slevomat/coding-standard": "^1.1.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Guzzle extensions for PHPStan",
+            "time": "2017-03-11T17:50:47+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

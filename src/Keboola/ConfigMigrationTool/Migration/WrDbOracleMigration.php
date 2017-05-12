@@ -8,7 +8,7 @@
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
-class WrDbOracle extends WrDbMigration
+class WrDbOracleMigration extends WrDbMigration
 {
     public function __construct($logger)
     {

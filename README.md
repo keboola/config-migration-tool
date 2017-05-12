@@ -9,9 +9,12 @@ Orchestration tasks are also updated to use the new extractors.
 
 ### Example Configuration
 
-``` yaml
-parameters:
-  component: 'ex-db'  
+``` json
+{
+  "parameters": {
+    "component": "ex-db"
+  }
+}
 ```
 
 ## Google Analytics Extractor Migration
@@ -19,9 +22,12 @@ Migrate Google Analytics Extractor configs form sys.c-ex-google-analytics bucket
 
 ### Example Configuration
 
-``` yaml
-parameters:
-  component: 'ex-google-analytics'  
+``` json
+{
+  "parameters": {
+    "component": "ex-google-analytics"
+  }
+}  
 ```
 
 Some things are quite different in Google Analytics V4 API. 
