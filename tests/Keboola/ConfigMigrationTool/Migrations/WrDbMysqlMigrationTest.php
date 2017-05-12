@@ -8,7 +8,6 @@
 
 namespace Keboola\ConfigMigrationTool\Test;
 
-
 use Keboola\ConfigMigrationTool\Migration\WrDbMigration;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;

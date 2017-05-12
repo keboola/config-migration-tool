@@ -34,7 +34,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         try {
             $this->application->getMigration(['parameters' => ['component' => 'ex-google-analyticsx']]);
             $this->fail();
-        } catch (UserException $e) {}
+        } catch (UserException $e) {
+        }
 
         $result = $this->application->getMigration(['parameters' => [
             'origin' => 'ex-adwords-v2', 'destination' => 'keboola.ex-adwords-v201705'
@@ -46,13 +47,15 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
                 'origin' => 'ex-adwords-v2x', 'destination' => 'keboola.ex-adwords-v201705'
             ]]);
             $this->fail();
-        } catch (UserException $e) {}
+        } catch (UserException $e) {
+        }
 
         try {
             $this->application->getMigration(['parameters' => [
                 'origin' => 'ex-adwords-v2', 'destination' => 'keboola.ex-adwords-v201705x'
             ]]);
             $this->fail();
-        } catch (UserException $e) {}
+        } catch (UserException $e) {
+        }
     }
 }

@@ -108,7 +108,7 @@ class WrDbTest extends \PHPUnit_Framework_TestCase
     protected function createOldConfig()
     {
         $testTables = [];
-        for ($i=0;$i<5;$i++) {
+        for ($i=0; $i<5; $i++) {
             $testTables[] = $this->createOldConfigTables();
         }
 

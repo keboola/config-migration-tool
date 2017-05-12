@@ -8,7 +8,6 @@
 
 namespace Keboola\ConfigMigrationTool\Test;
 
-
 use Keboola\ConfigMigrationTool\Configurator\WrDbConfigurator;
 use Keboola\StorageApi\Options\Components\Configuration;
 

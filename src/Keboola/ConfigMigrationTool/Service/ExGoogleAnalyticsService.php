@@ -49,6 +49,6 @@ class ExGoogleAnalyticsService
     public function request($method, $uri, $options = [])
     {
         $response = $this->client->request($method, $uri, $options);
-        return \GuzzleHttp\json_decode($response->getBody(),true);
+        return \GuzzleHttp\json_decode($response->getBody(), true);
     }
 }

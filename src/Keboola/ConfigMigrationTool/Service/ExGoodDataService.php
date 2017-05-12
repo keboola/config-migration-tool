@@ -40,7 +40,7 @@ class ExGoodDataService
     public function request($method, $uri, $options = [])
     {
         $response = $this->client->request($method, $uri, $options);
-        return \GuzzleHttp\json_decode($response->getBody(),true);
+        return \GuzzleHttp\json_decode($response->getBody(), true);
     }
 
     public function getProjectsWriters()
@@ -52,7 +52,7 @@ class ExGoodDataService
             'handler' => $this->initRetryHandler()
         ]);
         $response = $client->request('get', 'https://syrup.keboola.com/gooddata-writer/v2?include=project');
-        $responseParsed = \GuzzleHttp\json_decode($response->getBody(),true);
+        $responseParsed = \GuzzleHttp\json_decode($response->getBody(), true);
         $out = [];
         foreach ($responseParsed as $writer) {
             if (isset($writer['project']['pid'])) {
