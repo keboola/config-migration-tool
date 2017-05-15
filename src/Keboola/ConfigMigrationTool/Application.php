@@ -51,7 +51,7 @@ class Application
     private function getVersionMigration($origin, $destination)
     {
         $jsonDecode = new JsonDecode(true);
-        $config = $jsonDecode->decode(file_get_contents(__DIR__ . '/migrations.json'), JsonEncoder::FORMAT);
+        $config = $jsonDecode->decode(file_get_contents(__DIR__ . '/definition.json'), JsonEncoder::FORMAT);
         if (!isset($config[$origin])) {
             throw new UserException("Origin component '$origin' is not supported");
         }

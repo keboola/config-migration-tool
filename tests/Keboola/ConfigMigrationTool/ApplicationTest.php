@@ -9,7 +9,7 @@ namespace Keboola\ConfigMigrationTool\Test;
 use Keboola\ConfigMigrationTool\Application;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migration\ExGoogleAnalyticsMigration;
-use Keboola\ConfigMigrationTool\Migration\KeboolaExAdwordsMigration;
+use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 
@@ -40,7 +40,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $result = $this->application->getMigration(['parameters' => [
             'origin' => 'ex-adwords-v2', 'destination' => 'keboola.ex-adwords-v201705'
         ]]);
-        $this->assertInstanceOf(KeboolaExAdwordsMigration::class, $result);
+        $this->assertInstanceOf(GenericCopyMigration::class, $result);
 
         try {
             $this->application->getMigration(['parameters' => [

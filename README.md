@@ -3,6 +3,39 @@
 
 Tool for migrating users configurations in SYS buckets to [Storage API components configuration](http://docs.keboola.apiary.io/#reference/component-configurations).
 
+## API versions migration
+
+If you need to create a new app for the same service but differing e.g. only in version of the API, you can migrate configurations using built-in helpers.
+ 
+ First add definition to `definition.json`. Its format is:
+ 
+ ``` json
+ {
+   "<originApp>": {
+     "destinations": ["<destApp1>", "<destApp2>"],
+     "migration": "GenericCopy"
+   }
+ }
+ ```
+ 
+ - `<originApp>` - is id of migrated app
+ - `destinations` - is list of destination apps to which the origin may be migrated
+ - `migration` - is name of the class used for migration (without `Migration` suffix)
+ 
+ E.g.
+```json
+{
+  "ex-adwords-v2": {
+    "destinations": ["keboola.ex-adwords-v201705"],
+    "migration": "ExAdWords"
+  }
+}
+```
+
+### GenericCopy Migration
+
+If you just need to copy & paste configuration from origin to destination without any changes, you can use `GenericCopyMigration` class.
+
 ## Database Extractor Migration
 Take all tables from sys.c-ex-db bucket and converts them to JSON based configurations in SAPI.
 Orchestration tasks are also updated to use the new extractors.
