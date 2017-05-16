@@ -3,13 +3,13 @@ app:
   volumes:
     - .:/code
   working_dir: /code
-  entrypoint: bash -c "composer install && sh tests.sh"
+  entrypoint: bash -c "composer install && sh tests.sh $$TESTS_PATH"
   tty: true
   stdin_open: true
   environment:
-    KBC_TOKEN: $KBC_TOKEN
-    GOOGLE_KEY: $GOOGLE_KEY
-    GOOGLE_ACCOUNT_ID: $GOOGLE_ACCOUNT_ID
-    GOOGLE_ACCOUNT_EMAIL: $GOOGLE_ACCOUNT_EMAIL
-    GOOGLE_ACCESS_TOKEN: $GOOGLE_ACCESS_TOKEN
-    GOOGLE_REFRESH_TOKEN: $GOOGLE_REFRESH_TOKEN
+    - KBC_TOKEN
+    - GOOGLE_KEY
+    - GOOGLE_ACCOUNT_ID
+    - GOOGLE_ACCOUNT_EMAIL
+    - GOOGLE_ACCESS_TOKEN
+    - GOOGLE_REFRESH_TOKEN

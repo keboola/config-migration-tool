@@ -28,10 +28,10 @@ class GenericCopyMigration extends VersionMigration
     protected function doExecute(callable $configurationAdjustment = null)
     {
         $createdConfigurations = [];
-        foreach ($this->storageApiService->getConfigurations($this->oldComponentId) as $oldConfig) {
+        foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
                 try {
-                    $configuration = $this->buildConfigurationObject($this->newComponentId, $oldConfig);
+                    $configuration = $this->buildConfigurationObject($this->destinationComponentId, $oldConfig);
                     $this->storageApiService->createConfiguration($configuration);
                     if ($configurationAdjustment) {
                         $configuration = $configurationAdjustment($configuration);
@@ -43,7 +43,7 @@ class GenericCopyMigration extends VersionMigration
                         $configuration->getName()
                     ));
 
-                    $this->orchestratorService->updateOrchestrations($this->oldComponentId, $configuration);
+                    $this->orchestratorService->updateOrchestrations($this->originComponentId, $configuration);
 
                     $this->logger->info(sprintf(
                         "Orchestration task for configuration '%s' has been updated",
@@ -51,26 +51,26 @@ class GenericCopyMigration extends VersionMigration
                     ));
 
                     $createdConfigurations[] = $configuration;
-                    $oldConfiguration = $this->buildConfigurationObject($this->oldComponentId, $oldConfig);
+                    $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions($oldConfiguration, ['migrationStatus' => 'success']);
                 } catch (\Exception $e) {
-                    $oldConfiguration = $this->buildConfigurationObject($this->oldComponentId, $oldConfig);
+                    $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions(
                         $oldConfiguration,
                         ['migrationStatus' => "error: {$e->getMessage()}"]
                     );
-                    $this->storageApiService->deleteConfiguration($this->newComponentId, $oldConfig['id']);
+                    $this->storageApiService->deleteConfiguration($this->destinationComponentId, $oldConfig['id']);
                     if ($e instanceof ClientException || $e instanceof UserException) {
                         throw new UserException($e->getMessage(), 400, $e, [
-                            'oldComponentId' => $this->oldComponentId,
-                            'newComponentId' => $this->newComponentId,
+                            'oldComponentId' => $this->originComponentId,
+                            'newComponentId' => $this->destinationComponentId,
                             'configurationId' => $oldConfig['id']
                         ]);
                     }
 
                     throw new ApplicationException($e->getMessage(), 500, $e, [
-                        'oldComponentId' => $this->oldComponentId,
-                        'newComponentId' => $this->newComponentId,
+                        'oldComponentId' => $this->originComponentId,
+                        'newComponentId' => $this->destinationComponentId,
                         'configurationId' => $oldConfig['id']
                     ]);
                 }
@@ -84,21 +84,21 @@ class GenericCopyMigration extends VersionMigration
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
 
-        $configurations = $sapiService->getConfigurations($this->oldComponentId);
+        $configurations = $sapiService->getConfigurations($this->originComponentId);
         return [
             'configurations' => array_map(
                 function ($item) {
                     return [
                         'configId' => $item['id'],
                         'configName' => $item['name'],
-                        'componentId' => $this->oldComponentId,
+                        'componentId' => $this->originComponentId,
                         'status' => isset($item['configuration']['migrationStatus'])
                             ? $item['configuration']['migrationStatus'] : 'n/a'
                     ];
                 },
                 $configurations
             ),
-            'orchestrations' => $orchestratorService->getOrchestrations($this->oldComponentId, $this->newComponentId)
+            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId)
         ];
     }
 }

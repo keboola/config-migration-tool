@@ -8,8 +8,10 @@
 
 namespace Keboola\ConfigMigrationTool;
 
+use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migration\MigrationInterface;
+use Keboola\ConfigMigrationTool\Migration\VersionMigration;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
@@ -58,7 +60,13 @@ class Application
         if (!in_array($destination, $config[$origin]['destinations'])) {
             throw new UserException("Destination component '$destination' is not supported for origin '$origin'");
         }
-        return $this->getMigrationClass($config[$origin]['migration']);
+        /** @var VersionMigration $migration */
+        $migration = $this->getMigrationClass($config[$origin]['migration']);
+        if (!($migration instanceof VersionMigration)) {
+            $class = get_class($migration);
+            throw new ApplicationException("Migration class ${$class} is not instance of VersionMigration");
+        }
+        return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
     }
 
     private function getLegacyMigration($component)

@@ -15,8 +15,8 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 abstract class VersionMigration implements MigrationInterface
 {
-    protected $oldComponentId;
-    protected $newComponentId;
+    protected $originComponentId;
+    protected $destinationComponentId;
     /** @var Logger  */
     protected $logger;
     /** @var OrchestratorService  */
@@ -27,19 +27,19 @@ abstract class VersionMigration implements MigrationInterface
     public function __construct(Logger $logger)
     {
         $this->logger = $logger;
-        $this->sapiService = new StorageApiService();
+        $this->storageApiService = new StorageApiService();
         $this->orchestratorService = new OrchestratorService($this->logger);
     }
 
-    public function setOldComponentId($id)
+    public function setOriginComponentId($id)
     {
-        $this->oldComponentId = $id;
+        $this->originComponentId = $id;
         return $this;
     }
 
-    public function setNewComponentId($id)
+    public function setDestinationComponentId($id)
     {
-        $this->newComponentId = $id;
+        $this->destinationComponentId = $id;
         return $this;
     }
 
