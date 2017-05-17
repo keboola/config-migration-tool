@@ -15,11 +15,16 @@ class KeboolaExAdWordsMigration extends GenericCopyMigration
     {
         $encryptDeveloperToken = function (Configuration $configuration) {
             $c = $configuration->getConfiguration();
-            if (isset($c['#developerToken'])) {
-                $c['#developerToken'] = $c['developerToken'];
-                unset($c['developerToken']);
-                $configuration->setConfiguration($c);
+            if (isset($c['developer_token'])) {
+                $c['#developerToken'] = $c['developer_token'];
+                unset($c['developer_token']);
+            } elseif (isset($c['#developer_token'])) {
+                $c['#developerToken'] = null;
+                unset($c['#developer_token']);
+            } elseif (isset($c['#developerToken'])) {
+                $c['#developerToken'] = null;
             }
+            $configuration->setConfiguration($c);
             return $configuration;
         };
         return $this->doExecute($encryptDeveloperToken);

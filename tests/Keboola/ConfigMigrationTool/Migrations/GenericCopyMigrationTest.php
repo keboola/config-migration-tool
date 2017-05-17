@@ -66,6 +66,7 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
 
         $originConfig1 = $this->components->getConfiguration($this->originComponentId, $this->configurationId1);
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
+        $this->assertEquals('success', $originConfig1['configuration']['migrationStatus']);
         $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->configurationId1);
         $this->assertNotEmpty($destConfig1);
         unset($originConfig1['configuration']['migrationStatus']);
@@ -73,6 +74,7 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
 
         $originConfig2 = $this->components->getConfiguration($this->originComponentId, $this->configurationId2);
         $this->assertArrayHasKey('migrationStatus', $originConfig2['configuration']);
+        $this->assertEquals('success', $originConfig2['configuration']['migrationStatus']);
         $destConfig2 = $this->components->getConfiguration($this->destinationComponentId, $this->configurationId2);
         $this->assertNotEmpty($destConfig2);
         unset($originConfig2['configuration']['migrationStatus']);
