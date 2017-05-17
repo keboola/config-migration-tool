@@ -9,6 +9,7 @@
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
+use Keboola\StorageApi\HandlerStack;
 use Monolog\Logger;
 
 class ExGoogleAnalyticsService
@@ -26,7 +27,8 @@ class ExGoogleAnalyticsService
             'base_uri' => 'https://syrup.keboola.com/ex-google-analytics/',
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN')
-            ]
+            ],
+            'handler' => HandlerStack::create()
         ]);
     }
 
