@@ -7,7 +7,7 @@ Tool for migrating users configurations in SYS buckets to [Storage API component
 
 If you need to create a new app for the same service but differing e.g. only in version of the API, you can migrate configurations using built-in helpers.
  
- First add definition to `definition.json`. Its format is:
+ Add definition to `definition.json`. Its format is:
  
  ``` json
  {
@@ -35,6 +35,7 @@ If you need to create a new app for the same service but differing e.g. only in 
 ### GenericCopy Migration
 
 If you just need to copy & paste configuration from origin to destination without any changes, you can use `GenericCopyMigration` class.
+
 
 ## Database Extractor Migration
 Take all tables from sys.c-ex-db bucket and converts them to JSON based configurations in SAPI.

@@ -31,8 +31,8 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
         $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN')]);
         $this->components = new Components($this->storageApiClient);
 
-        $this->originComponentId = uniqid();
-        $this->destinationComponentId = uniqid();
+        $this->originComponentId = 'ex-adwords-v2';
+        $this->destinationComponentId = 'keboola.ex-adwords-v201702';
 
         $this->configurationId1 = $this->createTestConfiguration($this->originComponentId);
         $this->configurationId2 = $this->createTestConfiguration($this->originComponentId);
@@ -68,12 +68,14 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
         $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->configurationId1);
         $this->assertNotEmpty($destConfig1);
+        unset($originConfig1['configuration']['migrationStatus']);
         $this->assertEquals($originConfig1['configuration'], $destConfig1['configuration']);
 
         $originConfig2 = $this->components->getConfiguration($this->originComponentId, $this->configurationId2);
         $this->assertArrayHasKey('migrationStatus', $originConfig2['configuration']);
         $destConfig2 = $this->components->getConfiguration($this->destinationComponentId, $this->configurationId2);
         $this->assertNotEmpty($destConfig2);
+        unset($originConfig2['configuration']['migrationStatus']);
         $this->assertEquals($originConfig2['configuration'], $destConfig2['configuration']);
     }
 

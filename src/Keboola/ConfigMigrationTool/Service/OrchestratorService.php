@@ -118,6 +118,7 @@ class OrchestratorService
     public function request($method, $uri, $options = [])
     {
         $response = $this->client->request($method, $uri, $options);
-        return \GuzzleHttp\json_decode($response->getBody(), true);
+        $body = (string)$response->getBody();
+        return $body ? \GuzzleHttp\json_decode($body, true) : null;
     }
 }
