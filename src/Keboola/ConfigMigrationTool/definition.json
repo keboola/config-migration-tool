@@ -2,5 +2,9 @@
   "ex-adwords-v2": {
     "destinations": ["keboola.ex-adwords-v201705"],
     "migration": "KeboolaExAdWords"
+  },
+  "keboola.ex-adwords-v201702": {
+    "destinations": ["keboola.ex-adwords-v201705"],
+    "migration": "KeboolaExAdWords"
   }
 }
