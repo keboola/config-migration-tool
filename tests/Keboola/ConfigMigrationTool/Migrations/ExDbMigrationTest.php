@@ -7,7 +7,7 @@
  * Time: 11:10
  */
 
-namespace Keboola\ConfigMigrationTool\Test;
+namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Migration\ExDbMigration;
 use Keboola\ConfigMigrationTool\Service\ExDbService;
@@ -33,6 +33,9 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
 
     public function testExecute()
     {
+        if (!$this->sapiClient->bucketExists('sys.c-ex-db')) {
+            $this->sapiClient->createBucket('ex-db', 'sys');
+        }
         $tables = $this->sapiClient->listTables('sys.c-ex-db');
         foreach ($tables as $table) {
             $this->sapiClient->dropTable($table['id']);

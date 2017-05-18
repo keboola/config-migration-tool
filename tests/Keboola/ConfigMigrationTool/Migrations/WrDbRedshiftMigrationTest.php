@@ -6,7 +6,7 @@
  * Time: 14:15
  */
 
-namespace Keboola\ConfigMigrationTool\Test;
+namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 class WrDbRedshiftMigrationTest extends WrDbMysqlMigrationTest
 {

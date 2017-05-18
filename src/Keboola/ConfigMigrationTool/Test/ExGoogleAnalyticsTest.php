@@ -60,7 +60,7 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
         $sapiClient->setTableAttribute($tableId, 'refreshToken', getenv('GOOGLE_REFRESH_TOKEN'));
 
         $queries = $this->createQueriesConfig();
-        if (rand(0,9) >= 5) {
+        if (rand(0, 9) >= 5) {
             $queriesArr = json_decode($queries, true);
             $queriesArr['Users']['profile'] = 69127714;
             $queries = json_encode($queriesArr);
@@ -82,7 +82,7 @@ class ExGoogleAnalyticsTest extends \PHPUnit_Framework_TestCase
     protected function createOldConfigs()
     {
         $testTables = [];
-        for ($i=0;$i<5;$i++) {
+        for ($i=0; $i<5; $i++) {
             $testTables[] = $this->createOldConfig();
         }
 

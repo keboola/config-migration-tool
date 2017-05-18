@@ -4,7 +4,8 @@ use Keboola\ConfigMigrationTool\Application;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Monolog\Logger;
-use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 require_once(dirname(__FILE__) . "/bootstrap.php");
 
@@ -18,7 +19,15 @@ try {
     if (!isset($arguments["data"])) {
         throw new UserException('Data folder not set.');
     }
-    $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
+    $dataDirectory = $arguments["data"];
+
+    $configFile = "$dataDirectory/config.json";
+    if (!file_exists($configFile)) {
+        throw new \Exception("Config file not found at path $configFile");
+    }
+    $jsonDecode = new JsonDecode(true);
+    $config = $jsonDecode->decode(file_get_contents($configFile), JsonEncoder::FORMAT);
+
     $app = new Application($logger);
 
     if (isset($config['action']) && $config['action'] != 'run') {
@@ -26,13 +35,13 @@ try {
     } else {
         $app->run($config);
     }
-} catch(UserException $e) {
+} catch (UserException $e) {
     $logger->log('error', $e->getMessage(), (array) $e->getData());
     exit(1);
-} catch(ApplicationException $e) {
+} catch (ApplicationException $e) {
     $logger->log('error', $e->getMessage(), (array) $e->getData());
     exit($e->getCode() > 1 ? $e->getCode(): 2);
-} catch(\Exception $e) {
+} catch (\Exception $e) {
     $logger->log('error', $e->getMessage(), [
         'errFile' => $e->getFile(),
         'errLine' => $e->getLine(),

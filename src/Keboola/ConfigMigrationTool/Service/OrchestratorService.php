@@ -9,6 +9,7 @@
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
+use Keboola\StorageApi\HandlerStack;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
 
@@ -25,7 +26,8 @@ class OrchestratorService
             'base_uri' => 'https://syrup.keboola.com/orchestrator/',
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN')
-            ]
+            ],
+            'handler' => HandlerStack::create()
         ]);
     }
 
@@ -118,6 +120,7 @@ class OrchestratorService
     public function request($method, $uri, $options = [])
     {
         $response = $this->client->request($method, $uri, $options);
-        return \GuzzleHttp\json_decode($response->getBody(),true);
+        $body = (string)$response->getBody();
+        return $body ? \GuzzleHttp\json_decode($body, true) : null;
     }
 }

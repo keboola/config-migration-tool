@@ -8,7 +8,6 @@
 
 namespace Keboola\ConfigMigrationTool\Test\Service;
 
-
 use Keboola\ConfigMigrationTool\Service\WrDbService;
 use Keboola\ConfigMigrationTool\Test\WrDbTest;
 use Monolog\Logger;
@@ -28,7 +27,7 @@ class WrDbServiceTest extends WrDbTest
     {
         $this->createOldConfig();
         $configs = $this->service->getConfigs();
-        $testConfigs = array_filter($configs, function($item) {
+        $testConfigs = array_filter($configs, function ($item) {
             return ($item['id'] == 'migration');
         });
         $testConfig = array_shift($testConfigs);

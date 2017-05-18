@@ -5,12 +5,16 @@
     "keboola/csv": "^1.1",
     "monolog/monolog": "^1.17",
     "symfony/config": "^3.0",
-    "symfony/yaml": "^3.0",
     "keboola/storage-api-client": "^4.8",
-    "keboola/orchestrator-php-client": "^1.2"
+    "keboola/orchestrator-php-client": "^1.2",
+    "symfony/serializer": "^3.2",
+    "guzzlehttp/guzzle": "^6.2"
   },
   "require-dev": {
-    "phpunit/phpunit": "4.6.*"
+    "phpunit/phpunit": "4.6.*",
+    "squizlabs/php_codesniffer": "^2.8",
+    "phpstan/phpstan": "^0.6.4",
+    "phpstan/phpstan-guzzle": "^0.6.3"
   },
   "authors": [
     {
@@ -20,7 +24,8 @@
   ],
   "autoload": {
     "psr-4": {
-      "Keboola\\": "src/Keboola/"
+      "Keboola\\ConfigMigrationTool\\": "src/Keboola/ConfigMigrationTool/",
+      "Keboola\\ConfigMigrationTool\\Test\\": "tests/Keboola/ConfigMigrationTool/"
     }
   }
 }

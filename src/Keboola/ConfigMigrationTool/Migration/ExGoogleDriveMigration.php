@@ -43,7 +43,6 @@ class ExGoogleDriveMigration implements MigrationInterface
         foreach ($tables as $table) {
             $attributes = TableHelper::formatAttributes($table['attributes']);
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] != 'success') {
-
                 if (!isset($attributes['email']) || !isset($attributes['accessToken']) || !isset($attributes['refreshToken'])) {
                     $sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'skipped: not authorized');
                     continue;

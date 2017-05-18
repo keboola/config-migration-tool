@@ -4,7 +4,7 @@
  * @author Jakub Matejka <jakub@keboola.com>
  */
 
-namespace Keboola\ConfigMigrationTool\Test;
+namespace Keboola\ConfigMigrationTool\Test\Configurator;
 
 use Keboola\ConfigMigrationTool\Configurator\ExGoodDataConfigurator;
 use Keboola\ConfigMigrationTool\Exception\UserException;

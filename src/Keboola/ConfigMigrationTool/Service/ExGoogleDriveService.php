@@ -9,6 +9,7 @@
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
+use Keboola\StorageApi\HandlerStack;
 use Monolog\Logger;
 
 class ExGoogleDriveService
@@ -26,7 +27,8 @@ class ExGoogleDriveService
             'base_uri' => 'https://syrup.keboola.com/ex-google-drive/',
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN')
-            ]
+            ],
+            'handler' => HandlerStack::create()
         ]);
     }
 
@@ -59,6 +61,6 @@ class ExGoogleDriveService
     public function request($method, $uri, $options = [])
     {
         $response = $this->client->request($method, $uri, $options);
-        return \GuzzleHttp\json_decode($response->getBody(),true);
+        return \GuzzleHttp\json_decode($response->getBody(), true);
     }
 }

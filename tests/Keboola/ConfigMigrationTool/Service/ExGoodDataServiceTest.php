@@ -18,7 +18,7 @@ class ExGoodDataServiceTest extends ExGoodDataTest
     public function setUp()
     {
         parent::setUp();
-        $this->service = new ExGoodDataService(new Logger(APP_NAME));
+        $this->service = new ExGoodDataService();
     }
 
     public function testGetConfigs()
@@ -26,7 +26,7 @@ class ExGoodDataServiceTest extends ExGoodDataTest
         $oldConfigIds = $this->createOldConfigs();
         $configs = $this->service->getConfigs();
 
-        $testConfigs = array_filter($configs, function($item) {
+        $testConfigs = array_filter($configs, function ($item) {
             return (false !== strstr($item['id'], 'migrationtest'));
         });
 

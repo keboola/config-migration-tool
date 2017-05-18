@@ -9,6 +9,7 @@
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
+use Keboola\StorageApi\HandlerStack;
 
 class OAuthService
 {
@@ -20,7 +21,8 @@ class OAuthService
             'base_uri' => 'https://syrup.keboola.com/oauth-v2/',
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN'),
-            ]
+            ],
+            'handler' => HandlerStack::create()
         ]);
     }
 

@@ -30,7 +30,7 @@ class ExGooddataMigration implements MigrationInterface
         $this->sapiService = new StorageApiService();
         $this->orchestratorService = new OrchestratorService($this->logger);
         $this->configurator = new ExGoodDataConfigurator();
-        $this->service = new ExGoodDataService($this->logger);
+        $this->service = new ExGoodDataService();
     }
 
     public function setService(ExGoodDataService $service)

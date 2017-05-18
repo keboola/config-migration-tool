@@ -73,7 +73,7 @@ class ExGoogleDriveTest extends \PHPUnit_Framework_TestCase
     protected function createOldConfigs()
     {
         $testTables = [];
-        for ($i=0;$i<5;$i++) {
+        for ($i=0; $i<5; $i++) {
             $testTables[] = $this->createOldConfig();
         }
 

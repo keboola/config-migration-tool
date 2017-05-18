@@ -5,9 +5,7 @@
  * Date: 09/01/17
  * Time: 15:59
  */
-
 namespace Keboola\ConfigMigrationTool\Migration;
-
 
 use Keboola\ConfigMigrationTool\Configurator\WrDbConfigurator;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
@@ -101,7 +99,7 @@ class WrDbMigration
         $buckets = $sapiService->getConfigurationBuckets($oldComponentId);
         return [
             'configurations' => array_map(
-                function ($item) use ($oldComponentId, $newComponentId) {
+                function ($item) use ($oldComponentId) {
                     $attributes = TableHelper::formatAttributes($item['attributes']);
                     return [
                         'configId' => $attributes['writerId'],

@@ -9,6 +9,7 @@
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
+use Keboola\StorageApi\HandlerStack;
 use Monolog\Logger;
 
 class WrDbService
@@ -24,7 +25,8 @@ class WrDbService
             'base_uri' => sprintf('https://syrup.keboola.com/wr-db/%s/', $driver),
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN')
-            ]
+            ],
+            'handler' => HandlerStack::create()
         ]);
     }
 
@@ -51,6 +53,6 @@ class WrDbService
     public function request($method, $uri, $options = [])
     {
         $response = $this->client->request($method, $uri, $options);
-        return \GuzzleHttp\json_decode($response->getBody(),true);
+        return \GuzzleHttp\json_decode($response->getBody(), true);
     }
 }

@@ -27,7 +27,7 @@ class ExGoogleAnalyticsServiceTest extends ExGoogleAnalyticsTest
         $oldConfigIds = $this->createOldConfigs();
         $configs = $this->service->getConfigs();
 
-        $testConfigs = array_filter($configs, function($item) {
+        $testConfigs = array_filter($configs, function ($item) {
             return (false !== strstr($item['id'], 'migrationtest'));
         });
 
