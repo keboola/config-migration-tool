@@ -33,11 +33,29 @@ class Application
     public function action($config)
     {
         $action = $config['action'];
+        if ($action == 'supported-migrations') {
+            return $this->getSupportedMigrations();
+        }
         $migration = $this->getMigration($config);
         if (!method_exists($migration, $action)) {
             throw new UserException("Action '$action' does not exist");
         }
         return $migration->$action();
+    }
+
+    public function getSupportedMigrations()
+    {
+        $result = [];
+        foreach ($this->getDefinition() as $k => $v) {
+            $result[$k] = $v['destinations'];
+        }
+        return $result;
+    }
+
+    public function getDefinition()
+    {
+        $jsonDecode = new JsonDecode(true);
+        return $jsonDecode->decode(file_get_contents(__DIR__ . '/definition.json'), JsonEncoder::FORMAT);
     }
 
     public function getMigration($config)
@@ -52,8 +70,7 @@ class Application
 
     private function getVersionMigration($origin, $destination)
     {
-        $jsonDecode = new JsonDecode(true);
-        $config = $jsonDecode->decode(file_get_contents(__DIR__ . '/definition.json'), JsonEncoder::FORMAT);
+        $config = $this->getDefinition();
         if (!isset($config[$origin])) {
             throw new UserException("Origin component '$origin' is not supported");
         }

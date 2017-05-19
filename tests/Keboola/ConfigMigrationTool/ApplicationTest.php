@@ -58,4 +58,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         } catch (UserException $e) {
         }
     }
+
+    public function testApplicationGetSupportedMigrations()
+    {
+        $res = $this->application->action(['action' => 'supported-migrations']);
+        $this->assertArrayHasKey('ex-adwords-v2', $res);
+        $this->assertCount(1, $res['ex-adwords-v2']);
+        $this->assertContains('keboola.ex-adwords-v201705', $res['ex-adwords-v2']);
+    }
 }
