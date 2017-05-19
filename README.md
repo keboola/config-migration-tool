@@ -3,7 +3,7 @@
 
 Tool for migrating users configurations in SYS buckets to [Storage API components configuration](http://docs.keboola.apiary.io/#reference/component-configurations).
 
-## API versions migration
+## Migration between docker apps
 
 If you need to create a new app for the same service but differing e.g. only in version of the API, you can migrate configurations using built-in helpers.
  
@@ -29,6 +29,28 @@ If you need to create a new app for the same service but differing e.g. only in 
     "destinations": ["keboola.ex-adwords-v201705"],
     "migration": "ExAdWords"
   }
+}
+```
+
+### List of supported migrations
+
+Can be obtained using this call:
+```bash
+curl -X "POST" "https://docker-runner.keboola.com/docker/keboola.config-migration-tool/action/supported-migrations" \
+     -H "x-storageapi-token: TOKEN" \
+     -H "Content-Type: text/plain; charset=utf-8" \
+     -d $'{ "configData": { "parameters": {} } }'
+```
+
+Returns list like:
+```json
+{
+  "ex-adwords-v2": [
+    "keboola.ex-adwords-v201705"
+  ],
+  "keboola.ex-adwords-v201702": [
+    "keboola.ex-adwords-v201705"
+  ]
 }
 ```
 
