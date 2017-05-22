@@ -18,7 +18,7 @@ class ExGoogleDriveConfigurator
         $configuration->setComponentId($this->getComponentId());
         $configuration->setConfigurationId($account['id']);
         $configuration->setName($account['accountNamePretty']);
-        $configuration->setDescription($account['description']);
+        $configuration->setDescription(empty($account['description']) ? '' : $account['description']);
 
         return $configuration;
     }
