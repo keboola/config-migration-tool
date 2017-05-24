@@ -5,3 +5,4 @@ composer.phar
 runtests.sh
 run.sh
 fix.php
+.DS_Store
