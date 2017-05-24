@@ -75,10 +75,6 @@ class ExGoogleDriveConfigurator
                 'enabled' => true
             ];
 
-            if (isset($sheetCfg['header']['sanitize'])) {
-                $newSheet['header']['sanitize'] = boolval($sheetCfg['header']['sanitize']);
-            }
-
             $configuration['parameters']['sheets'][] = $newSheet;
 
             if (isset($sheetCfg['header']) || isset($sheetCfg['transformation']['transpose'])) {
