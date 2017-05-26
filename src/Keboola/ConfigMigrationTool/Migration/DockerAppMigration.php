@@ -13,7 +13,7 @@ use Monolog\Logger;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 
-abstract class VersionMigration implements MigrationInterface
+abstract class DockerAppMigration implements MigrationInterface
 {
     protected $originComponentId;
     protected $destinationComponentId;
@@ -51,6 +51,7 @@ abstract class VersionMigration implements MigrationInterface
         $configuration->setName($config['name']);
         $configuration->setDescription($config['description']);
         $configuration->setConfiguration($config['configuration']);
+        
         return $configuration;
     }
 

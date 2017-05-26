@@ -10,6 +10,7 @@ use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Monolog\Logger;
 
 class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
@@ -50,6 +51,14 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
         $c->setConfiguration(['a' => uniqid(), 'b' => uniqid(), 'c' => uniqid()]);
         $this->components->addConfiguration($c);
 
+        $row = new ConfigurationRow($c);
+        $row->setRowId(uniqid())->setConfiguration(['x' => uniqid(), 'y' => uniqid()]);
+        $this->components->addConfigurationRow($row);
+
+        $row = new ConfigurationRow($c);
+        $row->setRowId(uniqid())->setConfiguration(['x' => uniqid(), 'y' => uniqid()]);
+        $this->components->addConfigurationRow($row);
+
         return $id;
     }
 
@@ -65,20 +74,27 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(2, $createdConfigurations);
 
         $originConfig1 = $this->components->getConfiguration($this->originComponentId, $this->configurationId1);
-        $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
-        $this->assertEquals('success', $originConfig1['configuration']['migrationStatus']);
         $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->configurationId1);
-        $this->assertNotEmpty($destConfig1);
-        unset($originConfig1['configuration']['migrationStatus']);
-        $this->assertEquals($originConfig1['configuration'], $destConfig1['configuration']);
+        $this->runConfigurationTest($originConfig1, $destConfig1);
 
         $originConfig2 = $this->components->getConfiguration($this->originComponentId, $this->configurationId2);
-        $this->assertArrayHasKey('migrationStatus', $originConfig2['configuration']);
-        $this->assertEquals('success', $originConfig2['configuration']['migrationStatus']);
         $destConfig2 = $this->components->getConfiguration($this->destinationComponentId, $this->configurationId2);
-        $this->assertNotEmpty($destConfig2);
-        unset($originConfig2['configuration']['migrationStatus']);
-        $this->assertEquals($originConfig2['configuration'], $destConfig2['configuration']);
+        $this->runConfigurationTest($originConfig2, $destConfig2);
+    }
+
+    protected function runConfigurationTest($originConfig, $destConfig)
+    {
+        $this->assertArrayHasKey('migrationStatus', $originConfig['configuration']);
+        $this->assertEquals('success', $originConfig['configuration']['migrationStatus']);
+        $this->assertNotEmpty($destConfig);
+        unset($originConfig['configuration']['migrationStatus']);
+        $this->assertEquals($originConfig['configuration'], $destConfig['configuration']);
+        $this->assertCount(2, $originConfig['rows']);
+        $this->assertCount(2, $destConfig['rows']);
+        foreach ($originConfig['rows'] as $i => $r) {
+            $this->assertEquals($r['id'], $destConfig['rows'][$i]['id']);
+            $this->assertEquals($r['configuration'], $destConfig['rows'][$i]['configuration']);
+        }
     }
 
     public function tearDown()

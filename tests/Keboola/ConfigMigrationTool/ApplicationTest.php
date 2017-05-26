@@ -42,21 +42,15 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         ]]);
         $this->assertInstanceOf(GenericCopyMigration::class, $result);
 
-        try {
-            $this->application->getMigration(['parameters' => [
-                'origin' => 'ex-adwords-v2x', 'destination' => 'keboola.ex-adwords-v201705'
-            ]]);
-            $this->fail();
-        } catch (UserException $e) {
-        }
+        $this->application->getMigration(['parameters' => [
+            'origin' => 'ex-adwords-v2x', 'destination' => 'keboola.ex-adwords-v201705'
+        ]]);
+        $this->assertInstanceOf(GenericCopyMigration::class, $result);
 
-        try {
-            $this->application->getMigration(['parameters' => [
-                'origin' => 'ex-adwords-v2', 'destination' => 'keboola.ex-adwords-v201705x'
-            ]]);
-            $this->fail();
-        } catch (UserException $e) {
-        }
+        $this->application->getMigration(['parameters' => [
+            'origin' => 'ex-adwords-v2', 'destination' => 'keboola.ex-adwords-v201705x'
+        ]]);
+        $this->assertInstanceOf(GenericCopyMigration::class, $result);
     }
 
     public function testApplicationGetSupportedMigrations()

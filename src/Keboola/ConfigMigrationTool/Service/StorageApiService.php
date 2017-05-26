@@ -11,6 +11,7 @@ namespace Keboola\ConfigMigrationTool\Service;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ConfigurationRow;
 
 class StorageApiService
 {
@@ -68,6 +69,14 @@ class StorageApiService
     public function createConfiguration(Configuration $configuration)
     {
         return $this->components->addConfiguration($configuration);
+    }
+
+    public function addConfigurationRow(Configuration $configuration, $id, array $rowConfiguration)
+    {
+        $row = new ConfigurationRow($configuration);
+        $row->setRowId($id)
+            ->setConfiguration($rowConfiguration);
+        return $this->components->addConfigurationRow($row);
     }
 
     public function encryptConfiguration(Configuration $configuration)

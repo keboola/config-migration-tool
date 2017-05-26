@@ -11,7 +11,7 @@ use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\ClientException;
 
-class GenericCopyMigration extends VersionMigration
+class GenericCopyMigration extends DockerAppMigration
 {
 
     public function execute()
@@ -37,6 +37,12 @@ class GenericCopyMigration extends VersionMigration
                         $configuration = $configurationAdjustment($configuration);
                     }
                     $this->storageApiService->encryptConfiguration($configuration);
+
+                    if (!empty($oldConfig['rows'])) {
+                        foreach ($oldConfig['rows'] as $r) {
+                            $this->storageApiService->addConfigurationRow($configuration, $r['id'], $r['configuration']);
+                        }
+                    }
 
                     $this->logger->info(sprintf(
                         "Configuration '%s' has been migrated",

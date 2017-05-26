@@ -6,8 +6,8 @@ Tool for migrating users configurations in SYS buckets to [Storage API component
 ## Migration between docker apps
 
 If you need to create a new app for the same service but differing e.g. only in version of the API, you can migrate configurations using built-in helpers.
- 
- Add definition to `definition.json`. Its format is:
+
+Add definition to `definition.json`. Its format is:
  
  ``` json
  {
@@ -31,6 +31,8 @@ If you need to create a new app for the same service but differing e.g. only in 
   }
 }
 ```
+
+If there is no explicit definition of origin and destination, Generic Copy migration will be used.
 
 ### List of supported migrations
 

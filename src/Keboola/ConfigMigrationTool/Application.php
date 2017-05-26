@@ -10,8 +10,9 @@ namespace Keboola\ConfigMigrationTool;
 
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
+use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
 use Keboola\ConfigMigrationTool\Migration\MigrationInterface;
-use Keboola\ConfigMigrationTool\Migration\VersionMigration;
+use Keboola\ConfigMigrationTool\Migration\DockerAppMigration;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
@@ -63,25 +64,25 @@ class Application
         if (isset($config['parameters']['component'])) {
             return $this->getLegacyMigration($config['parameters']['component']);
         } elseif (isset($config['parameters']['origin']) && isset($config['parameters']['destination'])) {
-            return $this->getVersionMigration($config['parameters']['origin'], $config['parameters']['destination']);
+            return $this->getDockerAppMigration($config['parameters']['origin'], $config['parameters']['destination']);
         }
         throw new UserException("Missing parameters 'origin' and 'destination' or 'component'");
     }
 
-    private function getVersionMigration($origin, $destination)
+    private function getDockerAppMigration($origin, $destination)
     {
         $config = $this->getDefinition();
         if (!isset($config[$origin])) {
-            throw new UserException("Origin component '$origin' is not supported");
-        }
-        if (!in_array($destination, $config[$origin]['destinations'])) {
-            throw new UserException("Destination component '$destination' is not supported for origin '$origin'");
-        }
-        /** @var VersionMigration $migration */
-        $migration = $this->getMigrationClass($config[$origin]['migration']);
-        if (!($migration instanceof VersionMigration)) {
-            $class = get_class($migration);
-            throw new ApplicationException("Migration class ${$class} is not instance of VersionMigration");
+            $migration = new GenericCopyMigration($this->logger);
+        } elseif (!in_array($destination, $config[$origin]['destinations'])) {
+            $migration = new GenericCopyMigration($this->logger);
+        } else {
+            /** @var DockerAppMigration $migration */
+            $migration = $this->getMigrationClass($config[$origin]['migration']);
+            if (!($migration instanceof DockerAppMigration)) {
+                $class = get_class($migration);
+                throw new ApplicationException("Migration class ${$class} is not instance of VersionMigration");
+            }
         }
         return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
     }
