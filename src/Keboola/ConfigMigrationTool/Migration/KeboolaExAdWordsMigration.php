@@ -19,15 +19,9 @@ class KeboolaExAdWordsMigration extends GenericCopyMigration
                 $c['parameters']['customerId'] = $c['parameters']['customer_id'];
                 unset($c['parameters']['customer_id']);
             }
-            if (isset($c['parameters']['developer_token'])) {
-                $c['parameters']['#developerToken'] = $c['parameters']['developer_token'];
-                unset($c['parameters']['developer_token']);
-            } elseif (isset($c['parameters']['#developer_token'])) {
-                $c['parameters']['#developerToken'] = null;
-                unset($c['parameters']['#developer_token']);
-            } elseif (isset($c['parameters']['#developerToken'])) {
-                $c['parameters']['#developerToken'] = null;
-            }
+            $c['parameters']['#developerToken'] = null;
+            unset($c['parameters']['developer_token']);
+            unset($c['parameters']['#developer_token']);
             unset($c['parameters']['bucket']);
             $configuration->setConfiguration($c);
             return $configuration;
