@@ -13,7 +13,7 @@ class KeboolaExAdWordsMigration extends GenericCopyMigration
 {
     public function execute()
     {
-        $encryptDeveloperToken = function (Configuration $configuration) {
+        $migrationHook = function (Configuration $configuration) {
             $c = $configuration->getConfiguration();
             if (isset($c['customer_id'])) {
                 $c['customerId'] = $c['customer_id'];
@@ -28,9 +28,10 @@ class KeboolaExAdWordsMigration extends GenericCopyMigration
             } elseif (isset($c['#developerToken'])) {
                 $c['#developerToken'] = null;
             }
+            unset($c['bucket']);
             $configuration->setConfiguration($c);
             return $configuration;
         };
-        return $this->doExecute($encryptDeveloperToken);
+        return $this->doExecute($migrationHook);
     }
 }
