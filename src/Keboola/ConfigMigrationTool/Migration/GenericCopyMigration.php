@@ -20,12 +20,12 @@ class GenericCopyMigration extends DockerAppMigration
     }
 
     /**
-     * @param callable|null $configurationAdjustment Optional callback to adjust configuration object before saving
+     * @param callable|null $migrationHook Optional callback to adjust configuration object before saving
      * @return array
      * @throws ApplicationException
      * @throws UserException
      */
-    protected function doExecute(callable $configurationAdjustment = null)
+    protected function doExecute(callable $migrationHook = null)
     {
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
@@ -33,8 +33,8 @@ class GenericCopyMigration extends DockerAppMigration
                 try {
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $oldConfig);
                     $this->storageApiService->createConfiguration($configuration);
-                    if ($configurationAdjustment) {
-                        $configuration = $configurationAdjustment($configuration);
+                    if ($migrationHook) {
+                        $configuration = $migrationHook($configuration);
                     }
                     $this->storageApiService->encryptConfiguration($configuration);
 

@@ -15,20 +15,20 @@ class KeboolaExAdWordsMigration extends GenericCopyMigration
     {
         $migrationHook = function (Configuration $configuration) {
             $c = $configuration->getConfiguration();
-            if (isset($c['customer_id'])) {
-                $c['customerId'] = $c['customer_id'];
-                unset($c['customer_id']);
+            if (isset($c['parameters']['customer_id'])) {
+                $c['parameters']['customerId'] = $c['parameters']['customer_id'];
+                unset($c['parameters']['customer_id']);
             }
-            if (isset($c['developer_token'])) {
-                $c['#developerToken'] = $c['developer_token'];
-                unset($c['developer_token']);
-            } elseif (isset($c['#developer_token'])) {
-                $c['#developerToken'] = null;
-                unset($c['#developer_token']);
-            } elseif (isset($c['#developerToken'])) {
-                $c['#developerToken'] = null;
+            if (isset($c['parameters']['developer_token'])) {
+                $c['parameters']['#developerToken'] = $c['parameters']['developer_token'];
+                unset($c['parameters']['developer_token']);
+            } elseif (isset($c['parameters']['#developer_token'])) {
+                $c['parameters']['#developerToken'] = null;
+                unset($c['parameters']['#developer_token']);
+            } elseif (isset($c['parameters']['#developerToken'])) {
+                $c['parameters']['#developerToken'] = null;
             }
-            unset($c['bucket']);
+            unset($c['parameters']['bucket']);
             $configuration->setConfiguration($c);
             return $configuration;
         };
