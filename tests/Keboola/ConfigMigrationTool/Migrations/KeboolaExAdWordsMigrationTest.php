@@ -39,8 +39,9 @@ class KeboolaExAdWordsMigrationTest extends \PHPUnit_Framework_TestCase
         $c->setConfigurationId($this->configurationId);
         $c->setName($this->configurationId);
         $c->setDescription('Migrate this account');
-        $c->setConfiguration(['a' => uniqid(), 'developer_token' => 'dT', 'c' => uniqid(), 'customer_id' => 'cId',
-            'bucket' => 'b']);
+        $c->setConfiguration(['parameters' =>
+            ['a' => uniqid(), 'developer_token' => 'dT', 'c' => uniqid(), 'customer_id' => 'cId', 'bucket' => 'b']
+        ]);
         $this->components->addConfiguration($c);
     }
 
@@ -61,13 +62,16 @@ class KeboolaExAdWordsMigrationTest extends \PHPUnit_Framework_TestCase
         $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->configurationId);
         $this->assertNotEmpty($destConfig1);
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
-        $this->assertArrayNotHasKey('developer_token', $destConfig1['configuration']);
-        $this->assertArrayHasKey('#developerToken', $destConfig1['configuration']);
-        $this->assertStringStartsWith('KBC::ComponentProjectEncrypted', $destConfig1['configuration']['#developerToken']);
-        $this->assertArrayNotHasKey('bucket', $destConfig1['configuration']);
-        $this->assertArrayNotHasKey('customer_id', $destConfig1['configuration']);
-        $this->assertArrayHasKey('customerId', $destConfig1['configuration']);
-        $this->assertEquals('cId', $destConfig1['configuration']['customerId']);
+        $this->assertArrayNotHasKey('developer_token', $destConfig1['configuration']['parameters']);
+        $this->assertArrayHasKey('#developerToken', $destConfig1['configuration']['parameters']);
+        $this->assertStringStartsWith(
+            'KBC::ComponentProjectEncrypted',
+            $destConfig1['configuration']['parameters']['#developerToken']
+        );
+        $this->assertArrayNotHasKey('bucket', $destConfig1['configuration']['parameters']);
+        $this->assertArrayNotHasKey('customer_id', $destConfig1['configuration']['parameters']);
+        $this->assertArrayHasKey('customerId', $destConfig1['configuration']['parameters']);
+        $this->assertEquals('cId', $destConfig1['configuration']['parameters']['customerId']);
     }
 
     public function tearDown()
