@@ -19,10 +19,10 @@ class KeboolaExAdWordsMigration extends GenericCopyMigration
                 $c['parameters']['customerId'] = $c['parameters']['customer_id'];
                 unset($c['parameters']['customer_id']);
             }
-            $c['parameters']['#developerToken'] = null;
+            unset($c['parameters']['#developerToken']);
             unset($c['parameters']['developer_token']);
             unset($c['parameters']['#developer_token']);
-            unset($c['parameters']['bucket']);
+
             $configuration->setConfiguration($c);
             return $configuration;
         };
