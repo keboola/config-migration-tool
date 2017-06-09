@@ -63,12 +63,8 @@ class KeboolaExAdWordsMigrationTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEmpty($destConfig1);
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
         $this->assertArrayNotHasKey('developer_token', $destConfig1['configuration']['parameters']);
-        $this->assertArrayHasKey('#developerToken', $destConfig1['configuration']['parameters']);
-        $this->assertStringStartsWith(
-            'KBC::ComponentProjectEncrypted',
-            $destConfig1['configuration']['parameters']['#developerToken']
-        );
-        $this->assertArrayNotHasKey('bucket', $destConfig1['configuration']['parameters']);
+        $this->assertArrayNotHasKey('#developerToken', $destConfig1['configuration']['parameters']);
+        $this->assertArrayHasKey('bucket', $destConfig1['configuration']['parameters']);
         $this->assertArrayNotHasKey('customer_id', $destConfig1['configuration']['parameters']);
         $this->assertArrayHasKey('customerId', $destConfig1['configuration']['parameters']);
         $this->assertEquals('cId', $destConfig1['configuration']['parameters']['customerId']);
