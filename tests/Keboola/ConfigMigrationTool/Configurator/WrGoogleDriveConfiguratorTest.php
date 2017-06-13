@@ -70,14 +70,6 @@ class WrGoogleDriveConfiguratorTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('tableId', $table);
         $this->assertArrayHasKey('convert', $table);
 
-        $column = $table['items'][0];
-        $this->assertArrayHasKey('name', $column);
-        $this->assertArrayHasKey('dbName', $column);
-        $this->assertArrayHasKey('type', $column);
-        $this->assertArrayHasKey('size', $column);
-        $this->assertArrayHasKey('nullable', $column);
-        $this->assertArrayHasKey('default', $column);
-
         $this->assertArrayHasKey('storage', $result);
         $this->assertArrayHasKey('input', $result['storage']);
         $this->assertArrayHasKey('tables', $result['storage']['input']);

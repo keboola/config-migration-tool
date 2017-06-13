@@ -7,49 +7,51 @@
 namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Configurator\WrGoogleDriveConfigurator;
+use Keboola\ConfigMigrationTool\Exception\ApplicationException;
+use Keboola\ConfigMigrationTool\Exception\UserException;
+use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
+use Keboola\ConfigMigrationTool\Service\WrGoogleDriveService;
+use Keboola\StorageApi\ClientException;
 use Monolog\Logger;
 
 class WrGoogleDriveMigration
 {
     private $logger;
 
-    private $driver;
-
-    public function __construct(Logger $logger, $driver = 'mysql')
+    public function __construct(Logger $logger)
     {
         $this->logger = $logger;
-        $this->driver = $driver;
     }
 
     public function execute()
     {
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
-        $driveConfigurator = new WrGoogleDriveConfigurator($this->driver);
-        $wrDbService = new WrDbService($this->driver, $this->logger);
+        $driveConfigurator = new WrGoogleDriveConfigurator();
+        $googleDriveService = new WrGoogleDriveService($this->logger);
 
-        $oldDbConfigs = $wrDbService->getConfigs();
+        $oldDbConfigs = $googleDriveService->getConfigs();
 
         $createdConfigurations = [];
         foreach ($oldDbConfigs as $oldConfig) {
-            $sysBucketId = sprintf('sys.c-wr-db-%s-%s', $this->driver, $oldConfig['id']);
+            $sysBucketId = 'sys.c-wr-google-drive';
             $sysBucket = $sapiService->getClient()->getBucket($sysBucketId);
             $attributes = TableHelper::formatAttributes($sysBucket['attributes']);
 
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] !== 'success') {
                 try {
-                    $credentials = $wrDbService->getCredentials($oldConfig['id']);
-                    $configTables = $wrDbService->getConfigTables($oldConfig['id']);
+                    $account = $googleDriveService->getAccount($oldConfig['id']);
                     $componentCfg = $sapiService->getConfiguration(
-                        sprintf('wr-db-%s', $this->driver),
-                        $attributes['writerId']
+                        'wr-google-drive',
+                        $attributes['id']
                     );
+                    $account['accountNamePretty'] = $componentCfg['name'];
 
-                    $configuration = $configurator->create($attributes, $componentCfg['name']);
+                    $configuration = $driveConfigurator->create($account);
                     $sapiService->createConfiguration($configuration);
-                    $configuration->setConfiguration($configurator->configure($credentials, $configTables));
+                    $configuration->setConfiguration($driveConfigurator->configure($account));
                     $sapiService->encryptConfiguration($configuration);
 
                     $this->logger->info(sprintf(
@@ -57,7 +59,7 @@ class WrGoogleDriveMigration
                         $configuration->getName()
                     ));
 
-                    $orchestratorService->updateOrchestrations(sprintf('wr-db-%s', $this->driver), $configuration);
+                    $orchestratorService->updateOrchestrations('wr-google-drive', $configuration);
 
                     $this->logger->info(sprintf(
                         "Orchestration task for configuration '%s' has been updated",
@@ -87,8 +89,8 @@ class WrGoogleDriveMigration
     {
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
-        $oldComponentId = sprintf('wr-db-%s', $this->driver);
-        $newComponentId = ($this->driver == 'redshift')?'keboola.wr-redshift-v2':'keboola.wr-db-' . $this->driver;
+        $oldComponentId = 'wr-google-drive';
+        $newComponentId = 'keboola.wr-google-drive';
 
         $buckets = $sapiService->getConfigurationBuckets($oldComponentId);
         return [
