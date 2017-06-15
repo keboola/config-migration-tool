@@ -31,6 +31,34 @@ class OrchestratorService
         ]);
     }
 
+    /**
+     * Get orchestrations from the API in raw form
+     * @param $oldComponentId
+     * @return array
+     */
+    public function listOrchestrations($oldComponentId)
+    {
+        $orchestrations = $this->request('get', 'orchestrations');
+
+        return array_filter($orchestrations, function ($orchestration) use ($oldComponentId) {
+            $tasks = $this->getTasks($orchestration['id']);
+            foreach ($tasks as $task) {
+                if ((isset($task['componentUrl'])
+                    && (false !== strstr($task['componentUrl'], '/' . $oldComponentId . '/')))
+                    || (isset($task['component']) && ($oldComponentId == $task['component']))) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Get orchestrations from the API and return them in form for displaying in status
+     * @param $oldComponentId
+     * @param $newComponentId
+     * @return array
+     */
     public function getOrchestrations($oldComponentId, $newComponentId)
     {
         $result = [];
@@ -71,50 +99,66 @@ class OrchestratorService
 
         $updatedOrchestrations = [];
         foreach ($orchestrations as $orchestration) {
-            $tasks = $this->getTasks($orchestration['id']);
-
-            $update = false;
-            foreach ($tasks as &$task) {
-                $config = null;
-                if (isset($task['actionParameters']['config'])
-                    && ($task['actionParameters']['config'] == $newConfiguration->getConfigurationId())) {
-                    $config = $task['actionParameters']['config'];
-                } elseif (isset($task['actionParameters']['account'])
-                    && ($task['actionParameters']['account'] == $newConfiguration->getConfigurationId())) {
-                    $config = $task['actionParameters']['account'];
-                    unset($task['actionParameters']['account']);
-                    $task['actionParameters']['config'] = $config;
-                }
-
-                if ($config !== null) {
-                    if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))) {
-                        $task['componentUrl'] = str_replace(
-                            $oldComponentId,
-                            $newConfiguration->getComponentId(),
-                            $task['componentUrl']
-                        );
-                        $update = true;
-                    } else if (isset($task['component']) && ($oldComponentId == $task['component'])) {
-                        $task['component'] = $newConfiguration->getComponentId();
-                        $update = true;
-                    }
-                }
-            }
-
-            if ($update) {
-                $this->request('put', sprintf('orchestrations/%s/tasks', $orchestration['id']), [
-                    'json' => $tasks
-                ]);
-                $updatedOrchestrations[] = $orchestration;
-            }
+            $this->updateOrchestration($orchestration, $oldComponentId, $newConfiguration);
         }
 
         return $updatedOrchestrations;
     }
 
+    public function updateOrchestration($orchestration, $oldComponentId, Configuration $newConfiguration)
+    {
+        $tasks = $this->getTasks($orchestration['id']);
+
+        $update = false;
+        foreach ($tasks as &$task) {
+            $updateTask = $this->taskNeedUpdate($newConfiguration->getConfigurationId());
+            if ($updateTask) {
+                if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))) {
+                    $task['componentUrl'] = str_replace(
+                        $oldComponentId,
+                        $newConfiguration->getComponentId(),
+                        $task['componentUrl']
+                    );
+                    $update = true;
+                } else if (isset($task['component']) && ($oldComponentId == $task['component'])) {
+                    $task['component'] = $newConfiguration->getComponentId();
+                    $update = true;
+                }
+            }
+        }
+
+        if ($update) {
+            $this->updateTasks($orchestration['id'], $tasks);
+            $updatedOrchestrations[] = $orchestration;
+        }
+    }
+
+    public function taskNeedUpdate($configurationId)
+    {
+        $config = null;
+        if (isset($task['actionParameters']['config'])
+            && ($task['actionParameters']['config'] == $configurationId)) {
+            $config = $task['actionParameters']['config'];
+        } elseif (isset($task['actionParameters']['account'])
+            && ($task['actionParameters']['account'] == $configurationId)) {
+            $config = $task['actionParameters']['account'];
+            unset($task['actionParameters']['account']);
+            $task['actionParameters']['config'] = $config;
+        }
+
+        return ($config !== null);
+    }
+
     public function getTasks($orchestrationId)
     {
         return $this->request('get', sprintf('orchestrations/%s/tasks', $orchestrationId));
+    }
+
+    public function updateTasks($orchestrationId, $tasks)
+    {
+        return $this->request('put', sprintf('orchestrations/%s/tasks', $orchestrationId), [
+            'json' => $tasks
+        ]);
     }
 
     public function request($method, $uri, $options = [])
