@@ -61,6 +61,8 @@ class WrGoogleSheetsConfigurator
                 'id' => $cnt++,
                 'fileId' => $item['googleId'],
                 'title' => $item['title'],
+                'sheetId' => $item['sheetId'],
+                'sheetTitle' => $item['sheetTitle'],
                 'enabled' => true,
                 'folder' => ['id' => $item['targetFolder']],
                 'action' => $item['operation'],

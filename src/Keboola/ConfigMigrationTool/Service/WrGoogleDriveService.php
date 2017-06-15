@@ -36,8 +36,7 @@ class WrGoogleDriveService
 
     public function getAccount($id)
     {
-        $account = $this->request('get', sprintf('account/%s/decrypt', $id));
-        return $account;
+        return $this->request('get', sprintf('account/%s/decrypt', $id));
     }
 
     public function getFiles($configId, $pageToken = null)
@@ -59,5 +58,10 @@ class WrGoogleDriveService
     {
         $response = $this->client->request($method, $uri, $options);
         return \GuzzleHttp\json_decode($response->getBody(), true);
+    }
+
+    public function getSheets($accountId, $fileId)
+    {
+        return $this->request('get', sprintf('remote-sheets/%s/%s', $accountId, $fileId));
     }
 }

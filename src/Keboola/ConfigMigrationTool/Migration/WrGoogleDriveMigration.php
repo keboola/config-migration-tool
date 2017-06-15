@@ -11,6 +11,7 @@ use Keboola\ConfigMigrationTool\Configurator\WrGoogleSheetsConfigurator;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Helper\TableHelper;
+use Keboola\ConfigMigrationTool\Service\OAuthService;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\ConfigMigrationTool\Service\WrGoogleDriveService;
@@ -38,6 +39,9 @@ class WrGoogleDriveMigration
     /** @var WrGoogleDriveService */
     private $googleDriveService;
 
+    /** @var OAuthService */
+    private $oauthService;
+
     public function __construct(Logger $logger)
     {
         $this->logger = $logger;
@@ -46,12 +50,14 @@ class WrGoogleDriveMigration
         $this->driveConfigurator = new WrGoogleDriveConfigurator();
         $this->sheetsConfigurator = new WrGoogleSheetsConfigurator();
         $this->googleDriveService = new WrGoogleDriveService($this->logger);
+        $this->oauthService = new OAuthService();
     }
 
     public function execute()
     {
         $oldDbConfigs = $this->googleDriveService->getConfigs();
 
+        $createdConfigurations = [];
         foreach ($oldDbConfigs as $oldConfig) {
             $sysBucketId = 'sys.c-wr-google-drive';
             $sysBucket = $this->sapiService->getClient()->getBucket($sysBucketId);
@@ -59,13 +65,21 @@ class WrGoogleDriveMigration
 
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] !== 'success') {
                 try {
+                    // get old Account from old Google Drive Writer API, SAPI configuration
                     $account = $this->googleDriveService->getAccount($oldConfig['id']);
                     $componentCfg = $this->sapiService->getConfiguration('wr-google-drive', $attributes['id']);
                     $account['accountNamePretty'] = $componentCfg['name'];
 
+                    // create OAuth credentials
+                     $this->oauthService->obtainCredentials('keboola.wr-google-drive', $account);
+
+                    // migrate configurations
                     $newDriveConfiguration = $this->toGoogleDrive($account);
                     $newSheetsConfiguration = $this->toGoogleSheets($account);
+                    $createdConfigurations[] = $newDriveConfiguration;
+                    $createdConfigurations[] = $newSheetsConfiguration;
 
+                    // update orchestration
                     $this->updateOrchestrations($newDriveConfiguration, $newSheetsConfiguration);
 
                     $this->sapiService->getClient()->setBucketAttribute($sysBucketId, 'migrationStatus', 'success');
@@ -82,6 +96,8 @@ class WrGoogleDriveMigration
                 }
             }
         }
+
+        return $createdConfigurations;
     }
 
     protected function toGoogleDrive($account)
@@ -113,6 +129,18 @@ class WrGoogleDriveMigration
         });
 
         if (!empty($account['items'])) {
+            // get sheet titles for old sheets
+            foreach ($account['items'] as &$item) {
+                if (strtolower($item['type']) == 'sheet') {
+                    $sheets = $this->googleDriveService->getSheets($account['googleId'], $item['googleId']);
+                    foreach ($sheets as $sheet) {
+                        if ($sheet['id'] == $item['sheetId']) {
+                            $item['sheetTitle'] = $sheet['title'];
+                        }
+                    }
+                }
+            }
+            
             $newComponentConfiguration = $this->sheetsConfigurator->create($account);
             $this->sapiService->createConfiguration($newComponentConfiguration);
             $newComponentConfiguration->setConfiguration($this->sheetsConfigurator->configure($account));
