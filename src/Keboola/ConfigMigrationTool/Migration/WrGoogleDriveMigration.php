@@ -55,18 +55,14 @@ class WrGoogleDriveMigration
 
     public function execute()
     {
-        $oldDbConfigs = $this->googleDriveService->getConfigs();
-
+        $tables = $this->sapiService->getConfigurationTables('wr-google-drive');
         $createdConfigurations = [];
-        foreach ($oldDbConfigs as $oldConfig) {
-            $sysBucketId = 'sys.c-wr-google-drive';
-            $sysBucket = $this->sapiService->getClient()->getBucket($sysBucketId);
-            $attributes = TableHelper::formatAttributes($sysBucket['attributes']);
-
+        foreach ($tables as $table) {
+            $attributes = TableHelper::formatAttributes($table['attributes']);
             if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] !== 'success') {
                 try {
                     // get old Account from old Google Drive Writer API, SAPI configuration
-                    $account = $this->googleDriveService->getAccount($oldConfig['id']);
+                    $account = $this->googleDriveService->getAccount($attributes['id']);
                     $componentCfg = $this->sapiService->getConfiguration('wr-google-drive', $attributes['id']);
                     $account['accountNamePretty'] = $componentCfg['name'];
 
@@ -82,16 +78,20 @@ class WrGoogleDriveMigration
                     // update orchestration
                     $this->updateOrchestrations($newDriveConfiguration, $newSheetsConfiguration);
 
-                    $this->sapiService->getClient()->setBucketAttribute($sysBucketId, 'migrationStatus', 'success');
+                    $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'success');
                 } catch (ClientException $e) {
-                    $this->sapiService->getClient()->setBucketAttribute($sysBucketId, 'migrationStatus', 'error: ' . $e->getMessage());
+                    $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'bucketId' => $sysBucketId
+                        'tableId' => $table['id']
                     ]);
                 } catch (\Exception $e) {
-                    $this->sapiService->getClient()->setBucketAttribute($sysBucketId, 'migrationStatus', 'error: ' . $e->getMessage());
+                    var_dump($e->getMessage());
+                    var_dump($e->getFile());
+                    var_dump($e->getLine());
+                    die;
+                    $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'bucketId' => $sysBucketId
+                        'tableId' => $table['id']
                     ]);
                 }
             }

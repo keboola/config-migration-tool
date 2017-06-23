@@ -29,6 +29,11 @@ class WrGoogleDriveService
         ]);
     }
 
+    public function createAccoung()
+    {
+        //@TODO: create account for testing purposes -> the tokens need to be encrypted in configuration
+    }
+
     public function getConfigs()
     {
         return $this->request('get', 'configs');
