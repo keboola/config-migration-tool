@@ -32,6 +32,7 @@ class WrGoogleDriveService
     public function createAccoung()
     {
         //@TODO: create account for testing purposes -> the tokens need to be encrypted in configuration
+
     }
 
     public function getConfigs()
@@ -68,5 +69,10 @@ class WrGoogleDriveService
     public function getSheets($accountId, $fileId)
     {
         return $this->request('get', sprintf('remote-sheets/%s/%s', $accountId, $fileId));
+    }
+
+    public function getRemoteFile($accountId, $fileId)
+    {
+        return $this->request('get', sprintf('remote-file/%s/%s', $accountId, $fileId));
     }
 }

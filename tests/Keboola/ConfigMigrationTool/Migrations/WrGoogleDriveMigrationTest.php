@@ -28,50 +28,62 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
 
     public function testExecute()
     {
-        $expectedConfig = json_decode(file_get_contents(
-            ROOT_PATH . '/tests/data/wr-google-drive/expected-config.json'
+        $expectedConfigDrive = json_decode(file_get_contents(
+            ROOT_PATH . '/tests/data/wr-google-drive/expected-config-drive.json'
         ), true);
+        $expectedConfigSheets = json_decode(file_get_contents(
+            ROOT_PATH . '/tests/data/wr-google-drive/expected-config-sheets.json'
+        ), true);
+
         $testConfigIds = $this->createOldConfigs();
+
         $sapiService = new StorageApiService();
         $migration = new WrGoogleDriveMigration($this->getLogger());
         $createdConfigurations = $migration->execute();
 
         /** @var Configuration $configuration */
         foreach ($createdConfigurations as $configuration) {
-            $this->assertContains($configuration->getConfigurationId(), $testConfigIds);
-            $this->assertEquals('keboola.ex-google-drive', $configuration->getComponentId());
+            $this->assertContains($configuration->getConfigurationId(), $testConfigIds, "", true);
+            $this->assertContains(
+                $configuration->getComponentId(),
+                ['keboola.wr-google-drive', 'keboola.wr-google-sheets']
+            );
             $config = $configuration->getConfiguration();
             $this->assertArrayHasKey('authorization', $config);
             $this->assertArrayHasKey('parameters', $config);
             $parameters = $config['parameters'];
-            $this->assertArrayHasKey('sheets', $parameters);
-            $this->assertArrayHasKey('outputBucket', $parameters);
-            $sheets = $parameters['sheets'];
+            $this->assertArrayHasKey('tables', $parameters);
+            $tables = $parameters['tables'];
 
-            foreach ($sheets as $sheet) {
+            foreach ($tables as $sheet) {
                 $this->assertArrayHasKey('id', $sheet);
                 $this->assertArrayHasKey('fileId', $sheet);
-                $this->assertArrayHasKey('fileTitle', $sheet);
-                $this->assertArrayHasKey('sheetId', $sheet);
-                $this->assertArrayHasKey('sheetTitle', $sheet);
-                $this->assertArrayHasKey('outputTable', $sheet);
+                $this->assertArrayHasKey('title', $sheet);
+                $this->assertArrayHasKey('tableId', $sheet);
                 $this->assertArrayHasKey('enabled', $sheet);
-                $this->assertArrayHasKey('header', $sheet);
+                $this->assertArrayHasKey('action', $sheet);
+                $this->assertArrayHasKey('folder', $sheet);
+
+                if ($configuration->getComponentId() == 'keboola.wr-google-sheets') {
+                    $this->assertArrayHasKey('sheetId', $sheet);
+                    $this->assertArrayHasKey('sheetTitle', $sheet);
+                }
             }
 
             unset($config['authorization']);
-            unset($config['parameters']['outputBucket']);
+            sort($config['parameters']['tables']);
+            sort($config['storage']['input']['tables']);
 
-            $this->assertEquals($expectedConfig, $config);
+            if ($configuration->getComponentId() == 'keboola.wr-google-sheets') {
+                $this->assertEquals($expectedConfigSheets, $config);
+            } else {
+                $this->assertEquals($expectedConfigDrive, $config);
+            }
 
             // clear created configurations
-            $sapiService->deleteConfiguration('keboola.ex-google-drive', $configuration->getConfigurationId());
-            $key = array_search($configuration->getConfigurationId(), $testConfigIds);
-            unset($testConfigIds[$key]);
+            $sapiService->deleteConfiguration('keboola.wr-google-drive', $configuration->getConfigurationId());
+            $sapiService->deleteConfiguration('keboola.wr-google-sheets', $configuration->getConfigurationId());
         }
-
-        // all configs migrated
-        $this->assertEmpty($testConfigIds);
     }
 
     public function testOrchestrationUpdate()

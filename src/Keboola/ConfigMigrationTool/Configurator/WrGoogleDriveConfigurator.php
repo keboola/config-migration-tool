@@ -62,7 +62,7 @@ class WrGoogleDriveConfigurator
                 'fileId' => $item['googleId'],
                 'title' => $item['title'],
                 'enabled' => true,
-                'folder' => ['id' => $item['targetFolder']],
+                'folder' => $item['folder'],
                 'action' => $item['operation'],
                 'tableId' => $item['tableId'],
                 'convert' => false

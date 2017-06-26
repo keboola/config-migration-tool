@@ -85,10 +85,6 @@ class WrGoogleDriveMigration
                         'tableId' => $table['id']
                     ]);
                 } catch (\Exception $e) {
-                    var_dump($e->getMessage());
-                    var_dump($e->getFile());
-                    var_dump($e->getLine());
-                    die;
                     $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
                         'tableId' => $table['id']
@@ -107,6 +103,10 @@ class WrGoogleDriveMigration
         });
 
         if (!empty($account['items'])) {
+            foreach ($account['items'] as $key => &$item) {
+                $item['folder'] = $this->getFolder($account['id'], $item);
+            }
+
             $newComponentConfiguration = $this->driveConfigurator->create($account);
             $this->sapiService->createConfiguration($newComponentConfiguration);
             $newComponentConfiguration->setConfiguration($this->driveConfigurator->configure($account));
@@ -125,20 +125,29 @@ class WrGoogleDriveMigration
     protected function toGoogleSheets($account)
     {
         $account['items'] = array_filter($account['items'], function ($item) {
-            return ($item['type'] == 'sheet' && $item['operation'] !== 'create');
+            return (strtolower($item['type']) == 'sheet' && strtolower($item['operation']) !== 'create');
         });
 
         if (!empty($account['items'])) {
             // get sheet titles for old sheets
-            foreach ($account['items'] as &$item) {
+            foreach ($account['items'] as $key => &$item) {
                 if (strtolower($item['type']) == 'sheet') {
-                    $sheets = $this->googleDriveService->getSheets($account['googleId'], $item['googleId']);
-                    foreach ($sheets as $sheet) {
-                        if ($sheet['id'] == $item['sheetId']) {
-                            $item['sheetTitle'] = $sheet['title'];
+                    try {
+                        // try to get Sheets Title
+                        $sheets = $this->googleDriveService->getSheets($account['id'], $item['googleId']);
+                        foreach ($sheets as $sheet) {
+                            if ($sheet['id'] == $item['sheetId'] || $sheet['wsid'] == $item['sheetId']) {
+                                $item['sheetTitle'] = $sheet['title'];
+                            }
                         }
+                    } catch (\Exception $e) {
+                        // sheet not found in account
+                        unset($account['items'][$key]);
+                        continue;
                     }
                 }
+
+                $item['folder'] = $this->getFolder($account['id'], $item);
             }
             
             $newComponentConfiguration = $this->sheetsConfigurator->create($account);
@@ -154,6 +163,21 @@ class WrGoogleDriveMigration
         }
 
         return null;
+    }
+
+    protected function getFolder($accountId, $item)
+    {
+        if (empty($item['targetFolder'])) {
+            // get files parent folder
+            $file = $this->googleDriveService->getRemoteFile($accountId, $item['googleId']);
+            $item['targetFolder'] = $file['parents'][0];
+        }
+
+        $folder = $this->googleDriveService->getRemoteFile($accountId, $item['targetFolder']);
+        return [
+            'id' => $folder['id'],
+            'title' => $folder['name']
+        ];
     }
 
     protected function updateOrchestrations(Configuration $driveConfiguration, Configuration $sheetsConfiguration)

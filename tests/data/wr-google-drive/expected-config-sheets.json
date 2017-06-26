@@ -1,0 +1,31 @@
+{
+	"parameters": {
+		"tables": [
+			{
+				"id": 0,
+				"action": "update",
+				"enabled": true,
+				"convert": false,
+				"tableId": "in.c-main.ciselnik_cenik3",
+				"title": "Ceeniik234",
+				"folder": {
+					"id": "0AMceg4OWLR3lUk9PVA",
+					"title": "My Drive"
+				},
+				"fileId": "1uHbVgOXnr1SwCtMuSZrtu-v4tVHYLgHUTcPicMETuFc",
+				"sheetId": "oe8bwyw",
+				"sheetTitle": "Ceeniik234"
+			}
+		]
+	},
+	"storage": {
+		"input": {
+			"tables": [
+				{
+					"source": "in.c-main.ciselnik_cenik3",
+					"destination": "in.c-main.ciselnik_cenik3.csv"
+				}
+			]
+		}
+	}
+}
