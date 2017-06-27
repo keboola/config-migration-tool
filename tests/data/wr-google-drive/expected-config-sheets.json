@@ -5,7 +5,6 @@
 				"id": 0,
 				"action": "update",
 				"enabled": true,
-				"convert": false,
 				"tableId": "in.c-main.ciselnik_cenik3",
 				"title": "Ceeniik234",
 				"folder": {

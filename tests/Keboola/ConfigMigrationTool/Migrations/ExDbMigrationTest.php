@@ -157,6 +157,7 @@ class ExDbMigrationTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->assertNotEmpty($updatedOrchestrations);
+
         $orchestrationIsUpdated = false;
         foreach ($updatedOrchestrations as $updated) {
             // is updated?

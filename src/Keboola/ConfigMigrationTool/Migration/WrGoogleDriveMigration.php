@@ -67,7 +67,8 @@ class WrGoogleDriveMigration
                     $account['accountNamePretty'] = $componentCfg['name'];
 
                     // create OAuth credentials
-                     $this->oauthService->obtainCredentials('keboola.wr-google-drive', $account);
+                    $this->oauthService->obtainCredentials('keboola.wr-google-drive', $account);
+                    $this->oauthService->obtainCredentials('keboola.wr-google-sheets', $account);
 
                     // migrate configurations
                     $newDriveConfiguration = $this->toGoogleDrive($account);
@@ -180,14 +181,15 @@ class WrGoogleDriveMigration
         ];
     }
 
-    protected function updateOrchestrations(Configuration $driveConfiguration, Configuration $sheetsConfiguration)
+    public function updateOrchestrations(Configuration $driveConfiguration, Configuration $sheetsConfiguration)
     {
         $oldComponentId = 'wr-google-drive';
         $firstConfiguration = null;
         $secondConfiguration = null;
+        $updatedOrchestrations = [];
 
         if ($driveConfiguration == null && $sheetsConfiguration == null) {
-            return;
+            return $updatedOrchestrations;
         }
 
         if ($driveConfiguration !== null && $sheetsConfiguration !== null) {
@@ -203,7 +205,6 @@ class WrGoogleDriveMigration
             $firstConfiguration = $sheetsConfiguration;
         }
 
-        // we need two orchestration tasks instead of one
         $orchestrations = $this->orchestratorService->listOrchestrations($oldComponentId);
 
         foreach ($orchestrations as $orchestration) {
@@ -212,11 +213,15 @@ class WrGoogleDriveMigration
             $tasksChanged = false;
             $newTasks = [];
             foreach ($tasks as &$task) {
-                $updateTask = $this->orchestratorService->taskNeedUpdate(
+                $config = $this->orchestratorService->updateTaskConfig(
+                    $task,
                     $firstConfiguration->getConfigurationId()
                 );
 
-                if ($updateTask) {
+                if ($config !== null) {
+                    unset($task['actionParameters']['account']);
+                    $task['actionParameters']['config'] = $config;
+
                     if (isset($task['componentUrl'])
                         && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))
                     ) {
@@ -252,35 +257,37 @@ class WrGoogleDriveMigration
             }
         }
 
-//        $this->logger->info(sprintf(
-//            "Orchestration task for configuration '%s' has been updated",
-//            $componentCfg['name']
-//        ));
+        return $updatedOrchestrations;
     }
 
     public function status()
     {
-        $sapiService = new StorageApiService();
-        $orchestratorService = new OrchestratorService($this->logger);
         $oldComponentId = 'wr-google-drive';
-        $newComponentId = 'keboola.wr-google-drive';
+        $driveComponentId = 'keboola.wr-google-drive';
+        $sheetsComponentId = 'keboola.wr-google-sheets';
 
-        $buckets = $sapiService->getConfigurationBuckets($oldComponentId);
+        $driveOrchestrations = $this->orchestratorService->getOrchestrations($oldComponentId, $driveComponentId);
+        $sheetsOrchestrations = $this->orchestratorService->getOrchestrations($oldComponentId, $sheetsComponentId);
+        $orchestrations = array_merge($driveOrchestrations, $sheetsOrchestrations);
+
+        $tables = $this->sapiService->getConfigurationTables('wr-google-drive');
+        $configurations = array_map(
+            function ($table) use ($oldComponentId) {
+                $attributes = TableHelper::formatAttributes($table['attributes']);
+                return [
+                    'configId' => $attributes['id'],
+                    'configName' => $attributes['name'],
+                    'componentId' => $oldComponentId,
+                    'tableId' => $table['id'],
+                    'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'
+                ];
+            },
+            $tables
+        );
+
         return [
-            'configurations' => array_map(
-                function ($item) use ($oldComponentId) {
-                    $attributes = TableHelper::formatAttributes($item['attributes']);
-                    return [
-                        'configId' => $attributes['writerId'],
-                        'configName' => $attributes['writerId'],
-                        'componentId' => $oldComponentId,
-                        'tableId' => $item['id'],
-                        'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'
-                    ];
-                },
-                $buckets
-            ),
-            'orchestrations' => $orchestratorService->getOrchestrations($oldComponentId, $newComponentId)
+            'configurations' => $configurations,
+            'orchestrations' => $orchestrations
         ];
     }
 }

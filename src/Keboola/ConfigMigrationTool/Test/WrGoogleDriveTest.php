@@ -48,11 +48,11 @@ class WrGoogleDriveTest extends \PHPUnit_Framework_TestCase
         $sapiClient->setTableAttribute($tableId, 'id', $id);
         $sapiClient->setTableAttribute($tableId, 'name', $id);
         $sapiClient->setTableAttribute($tableId, 'description', 'Migrate this account');
-        $sapiClient->setTableAttribute($tableId, 'googleId', getenv('GOOGLE_ACCOUNT_ID'));
+        $sapiClient->setTableAttribute($tableId, 'googleId', getenv('WR_GOOGLE_DRIVE_ACCOUNT_ID'));
         $sapiClient->setTableAttribute($tableId, 'googleName', 'Some User Name');
-        $sapiClient->setTableAttribute($tableId, 'email', getenv('GOOGLE_ACCOUNT_EMAIL'));
-        $sapiClient->setTableAttribute($tableId, 'accessToken', getenv('GOOGLE_ACCESS_TOKEN'));
-        $sapiClient->setTableAttribute($tableId, 'refreshToken', getenv('GOOGLE_REFRESH_TOKEN'));
+        $sapiClient->setTableAttribute($tableId, 'email', getenv('WR_GOOGLE_DRIVE_ACCOUNT_EMAIL'));
+        $sapiClient->setTableAttribute($tableId, 'accessToken', getenv('WR_GOOGLE_DRIVE_ACCESS_TOKEN'));
+        $sapiClient->setTableAttribute($tableId, 'refreshToken', getenv('WR_GOOGLE_DRIVE_REFRESH_TOKEN'));
 
         // create config in SAPI
         $configuration = new Configuration();

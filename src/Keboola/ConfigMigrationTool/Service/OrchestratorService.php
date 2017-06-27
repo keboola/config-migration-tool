@@ -95,11 +95,14 @@ class OrchestratorService
 
     public function updateOrchestrations($oldComponentId, Configuration $newConfiguration)
     {
-        $orchestrations = $this->request('get', 'orchestrations');
+        $orchestrations = $this->listOrchestrations($oldComponentId);
 
         $updatedOrchestrations = [];
         foreach ($orchestrations as $orchestration) {
-            $this->updateOrchestration($orchestration, $oldComponentId, $newConfiguration);
+            $updated = $this->updateOrchestration($orchestration, $oldComponentId, $newConfiguration);
+            if ($updated !== null) {
+                $updatedOrchestrations[] = $updated;
+            }
         }
 
         return $updatedOrchestrations;
@@ -111,8 +114,11 @@ class OrchestratorService
 
         $update = false;
         foreach ($tasks as &$task) {
-            $updateTask = $this->taskNeedUpdate($newConfiguration->getConfigurationId());
-            if ($updateTask) {
+            $config = $this->updateTaskConfig($task, $newConfiguration->getConfigurationId());
+
+            if ($config !== null) {
+                unset($task['actionParameters']['account']);
+                $task['actionParameters']['config'] = $config;
                 if (isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId .'/'))) {
                     $task['componentUrl'] = str_replace(
                         $oldComponentId,
@@ -129,11 +135,13 @@ class OrchestratorService
 
         if ($update) {
             $this->updateTasks($orchestration['id'], $tasks);
-            $updatedOrchestrations[] = $orchestration;
+            return $orchestration;
         }
+
+        return null;
     }
 
-    public function taskNeedUpdate($configurationId)
+    public function updateTaskConfig($task, $configurationId)
     {
         $config = null;
         if (isset($task['actionParameters']['config'])
@@ -142,11 +150,9 @@ class OrchestratorService
         } elseif (isset($task['actionParameters']['account'])
             && ($task['actionParameters']['account'] == $configurationId)) {
             $config = $task['actionParameters']['account'];
-            unset($task['actionParameters']['account']);
-            $task['actionParameters']['config'] = $config;
         }
 
-        return ($config !== null);
+        return $config;
     }
 
     public function getTasks($orchestrationId)

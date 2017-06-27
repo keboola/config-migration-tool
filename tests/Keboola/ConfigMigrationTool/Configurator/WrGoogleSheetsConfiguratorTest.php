@@ -49,7 +49,8 @@ class WrGoogleSheetsConfiguratorTest extends \PHPUnit_Framework_TestCase
             'sheetTitle' => 'vouchers',
             'tableId' => 'in.c-academy.vouchers',
             'operation' => 'update',
-            'targetFolder' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc'
+            'targetFolder' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc',
+            'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc']
         ]];
 
         $configurator = new WrGoogleSheetsConfigurator();

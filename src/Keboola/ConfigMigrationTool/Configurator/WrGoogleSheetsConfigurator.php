@@ -66,8 +66,7 @@ class WrGoogleSheetsConfigurator
                 'enabled' => true,
                 'folder' => $item['folder'],
                 'action' => $item['operation'],
-                'tableId' => $item['tableId'],
-                'convert' => false
+                'tableId' => $item['tableId']
             ];
         }, $items);
     }

@@ -20,10 +20,15 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
     /** @var OrchestratorService */
     private $orchestratorService;
 
+    /** @var WrGoogleDriveMigration */
+    private $migration;
+
     public function setUp()
     {
         parent::setUp();
-        $this->orchestratorService = new OrchestratorService($this->getLogger());
+        $logger = $this->getLogger();
+        $this->orchestratorService = new OrchestratorService($logger);
+        $this->migration = new WrGoogleDriveMigration($logger);
     }
 
     public function testExecute()
@@ -37,9 +42,7 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
 
         $testConfigIds = $this->createOldConfigs();
 
-        $sapiService = new StorageApiService();
-        $migration = new WrGoogleDriveMigration($this->getLogger());
-        $createdConfigurations = $migration->execute();
+        $createdConfigurations = $this->migration->execute();
 
         /** @var Configuration $configuration */
         foreach ($createdConfigurations as $configuration) {
@@ -81,6 +84,7 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
             }
 
             // clear created configurations
+            $sapiService = new StorageApiService();
             $sapiService->deleteConfiguration('keboola.wr-google-drive', $configuration->getConfigurationId());
             $sapiService->deleteConfiguration('keboola.wr-google-sheets', $configuration->getConfigurationId());
         }
@@ -95,23 +99,13 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
         // create orchestration
         $orchestration = $this->orchestratorService->request('post', 'orchestrations', [
             'json' => [
-                "name" => "Ex Google Drive Migration Test Orchestrator",
+                "name" => "Wr Google Drive Migration Test",
                 "tasks" => [
                     [
                         "component" => $oldComponentId,
                         "action" => "run",
                         "actionParameters" => [
                             "config" => "testing"
-                        ],
-                        "continueOnFailure" => false,
-                        "timeoutMinutes" => null,
-                        "active" => true
-                    ],
-                    [
-                        "component" => $oldComponentId,
-                        "action" => "run",
-                        "actionParameters" => [
-                            "account" => "testing2"
                         ],
                         "continueOnFailure" => false,
                         "timeoutMinutes" => null,
@@ -145,40 +139,30 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
         }
         $this->assertTrue($orchestrationIsBetweenAffected);
 
-        // test update orchestration - drive
-        $updatedOrchestrations = $this->updateOrchestration($oldComponentId, $driveComponentId);
-        $this->assertOrchestration($updatedOrchestrations, $orchestration, $oldComponentId, $driveComponentId);
+        // test update orchestration - drive and sheets
+        $driveConfiguration = new Configuration();
+        $driveConfiguration->setComponentId($driveComponentId);
+        $driveConfiguration->setConfigurationId('testing');
+        $driveConfiguration->setName('testing');
 
-        // test update orchestration - drive
-        $updatedOrchestrations = $this->updateOrchestration($oldComponentId, $driveComponentId);
+        $sheetsConfiguration = new Configuration();
+        $sheetsConfiguration->setComponentId($sheetsComponentId);
+        $sheetsConfiguration->setConfigurationId('testing');
+        $sheetsConfiguration->setName('testing');
+
+        $updatedOrchestrations = $this->migration->updateOrchestrations($driveConfiguration, $sheetsConfiguration);
         $this->assertOrchestration($updatedOrchestrations, $orchestration, $oldComponentId, $driveComponentId);
+        $this->assertOrchestration($updatedOrchestrations, $orchestration, $oldComponentId, $sheetsComponentId);
 
         // cleanup
         $this->orchestratorService->request('delete', sprintf('orchestrations/%s', $orchestration['id']));
-    }
-
-    private function updateOrchestration($oldComponentId, $newComponentId)
-    {
-        $updatedOrchestrations = [];
-        foreach (['testing', 'testing2'] as $configId) {
-            $configuration = new Configuration();
-            $configuration->setComponentId($newComponentId);
-            $configuration->setConfigurationId($configId);
-            $configuration->setName($configId);
-
-            $updatedOrchestrations = array_merge(
-                $this->orchestratorService->updateOrchestrations($oldComponentId, $configuration),
-                $updatedOrchestrations
-            );
-        }
-
-        return $updatedOrchestrations;
     }
 
     private function assertOrchestration($updatedOrchestrations, $orchestration, $oldComponentId, $newComponentId)
     {
         $this->assertNotEmpty($updatedOrchestrations);
         $orchestrationIsUpdated = false;
+
         foreach ($updatedOrchestrations as $updated) {
             // is updated?
             if ($updated['id'] == $orchestration['id']) {
@@ -186,13 +170,17 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
             }
             // get tasks
             $tasks = $this->orchestratorService->getTasks($updated['id']);
+
             $this->assertNotEmpty($tasks);
+            $newComponentTaskExists = false;
             foreach ($tasks as $task) {
-                if (isset($task['component'])) {
-                    $this->assertEquals($newComponentId, $task['component']);
+                if (isset($task['component']) && $task['component'] == $newComponentId) {
+                    $this->assertNotEmpty($task['actionParameters']['config']);
+                    $newComponentTaskExists = true;
+                    break;
                 }
-                $this->assertNotEmpty($task['actionParameters']['config']);
             }
+            $this->assertTrue($newComponentTaskExists);
         }
         $this->assertTrue($orchestrationIsUpdated);
 
@@ -208,8 +196,8 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
 
     public function testStatus()
     {
-        $migration = new WrGoogleDriveMigration($this->getLogger());
-        $status = $migration->status();
+        $this->createOldConfigs();
+        $status = $this->migration->status();
 
         $this->assertNotEmpty($status);
         $this->assertArrayHasKey('configId', $status['configurations'][0]);
