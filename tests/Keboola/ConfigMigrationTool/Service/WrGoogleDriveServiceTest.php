@@ -49,13 +49,13 @@ class WrGoogleDriveServiceTest extends WrGoogleDriveTest
         $account = $this->service->getAccount(array_shift($oldConfigIds));
 
         $this->assertArrayHasKey('id', $account);
-        $this->assertArrayHasKey('accountName', $account);
+        $this->assertArrayHasKey('name', $account);
         $this->assertArrayHasKey('description', $account);
-        $this->assertArrayHasKey('outputBucket', $account);
+        $this->assertArrayHasKey('googleName', $account);
         $this->assertArrayHasKey('googleId', $account);
+        $this->assertArrayHasKey('email', $account);
         $this->assertArrayHasKey('accessToken', $account);
         $this->assertArrayHasKey('refreshToken', $account);
-        $this->assertArrayHasKey('configuration', $account);
         $this->assertArrayHasKey('items', $account);
     }
 }
