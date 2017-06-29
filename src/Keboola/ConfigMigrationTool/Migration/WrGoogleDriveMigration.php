@@ -181,10 +181,12 @@ class WrGoogleDriveMigration
         ];
     }
 
-    public function updateOrchestrations(Configuration $driveConfiguration, Configuration $sheetsConfiguration)
+    public function updateOrchestrations($driveConfiguration, $sheetsConfiguration)
     {
         $oldComponentId = 'wr-google-drive';
+        /** @var Configuration $firstConfiguration */
         $firstConfiguration = null;
+        /** @var Configuration $secondConfiguration */
         $secondConfiguration = null;
         $updatedOrchestrations = [];
 
