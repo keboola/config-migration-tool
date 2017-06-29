@@ -63,7 +63,17 @@ class WrGoogleDriveMigration
                 try {
                     // get old Account from old Google Drive Writer API, SAPI configuration
                     $account = $this->googleDriveService->getAccount($attributes['id']);
-                    $componentCfg = $this->sapiService->getConfiguration('wr-google-drive', $attributes['id']);
+
+                    try {
+                        $componentCfg = $this->sapiService->getConfiguration('wr-google-drive', $attributes['id']);
+                    } catch (ClientException $e) {
+                        // orphaned sys bucket
+                        if (strstr($e->getMessage(), 'not found') !== false) {
+                            continue;
+                        }
+                        throw $e;
+                    }
+
                     $account['accountNamePretty'] = $componentCfg['name'];
 
                     // create OAuth credentials
@@ -86,10 +96,6 @@ class WrGoogleDriveMigration
                         'tableId' => $table['id']
                     ]);
                 } catch (\Exception $e) {
-                    var_dump($e->getMessage());
-                    var_dump($e->getFile());
-                    var_dump($e->getLine());
-                    die;
                     $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
                         'tableId' => $table['id']
