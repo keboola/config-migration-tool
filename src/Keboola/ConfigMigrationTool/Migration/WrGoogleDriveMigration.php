@@ -133,6 +133,10 @@ class WrGoogleDriveMigration
             // get sheet titles for old sheets
             foreach ($account['items'] as $key => &$item) {
                 if (strtolower($item['type']) == 'sheet') {
+                    if (empty($item['googleId'])) {
+                        unset($account['items'][$key]);
+                        continue;
+                    }
                     try {
                         // try to get Sheets Title
                         $sheets = $this->googleDriveService->getSheets($account['id'], $item['googleId']);
@@ -168,13 +172,9 @@ class WrGoogleDriveMigration
 
     protected function getFolder($accountId, $item)
     {
-        if (empty($item['targetFolder'])) {
-            // get files parent folder
-            $file = $this->googleDriveService->getRemoteFile($accountId, $item['googleId']);
-            $item['targetFolder'] = $file['parents'][0];
-        }
+        $folderId = empty($item['targetFolder']) ? $item['targetFolder'] : 'root';
+        $folder = $this->googleDriveService->getRemoteFile($accountId, $folderId);
 
-        $folder = $this->googleDriveService->getRemoteFile($accountId, $item['targetFolder']);
         return [
             'id' => $folder['id'],
             'title' => $folder['name']
