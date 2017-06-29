@@ -86,6 +86,10 @@ class WrGoogleDriveMigration
                         'tableId' => $table['id']
                     ]);
                 } catch (\Exception $e) {
+                    var_dump($e->getMessage());
+                    var_dump($e->getFile());
+                    var_dump($e->getLine());
+                    die;
                     $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
                     throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
                         'tableId' => $table['id']
@@ -172,7 +176,7 @@ class WrGoogleDriveMigration
 
     protected function getFolder($accountId, $item)
     {
-        $folderId = empty($item['targetFolder']) ? $item['targetFolder'] : 'root';
+        $folderId = empty($item['targetFolder']) ? 'root' : $item['targetFolder'];
         $folder = $this->googleDriveService->getRemoteFile($accountId, $folderId);
 
         return [
