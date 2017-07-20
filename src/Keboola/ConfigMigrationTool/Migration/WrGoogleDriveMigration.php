@@ -59,49 +59,52 @@ class WrGoogleDriveMigration
         $createdConfigurations = [];
         foreach ($tables as $table) {
             $attributes = TableHelper::formatAttributes($table['attributes']);
-            if (!isset($attributes['migrationStatus']) || $attributes['migrationStatus'] !== 'success') {
-                try {
-                    // get old Account from old Google Drive Writer API, SAPI configuration
-                    $account = $this->googleDriveService->getAccount($attributes['id']);
-
-                    try {
-                        $componentCfg = $this->sapiService->getConfiguration('wr-google-drive', $attributes['id']);
-                    } catch (ClientException $e) {
-                        // orphaned sys bucket
-                        if (strstr($e->getMessage(), 'not found') !== false) {
-                            continue;
-                        }
-                        throw $e;
-                    }
-
-                    $account['accountNamePretty'] = $componentCfg['name'];
-
-                    // create OAuth credentials
-                    $this->oauthService->obtainCredentials('keboola.wr-google-drive', $account);
-                    $this->oauthService->obtainCredentials('keboola.wr-google-sheets', $account);
-
-                    // migrate configurations
-                    $newDriveConfiguration = $this->toGoogleDrive($account);
-                    $newSheetsConfiguration = $this->toGoogleSheets($account);
-                    $createdConfigurations[] = $newDriveConfiguration;
-                    $createdConfigurations[] = $newSheetsConfiguration;
-
-                    // update orchestration
-                    $this->updateOrchestrations($newDriveConfiguration, $newSheetsConfiguration);
-
-                    $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'success');
-                } catch (ClientException $e) {
-                    $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
-                    throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'tableId' => $table['id']
-                    ]);
-                } catch (\Exception $e) {
-                    $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
-                    throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                        'tableId' => $table['id']
-                    ]);
-                }
+            if (isset($attributes['migrationStatus']) && $attributes['migrationStatus'] === 'success') {
+                continue;
             }
+
+            try {
+                // get old Account from old Google Drive Writer API, SAPI configuration
+                $account = $this->googleDriveService->getAccount($attributes['id']);
+
+                try {
+                    $componentCfg = $this->sapiService->getConfiguration('wr-google-drive', $attributes['id']);
+                } catch (ClientException $e) {
+                    // orphaned sys bucket
+                    if (strstr($e->getMessage(), 'not found') !== false) {
+                        continue;
+                    }
+                    throw $e;
+                }
+
+                $account['accountNamePretty'] = $componentCfg['name'];
+
+                // create OAuth credentials
+                $this->oauthService->obtainCredentials('keboola.wr-google-drive', $account);
+                $this->oauthService->obtainCredentials('keboola.wr-google-sheets', $account);
+
+                // migrate configurations
+                $newDriveConfiguration = $this->toGoogleDrive($account);
+                $newSheetsConfiguration = $this->toGoogleSheets($account);
+                $createdConfigurations[] = $newDriveConfiguration;
+                $createdConfigurations[] = $newSheetsConfiguration;
+
+                // update orchestration
+                $this->updateOrchestrations($newDriveConfiguration, $newSheetsConfiguration);
+
+                $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'success');
+            } catch (ClientException $e) {
+                $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
+                throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
+                    'tableId' => $table['id']
+                ]);
+            } catch (\Exception $e) {
+                $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
+                throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
+                    'tableId' => $table['id']
+                ]);
+            }
+
         }
 
         return $createdConfigurations;
@@ -152,6 +155,7 @@ class WrGoogleDriveMigration
                         $sheets = $this->googleDriveService->getSheets($account['id'], $item['googleId']);
                         foreach ($sheets as $sheet) {
                             if ($sheet['id'] == $item['sheetId'] || $sheet['wsid'] == $item['sheetId']) {
+                                $item['sheetId'] = $sheet['id'];
                                 $item['sheetTitle'] = $sheet['title'];
                             }
                         }
