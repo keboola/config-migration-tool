@@ -104,7 +104,6 @@ class WrGoogleDriveMigration
                     'tableId' => $table['id']
                 ]);
             }
-
         }
 
         return $createdConfigurations;
