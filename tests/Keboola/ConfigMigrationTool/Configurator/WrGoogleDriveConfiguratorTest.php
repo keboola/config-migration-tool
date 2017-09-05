@@ -50,6 +50,16 @@ class WrGoogleDriveConfiguratorTest extends \PHPUnit_Framework_TestCase
             'operation' => 'update',
             'targetFolder' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc',
             'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc']
+        ],[
+            'id' => '244073864',
+            'title' => 'Vouchers',
+            'googleId' => '0B8ceg4OWLR3lWFhNREJEVmFxX0E',
+            'type' => 'file',
+            'sheetId' => '',
+            'tableId' => 'in.c-academy.vouchers',
+            'operation' => 'update',
+            'targetFolder' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc',
+            'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc']
         ]];
 
         $configurator = new WrGoogleDriveConfigurator();
@@ -62,6 +72,9 @@ class WrGoogleDriveConfiguratorTest extends \PHPUnit_Framework_TestCase
         $table = $parameters['tables'][0];
 
         $this->assertArrayHasKey('id', $table);
+        $this->assertEquals(0, $table['id']);
+        $this->assertEquals(1, $parameters['tables'][1]['id']);
+
         $this->assertArrayHasKey('fileId', $table);
         $this->assertArrayHasKey('title', $table);
         $this->assertArrayHasKey('enabled', $table);

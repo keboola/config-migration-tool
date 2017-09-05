@@ -51,6 +51,17 @@ class WrGoogleSheetsConfiguratorTest extends \PHPUnit_Framework_TestCase
             'operation' => 'update',
             'targetFolder' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc',
             'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc']
+        ],[
+            'id' => '244073864',
+            'title' => 'Vouchers',
+            'googleId' => '0B8ceg4OWLR3lWFhNREJEVmFxX0E',
+            'type' => 'sheet',
+            'sheetId' => 'o5si9ec',
+            'sheetTitle' => 'vouchers',
+            'tableId' => 'in.c-academy.vouchers',
+            'operation' => 'update',
+            'targetFolder' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc',
+            'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc']
         ]];
 
         $configurator = new WrGoogleSheetsConfigurator();
@@ -63,6 +74,9 @@ class WrGoogleSheetsConfiguratorTest extends \PHPUnit_Framework_TestCase
         $table = $parameters['tables'][0];
 
         $this->assertArrayHasKey('id', $table);
+        $this->assertEquals(0, $table['id']);
+        $this->assertEquals(1, $parameters['tables'][1]['id']);
+
         $this->assertArrayHasKey('action', $table);
         $this->assertArrayHasKey('sheetTitle', $table);
         $this->assertArrayHasKey('enabled', $table);

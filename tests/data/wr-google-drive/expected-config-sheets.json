@@ -2,7 +2,7 @@
 	"parameters": {
 		"tables": [
 			{
-				"id": 0,
+				"id": 1,
 				"action": "update",
 				"enabled": true,
 				"tableId": "in.c-main.ciselnik_cenik3",
