@@ -23,17 +23,21 @@ class WrDbMigration
 
     private $driver;
 
-    public function __construct(Logger $logger, $driver = 'mysql')
+    /** @var string|null componentId - for "fake" components */
+    private $dstComponentId;
+
+    public function __construct(Logger $logger, $driver = 'mysql', $dstComponentId = null)
     {
         $this->logger = $logger;
         $this->driver = $driver;
+        $this->dstComponentId = $dstComponentId;
     }
 
     public function execute()
     {
         $sapiService = new StorageApiService();
         $orchestratorService = new OrchestratorService($this->logger);
-        $configurator = new WrDbConfigurator($this->driver);
+        $configurator = new WrDbConfigurator($this->driver, $this->dstComponentId);
         $wrDbService = new WrDbService($this->driver, $this->logger);
 
         $oldDbConfigs = $wrDbService->getConfigs();
@@ -48,10 +52,19 @@ class WrDbMigration
                 try {
                     $credentials = $wrDbService->getCredentials($oldConfig['id']);
                     $configTables = $wrDbService->getConfigTables($oldConfig['id']);
-                    $componentCfg = $sapiService->getConfiguration(
-                        sprintf('wr-db-%s', $this->driver),
-                        $attributes['writerId']
-                    );
+
+                    try {
+                        $componentCfg = $sapiService->getConfiguration(
+                            isset($this->dstComponentId) ? $this->dstComponentId : sprintf('wr-db-%s', $this->driver),
+                            $attributes['writerId']
+                        );
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+
+                    if ($this->dstComponentId !== null) {
+                        $sapiService->deleteConfiguration($this->dstComponentId, $componentCfg['id']);
+                    }
 
                     $configuration = $configurator->create($attributes, $componentCfg['name']);
                     $sapiService->createConfiguration($configuration);

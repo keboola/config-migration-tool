@@ -15,9 +15,12 @@ class WrDbConfigurator
 {
     protected $driver;
 
-    public function __construct($driver = 'mysql')
+    protected $dstComponentId;
+
+    public function __construct($driver = 'mysql', $dstComponentId = null)
     {
         $this->driver = $driver;
+        $this->dstComponentId = $dstComponentId;
     }
 
 
@@ -42,6 +45,10 @@ class WrDbConfigurator
      */
     public function getComponentId()
     {
+        if ($this->dstComponentId !== null) {
+            return $this->dstComponentId;
+        }
+
         return ($this->driver == 'redshift')?'keboola.wr-redshift-v2':'keboola.wr-db-' . $this->driver;
     }
 
