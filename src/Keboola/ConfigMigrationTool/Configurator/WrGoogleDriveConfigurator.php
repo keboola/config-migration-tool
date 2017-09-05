@@ -55,9 +55,11 @@ class WrGoogleDriveConfigurator
 
     protected function configureTables($items)
     {
-        return array_map(function ($item, $key) {
-            return [
-                'id' => $key,
+        $tables = [];
+        $cnt = 0;
+        foreach ($items as $item) {
+            $tables[] = [
+                'id' => $cnt++,
                 'fileId' => $item['googleId'],
                 'title' => $item['title'],
                 'enabled' => true,
@@ -66,7 +68,9 @@ class WrGoogleDriveConfigurator
                 'tableId' => $item['tableId'],
                 'convert' => false
             ];
-        }, $items, array_keys($items));
+        }
+
+        return $tables;
     }
 
     protected function configureInputMapping($items)

@@ -13,6 +13,19 @@
 					"id": "0B8ceg4OWLR3lcnJmZHk1cEtpdVk",
 					"title": "Vouchers"
 				}
+			},
+			{
+				"id": 1,
+				"fileId": "1yyFxwLNs6n-UPQunVfEbr65Xo6PS6-0mJuv5rpBpyLw",
+				"action": "create",
+				"enabled": true,
+				"convert": false,
+				"tableId": "in.c-academy.vouchers-2",
+				"title": "vouchers",
+				"folder": {
+					"id": "0B8ceg4OWLR3lcnJmZHk1cEtpdVk",
+					"title": "Vouchers"
+				}
 			}
 		]
 	},
@@ -22,6 +35,10 @@
 				{
 					"source": "in.c-academy.vouchers",
 					"destination": "in.c-academy.vouchers.csv"
+				},
+				{
+					"source": "in.c-academy.vouchers-2",
+					"destination": "in.c-academy.vouchers-2.csv"
 				}
 			]
 		}
