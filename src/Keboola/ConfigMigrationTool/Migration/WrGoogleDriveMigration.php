@@ -111,21 +111,23 @@ class WrGoogleDriveMigration
 
     protected function toGoogleDrive($account)
     {
-        $account['items'] = array_filter($account['items'], function ($item) {
+        $driveItems = array_filter($account['items'], function ($item) {
             return ($item['type'] == 'file' || $item['operation'] == 'create');
         });
 
-        if (!empty($account['items'])) {
-            foreach ($account['items'] as $key => &$item) {
+        if (!empty($driveItems)) {
+            foreach ($driveItems as $key => &$item) {
                 $item['folder'] = $this->getFolder($account['id'], $item);
             }
+
+            $account['items'] = $driveItems;
 
             $newComponentConfiguration = $this->driveConfigurator->create($account);
             $this->sapiService->createConfiguration($newComponentConfiguration);
             $newComponentConfiguration->setConfiguration($this->driveConfigurator->configure($account));
             $this->sapiService->encryptConfiguration($newComponentConfiguration);
             $this->logger->info(sprintf(
-                "Configuration '%s' has been migrated",
+                "Configuration '%s' files has been migrated",
                 $newComponentConfiguration->getName()
             ));
 
@@ -137,43 +139,42 @@ class WrGoogleDriveMigration
 
     protected function toGoogleSheets($account)
     {
-        $account['items'] = array_filter($account['items'], function ($item) {
+        $sheetItems = array_filter($account['items'], function ($item) {
             return (strtolower($item['type']) == 'sheet' && strtolower($item['operation']) !== 'create');
         });
 
-        if (!empty($account['items'])) {
+        if (!empty($sheetItems)) {
             // get sheet titles for old sheets
-            foreach ($account['items'] as $key => &$item) {
-                if (strtolower($item['type']) == 'sheet') {
-                    if (empty($item['googleId'])) {
-                        unset($account['items'][$key]);
-                        continue;
-                    }
-                    try {
-                        // try to get Sheets Title
-                        $sheets = $this->googleDriveService->getSheets($account['id'], $item['googleId']);
-                        foreach ($sheets as $sheet) {
-                            if ($sheet['id'] == $item['sheetId'] || $sheet['wsid'] == $item['sheetId']) {
-                                $item['sheetId'] = $sheet['id'];
-                                $item['sheetTitle'] = $sheet['title'];
-                            }
-                        }
-                    } catch (\Exception $e) {
-                        // sheet not found in account
-                        unset($account['items'][$key]);
-                        continue;
-                    }
+            foreach ($sheetItems as $key => &$item) {
+                if (empty($item['googleId'])) {
+                    unset($sheetItems[$key]);
+                    continue;
                 }
-
-                $item['folder'] = $this->getFolder($account['id'], $item);
+                try {
+                    // try to get Sheets Title
+                    $sheets = $this->googleDriveService->getSheets($account['id'], $item['googleId']);
+                    foreach ($sheets as $sheet) {
+                        if ($sheet['id'] == $item['sheetId'] || $sheet['wsid'] == $item['sheetId']) {
+                            $item['sheetId'] = $sheet['id'];
+                            $item['sheetTitle'] = $sheet['title'];
+                        }
+                    }
+                    $item['folder'] = $this->getFolder($account['id'], $item);
+                } catch (\Exception $e) {
+                    // sheet not found in account
+                    unset($sheetItems[$key]);
+                    continue;
+                }
             }
+
+            $account['items'] = $sheetItems;
             
             $newComponentConfiguration = $this->sheetsConfigurator->create($account);
             $this->sapiService->createConfiguration($newComponentConfiguration);
             $newComponentConfiguration->setConfiguration($this->sheetsConfigurator->configure($account));
             $this->sapiService->encryptConfiguration($newComponentConfiguration);
             $this->logger->info(sprintf(
-                "Configuration '%s' has been migrated",
+                "Configuration '%s' sheets has been migrated",
                 $newComponentConfiguration->getName()
             ));
 
