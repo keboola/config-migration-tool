@@ -287,9 +287,13 @@ class WrGoogleDriveMigration
         $orchestrations = array_merge($driveOrchestrations, $sheetsOrchestrations);
 
         $tables = $this->sapiService->getConfigurationTables('wr-google-drive');
-        $configurations = array_map(
+
+        $configurations = array_filter(array_map(
             function ($table) use ($oldComponentId) {
                 $attributes = TableHelper::formatAttributes($table['attributes']);
+                if (empty($attributes['id'])) {
+                    return null;
+                }
                 return [
                     'configId' => $attributes['id'],
                     'configName' => $attributes['name'],
@@ -299,7 +303,7 @@ class WrGoogleDriveMigration
                 ];
             },
             $tables
-        );
+        ));
 
         return [
             'configurations' => $configurations,
