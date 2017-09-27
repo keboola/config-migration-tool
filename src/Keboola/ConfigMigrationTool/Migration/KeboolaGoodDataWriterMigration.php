@@ -1,19 +1,19 @@
 <?php
 /**
- * @copy Keboola
+ * @package config-migration-tool
+ * @copyright 2017 Keboola
  * @author Jakub Matejka <jakub@keboola.com>
  */
+
 namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
-use Keboola\ConfigMigrationTool\Service\OrchestratorService;
-use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Options\Components\Configuration;
 
-class GenericCopyMigration extends DockerAppMigration
+class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 {
-
     public function execute()
     {
         return $this->doExecute();
@@ -22,8 +22,6 @@ class GenericCopyMigration extends DockerAppMigration
     /**
      * @param callable|null $migrationHook Optional callback to adjust configuration object before saving
      * @return array
-     * @throws ApplicationException
-     * @throws UserException
      */
     protected function doExecute(callable $migrationHook = null)
     {
@@ -32,18 +30,37 @@ class GenericCopyMigration extends DockerAppMigration
             if (!isset($oldConfig['configuration']['migrationStatus'])
                 || $oldConfig['configuration']['migrationStatus'] != 'success') {
                 try {
-                    $configuration = $this->buildConfigurationObject($this->destinationComponentId, $oldConfig);
-                    $this->storageApiService->createConfiguration($configuration);
-                    if ($migrationHook) {
-                        $configuration = $migrationHook($configuration);
+                    $newConfig = $oldConfig;
+                    unset($newConfig['migrationStatus']);
+                    unset($newConfig['configuration']['filters']);
+                    if (!empty($newConfig['configuration']['domain']['url'])) {
+                        $newConfig['configuration']['project']['isWhiteLabel'] = true;
                     }
-                    $this->storageApiService->encryptConfiguration($configuration);
-
-                    if (!empty($oldConfig['rows'])) {
-                        foreach ($oldConfig['rows'] as $r) {
-                            $this->storageApiService->addConfigurationRow($configuration, $r['id'], $r['configuration']);
+                    unset($newConfig['configuration']['domain']);
+                    if (isset($newConfig['configuration']['user']['password'])) {
+                        $newConfig['configuration']['user']['#password'] = $newConfig['configuration']['user']['password'];
+                        unset($newConfig['configuration']['user']['password']);
+                    }
+                    unset($newConfig['configuration']['filterColumn']);
+                    unset($newConfig['configuration']['addDatasetTitleToColumns']);
+                    if (isset($newConfig['configuration']['dimensions'])) {
+                        foreach ($newConfig['configuration']['dimensions'] as $dimensionId => $dimension) {
+                            unset($newConfig['configuration']['dimensions'][$dimensionId]['isExported']);
                         }
                     }
+                    if (!empty($oldConfig['rows'])) {
+                        foreach ($oldConfig['rows'] as $r) {
+                            unset($r['configuration']['export']);
+                            unset($r['configuration']['isExported']);
+                            $newConfig['configuration']['tables'][$r['id']] = $r['configuration'];
+                        }
+                        $newConfig['rows'] = [];
+                    }
+                    $configuration = $this->buildConfigurationObject($this->destinationComponentId, $newConfig);
+
+                    $this->storageApiService->createConfiguration($configuration);
+                    $this->storageApiService->encryptConfiguration($configuration);
+
 
                     $this->logger->info(sprintf(
                         "Configuration '%s' has been migrated",
@@ -84,28 +101,5 @@ class GenericCopyMigration extends DockerAppMigration
             }
         }
         return $createdConfigurations;
-    }
-
-    public function status()
-    {
-        $sapiService = new StorageApiService();
-        $orchestratorService = new OrchestratorService($this->logger);
-
-        $configurations = $sapiService->getConfigurations($this->originComponentId);
-        return [
-            'configurations' => array_map(
-                function ($item) {
-                    return [
-                        'configId' => $item['id'],
-                        'configName' => $item['name'],
-                        'componentId' => $this->originComponentId,
-                        'status' => isset($item['configuration']['migrationStatus'])
-                            ? $item['configuration']['migrationStatus'] : 'n/a'
-                    ];
-                },
-                $configurations
-            ),
-            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId)
-        ];
     }
 }

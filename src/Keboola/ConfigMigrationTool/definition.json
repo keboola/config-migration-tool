@@ -6,5 +6,9 @@
   "keboola.ex-adwords-v201702": {
     "destinations": ["keboola.ex-adwords-v201705"],
     "migration": "KeboolaExAdWords"
+  },
+  "gooddata-writer": {
+    "destinations": ["keboola.gooddata-writer"],
+    "migration": "KeboolaGoodDataWriter"
   }
 }

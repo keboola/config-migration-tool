@@ -58,7 +58,7 @@ abstract class DockerAppMigration implements MigrationInterface
     protected function updateConfigurationOptions(Configuration $configuration, array $options)
     {
         $c = $configuration->getConfiguration();
-        $c = array_merge_recursive($c, $options);
+        $c = array_replace_recursive($c, $options);
         $configuration->setConfiguration($c);
         return $configuration;
     }
