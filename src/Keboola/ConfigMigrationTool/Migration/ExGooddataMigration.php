@@ -75,7 +75,11 @@ class ExGooddataMigration implements MigrationInterface
                     $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', 'success');
                 } catch (\Exception $e) {
                     $this->sapiService->getClient()->setTableAttribute($sysTableId, 'migrationStatus', "error: {$e->getMessage()}");
-                    $this->sapiService->deleteConfiguration('keboola.ex-gooddata', $oldConfig['id']);
+                    try {
+                        $this->sapiService->deleteConfiguration('keboola.ex-gooddata', $oldConfig['id']);
+                    } catch (ClientException $e2) {
+                        // Ignore
+                    }
                     if ($e instanceof ClientException || $e instanceof UserException) {
                         throw new UserException($e->getMessage(), 400, $e, [
                             'tableId' => $sysTableId

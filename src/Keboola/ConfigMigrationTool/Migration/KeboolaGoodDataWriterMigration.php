@@ -86,6 +86,11 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                         $oldConfiguration,
                         ['migrationStatus' => "error: {$e->getMessage()}"]
                     );
+                    try {
+                        $this->storageApiService->deleteConfiguration($this->destinationComponentId, $oldConfig['id']);
+                    } catch (ClientException $e2) {
+                        // Ignore
+                    }
                     $this->storageApiService->deleteConfiguration($this->destinationComponentId, $oldConfig['id']);
                     if ($e instanceof ClientException || $e instanceof UserException) {
                         throw new UserException($e->getMessage(), 400, $e, [
