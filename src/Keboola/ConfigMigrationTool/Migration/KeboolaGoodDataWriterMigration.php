@@ -31,28 +31,31 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 || $oldConfig['configuration']['migrationStatus'] != 'success') {
                 try {
                     $newConfig = $oldConfig;
-                    unset($newConfig['migrationStatus']);
-                    unset($newConfig['configuration']['filters']);
-                    if (!empty($newConfig['configuration']['domain']['url'])) {
-                        $newConfig['configuration']['project']['isWhiteLabel'] = true;
+                    $newConfig['configuration'] = [];
+                    $newConfig['configuration']['parameters'] = $oldConfig['configuration'];
+                    unset($newConfig['configuration']['parameters']['migrationStatus']);
+                    unset($newConfig['configuration']['parameters']['filters']);
+                    if (!empty($newConfig['configuration']['parameters']['domain']['url'])) {
+                        $newConfig['configuration']['parameters']['project']['isWhiteLabel'] = true;
                     }
-                    unset($newConfig['configuration']['domain']);
-                    if (isset($newConfig['configuration']['user']['password'])) {
-                        $newConfig['configuration']['user']['#password'] = $newConfig['configuration']['user']['password'];
-                        unset($newConfig['configuration']['user']['password']);
+                    unset($newConfig['configuration']['parameters']['domain']);
+                    if (isset($newConfig['configuration']['parameters']['user']['password'])) {
+                        $newConfig['configuration']['parameters']['user']['#password']
+                            = $newConfig['configuration']['parameters']['user']['password'];
+                        unset($newConfig['configuration']['parameters']['user']['password']);
                     }
-                    unset($newConfig['configuration']['filterColumn']);
-                    unset($newConfig['configuration']['addDatasetTitleToColumns']);
-                    if (isset($newConfig['configuration']['dimensions'])) {
-                        foreach ($newConfig['configuration']['dimensions'] as $dimensionId => $dimension) {
-                            unset($newConfig['configuration']['dimensions'][$dimensionId]['isExported']);
+                    unset($newConfig['configuration']['parameters']['filterColumn']);
+                    unset($newConfig['configuration']['parameters']['addDatasetTitleToColumns']);
+                    if (isset($newConfig['configuration']['parameters']['dimensions'])) {
+                        foreach ($newConfig['configuration']['parameters']['dimensions'] as $dimensionId => $dim) {
+                            unset($newConfig['configuration']['parameters']['dimensions'][$dimensionId]['isExported']);
                         }
                     }
                     if (!empty($oldConfig['rows'])) {
                         foreach ($oldConfig['rows'] as $r) {
                             unset($r['configuration']['export']);
                             unset($r['configuration']['isExported']);
-                            $newConfig['configuration']['tables'][$r['id']] = $r['configuration'];
+                            $newConfig['configuration']['parameters']['tables'][$r['id']] = $r['configuration'];
                         }
                         $newConfig['rows'] = [];
                     }

@@ -51,7 +51,7 @@ abstract class DockerAppMigration implements MigrationInterface
         $configuration->setName($config['name']);
         $configuration->setDescription($config['description']);
         $configuration->setConfiguration($config['configuration']);
-        
+
         return $configuration;
     }
 
