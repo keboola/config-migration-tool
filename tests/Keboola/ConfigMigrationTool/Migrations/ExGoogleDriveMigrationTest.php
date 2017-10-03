@@ -8,7 +8,6 @@
 
 namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
-use Keboola\ConfigMigrationTool\Migration\ExGoogleAnalyticsMigration;
 use Keboola\ConfigMigrationTool\Migration\ExGoogleDriveMigration;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
@@ -161,7 +160,7 @@ class ExGoogleDriveMigrationTest extends ExGoogleDriveTest
 
     public function testStatus()
     {
-        $migration = new ExGoogleAnalyticsMigration($this->getLogger());
+        $migration = new ExGoogleDriveMigration($this->getLogger());
         $status = $migration->status();
 
         $this->assertNotEmpty($status);

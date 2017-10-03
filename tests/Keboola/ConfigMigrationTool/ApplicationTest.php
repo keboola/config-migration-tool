@@ -8,7 +8,7 @@ namespace Keboola\ConfigMigrationTool\Test;
 
 use Keboola\ConfigMigrationTool\Application;
 use Keboola\ConfigMigrationTool\Exception\UserException;
-use Keboola\ConfigMigrationTool\Migration\ExGoogleAnalyticsMigration;
+use Keboola\ConfigMigrationTool\Migration\ExGoogleDriveMigration;
 use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
@@ -28,8 +28,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
     public function testApplicationGetMigration()
     {
-        $result = $this->application->getMigration(['parameters' => ['component' => 'ex-google-analytics']]);
-        $this->assertInstanceOf(ExGoogleAnalyticsMigration::class, $result);
+        $result = $this->application->getMigration(['parameters' => ['component' => 'ex-google-drive']]);
+        $this->assertInstanceOf(ExGoogleDriveMigration::class, $result);
 
         try {
             $this->application->getMigration(['parameters' => ['component' => 'ex-google-analyticsx']]);
