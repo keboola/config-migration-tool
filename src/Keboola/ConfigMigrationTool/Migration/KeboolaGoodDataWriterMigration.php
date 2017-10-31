@@ -36,7 +36,8 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     unset($newConfig['configuration']['parameters']['migrationStatus']);
                     unset($newConfig['configuration']['parameters']['filters']);
                     if (!empty($newConfig['configuration']['parameters']['domain']['url'])) {
-                        $newConfig['configuration']['parameters']['project']['isWhiteLabel'] = true;
+                        $newConfig['configuration']['parameters']['project']['backendUrl']
+                            = $newConfig['configuration']['parameters']['domain']['url'];
                     }
                     unset($newConfig['configuration']['parameters']['domain']);
                     if (isset($newConfig['configuration']['parameters']['user']['password'])) {

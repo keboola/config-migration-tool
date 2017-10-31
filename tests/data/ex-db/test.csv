@@ -1,2 +1,0 @@
-"id","name","query","outputTable","incremental","primaryKey","enabled"
-"136102248","test","SELECT id,name FROM test;","in.c-ex-db-mysqlssl.test","1","id","1"
