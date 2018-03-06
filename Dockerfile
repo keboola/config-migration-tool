@@ -1,5 +1,5 @@
 FROM php:7.1
-MAINTAINER Miro Cillik <miro@keboola.com>
+ENV COMPOSER_ALLOW_SUPERUSER 1
 
 RUN apt-get update -q \
   && apt-get install unzip git -y --no-install-recommends \
