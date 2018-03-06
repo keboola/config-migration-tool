@@ -94,7 +94,7 @@ class Application
     }
 
     /**
-     * @param $class
+     * @param string $class
      * @return MigrationInterface
      * @throws UserException
      */

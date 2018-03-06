@@ -8,7 +8,7 @@
          processIsolation="false"
          stopOnFailure="true"
          syntaxCheck="false"
-         bootstrap="bootstrap.php">
+         bootstrap="tests/bootstrap.php">
 
     <testsuite name="Config Migration Tool Test Suite">
         <directory>tests/Keboola</directory>
