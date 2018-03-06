@@ -12,8 +12,9 @@ use Keboola\ConfigMigrationTool\Helper\TableHelper;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\Csv\CsvFile;
 use Keboola\StorageApi\Options\Components\Configuration;
+use PHPUnit\Framework\TestCase;
 
-class ExGoogleDriveTest extends \PHPUnit_Framework_TestCase
+class ExGoogleDriveTest extends TestCase
 {
     /** @var StorageApiService */
     protected $sapiService;

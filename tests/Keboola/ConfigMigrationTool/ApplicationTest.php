@@ -12,8 +12,9 @@ use Keboola\ConfigMigrationTool\Migration\ExGoogleDriveMigration;
 use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 
-class ApplicationTest extends \PHPUnit_Framework_TestCase
+class ApplicationTest extends TestCase
 {
     /** @var  Application */
     protected $application;

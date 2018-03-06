@@ -12,8 +12,9 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 
-class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
+class GenericCopyMigrationTest extends TestCase
 {
     /** @var Client */
     private $storageApiClient;

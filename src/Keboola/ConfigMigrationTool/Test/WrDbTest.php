@@ -12,8 +12,9 @@ use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\Csv\CsvFile;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\Components\Configuration;
+use PHPUnit\Framework\TestCase;
 
-class WrDbTest extends \PHPUnit_Framework_TestCase
+class WrDbTest extends TestCase
 {
     protected $driver = 'mysql';
 

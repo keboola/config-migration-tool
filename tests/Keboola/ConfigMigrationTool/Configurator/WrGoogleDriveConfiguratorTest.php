@@ -8,8 +8,9 @@ namespace Keboola\ConfigMigrationTool\Test\Configurator;
 
 use Keboola\ConfigMigrationTool\Configurator\WrGoogleDriveConfigurator;
 use Keboola\StorageApi\Options\Components\Configuration;
+use PHPUnit\Framework\TestCase;
 
-class WrGoogleDriveConfiguratorTest extends \PHPUnit_Framework_TestCase
+class WrGoogleDriveConfiguratorTest extends TestCase
 {
     private function createOldConfig()
     {

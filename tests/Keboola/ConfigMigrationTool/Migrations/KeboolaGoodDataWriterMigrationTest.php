@@ -12,8 +12,9 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 
-class KeboolaGoodDataWriterMigrationTest extends \PHPUnit_Framework_TestCase
+class KeboolaGoodDataWriterMigrationTest extends TestCase
 {
     /** @var Client */
     private $storageApiClient;

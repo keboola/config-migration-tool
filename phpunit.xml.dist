@@ -10,10 +10,6 @@
          syntaxCheck="false"
          bootstrap="bootstrap.php">
 
-    <php>
-        <const name="ROOT_PATH" value="./"/>
-    </php>
-
     <testsuite name="Config Migration Tool Test Suite">
         <directory>tests/Keboola</directory>
     </testsuite>

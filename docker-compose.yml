@@ -8,6 +8,7 @@ app:
   stdin_open: true
   environment:
     - KBC_TOKEN
+    - KBC_URL
     - GOOGLE_KEY
     - GOOGLE_ACCOUNT_ID
     - GOOGLE_ACCOUNT_EMAIL

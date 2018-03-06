@@ -10,8 +10,9 @@ namespace Keboola\ConfigMigrationTool\Test\Configurator;
 
 use Keboola\ConfigMigrationTool\Configurator\WrDbConfigurator;
 use Keboola\StorageApi\Options\Components\Configuration;
+use PHPUnit\Framework\TestCase;
 
-class WrDbConfiguratorTest extends \PHPUnit_Framework_TestCase
+class WrDbConfiguratorTest extends TestCase
 {
     private function createOldConfig()
     {

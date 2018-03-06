@@ -11,8 +11,9 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 
-class KeboolaExAdWordsMigrationTest extends \PHPUnit_Framework_TestCase
+class KeboolaExAdWordsMigrationTest extends TestCase
 {
     /** @var Client */
     private $storageApiClient;

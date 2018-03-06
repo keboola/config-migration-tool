@@ -22,7 +22,7 @@ class StorageApiService
 
     public function __construct()
     {
-        $this->client = new Client(['token' => getenv('KBC_TOKEN')]);
+        $this->client = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->client);
     }
 

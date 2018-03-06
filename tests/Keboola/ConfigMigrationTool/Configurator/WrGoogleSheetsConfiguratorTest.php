@@ -8,8 +8,9 @@ namespace Keboola\ConfigMigrationTool\Test\Configurator;
 
 use Keboola\ConfigMigrationTool\Configurator\WrGoogleSheetsConfigurator;
 use Keboola\StorageApi\Options\Components\Configuration;
+use PHPUnit\Framework\TestCase;
 
-class WrGoogleSheetsConfiguratorTest extends \PHPUnit_Framework_TestCase
+class WrGoogleSheetsConfiguratorTest extends TestCase
 {
     private function createOldConfig()
     {
