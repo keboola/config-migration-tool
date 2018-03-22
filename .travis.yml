@@ -1,4 +1,7 @@
-sudo: false
+sudo: required
+language: bash
+services:
+- docker
 services:
 - docker
 before_script:
