@@ -35,7 +35,7 @@ class OAuthService
         $response = $this->client->post(sprintf('credentials/%s', $componentId), [
             'body' => \GuzzleHttp\json_encode([
                 "id" => $account['id'],
-                "authorizedFor" => !isset($account['email']) ? $account['owner'] : $account['email'],
+                "authorizedFor" => empty($account['email']) ? $account['owner'] : $account['email'],
                 "data" => [
                     "access_token" => $account['accessToken'],
                     "refresh_token" => $account['refreshToken'],

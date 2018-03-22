@@ -167,7 +167,7 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
                 $orchestrationIsUpdated = true;
             }
             // get tasks
-            $tasks = $this->orchestratorService->getTasks($updated['id']);
+            $tasks = $this->orchestratorService->getTasks((string)$updated['id']);
 
             $this->assertNotEmpty($tasks);
             $newComponentTaskExists = false;
