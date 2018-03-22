@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 23/05/16
- * Time: 12:47
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Configurator;
 
@@ -12,7 +8,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 class ExGoogleDriveConfigurator
 {
-    public function create($account)
+    public function create(array $account) : Configuration
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId());
@@ -23,12 +19,12 @@ class ExGoogleDriveConfigurator
         return $configuration;
     }
 
-    public function getComponentId()
+    public function getComponentId() : string
     {
         return 'keboola.ex-google-drive';
     }
 
-    public function getTableAttributeValue($table, $name)
+    public function getTableAttributeValue(array  $table, string $name) : ?string
     {
         foreach ($table['attributes'] as $attribute) {
             if ($attribute['name'] == $name) {
@@ -39,7 +35,7 @@ class ExGoogleDriveConfigurator
         return null;
     }
 
-    public function configure($account)
+    public function configure(array $account) : array
     {
         $outputBucket = 'in.c-ex-google-drive-' . $account['id'];
         if (!empty($account['outputBucket'])) {
@@ -48,11 +44,11 @@ class ExGoogleDriveConfigurator
 
         $configuration = [
             'authorization' => [
-                'oauth_api' => ['id' => $account['id']]
+                'oauth_api' => ['id' => $account['id']],
             ],
             'parameters' => [
-                'outputBucket' => $outputBucket
-            ]
+                'outputBucket' => $outputBucket,
+            ],
         ];
 
         // files
@@ -72,7 +68,7 @@ class ExGoogleDriveConfigurator
                 'sheetTitle' => $sheet['sheetTitle'],
                 'outputTable' => $outputTableName,
                 'header' => ['rows' => $sheetCfg['header']['rows']],
-                'enabled' => true
+                'enabled' => true,
             ];
 
             if (isset($sheetCfg['header']['sanitize'])) {
@@ -89,13 +85,13 @@ class ExGoogleDriveConfigurator
         return $configuration;
     }
 
-    private function configureProcessors($sheet, $config)
+    private function configureProcessors(array $sheet, array $config) : array
     {
         $processorConfig['definition'] = ['component' => 'keboola.processor.transpose'];
         $parameters = [
             'filename' => $sheet['googleId'] . "_" . $sheet['sheetId'] . ".csv",
             'header_rows_count' => 1,
-            'header_sanitize' => true
+            'header_sanitize' => true,
         ];
 
         if (isset($config['transform']['transpose'])

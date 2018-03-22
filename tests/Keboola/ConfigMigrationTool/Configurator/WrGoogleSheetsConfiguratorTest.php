@@ -1,8 +1,6 @@
 <?php
-/**
- * Author: miro@keboola.com
- * Date: 13/06/2017
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Configurator;
 
@@ -12,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class WrGoogleSheetsConfiguratorTest extends TestCase
 {
-    private function createOldConfig()
+    private function createOldConfig() : array
     {
         return [
             'name' => 'Academy',
@@ -22,11 +20,11 @@ class WrGoogleSheetsConfiguratorTest extends TestCase
             'googleName' => 'Miro Cillik',
             'email' => 'test',
             'accessToken' => '12345',
-            'refreshToken' => '67890'
+            'refreshToken' => '67890',
         ];
     }
 
-    public function testCreate()
+    public function testCreate() : void
     {
         $config = $this->createOldConfig();
         $configurator = new WrGoogleSheetsConfigurator();
@@ -38,7 +36,7 @@ class WrGoogleSheetsConfiguratorTest extends TestCase
         $this->assertEquals($config['description'], $result->getDescription());
     }
 
-    public function testConfigure()
+    public function testConfigure() : void
     {
         $config = $this->createOldConfig();
         $config['items'] = [[
@@ -51,7 +49,7 @@ class WrGoogleSheetsConfiguratorTest extends TestCase
             'tableId' => 'in.c-academy.vouchers',
             'operation' => 'update',
             'targetFolder' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc',
-            'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc']
+            'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc'],
         ],[
             'id' => '244073864',
             'title' => 'Vouchers',
@@ -62,7 +60,7 @@ class WrGoogleSheetsConfiguratorTest extends TestCase
             'tableId' => 'in.c-academy.vouchers',
             'operation' => 'update',
             'targetFolder' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc',
-            'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc']
+            'folder' => ['id' => '0B8ceg4OWLR3ld0czTWxfd3RmQnc'],
         ]];
 
         $configurator = new WrGoogleSheetsConfigurator();

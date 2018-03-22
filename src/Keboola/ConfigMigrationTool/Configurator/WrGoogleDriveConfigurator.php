@@ -1,15 +1,14 @@
 <?php
-/**
- * Author: miro@keboola.com
- * Date: 23/05/2017
- */
+
+declare(strict_types=1);
+
 namespace Keboola\ConfigMigrationTool\Configurator;
 
 use Keboola\StorageApi\Options\Components\Configuration;
 
 class WrGoogleDriveConfigurator
 {
-    public function create($account)
+    public function create(array $account) : Configuration
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId());
@@ -24,12 +23,12 @@ class WrGoogleDriveConfigurator
         return $configuration;
     }
 
-    public function getComponentId()
+    public function getComponentId() : string
     {
         return 'keboola.wr-google-drive';
     }
 
-    public function getTableAttributeValue($table, $name)
+    public function getTableAttributeValue(array $table, string $name) : ?string
     {
         foreach ($table['attributes'] as $attribute) {
             if ($attribute['name'] == $name) {
@@ -40,20 +39,20 @@ class WrGoogleDriveConfigurator
         return null;
     }
 
-    public function configure($account)
+    public function configure(array $account) : array
     {
         $configuration = [
             'authorization' => [
-                'oauth_api' => ['id' => $account['id']]
+                'oauth_api' => ['id' => $account['id']],
             ],
             'parameters' => ['tables' => $this->configureTables($account['items'])],
-            'storage' => ['input' => ['tables' => $this->configureInputMapping($account['items'])]]
+            'storage' => ['input' => ['tables' => $this->configureInputMapping($account['items'])]],
         ];
 
         return $configuration;
     }
 
-    protected function configureTables($items)
+    protected function configureTables(array $items) : array
     {
         $tables = [];
         $cnt = 0;
@@ -66,20 +65,20 @@ class WrGoogleDriveConfigurator
                 'folder' => $item['folder'],
                 'action' => $item['operation'],
                 'tableId' => $item['tableId'],
-                'convert' => false
+                'convert' => false,
             ];
         }
 
         return $tables;
     }
 
-    protected function configureInputMapping($items)
+    protected function configureInputMapping(array $items) : array
     {
         return array_map(
             function ($item) {
                 return [
                     'source' => $item['tableId'],
-                    'destination' => $item['tableId'] . '.csv'
+                    'destination' => $item['tableId'] . '.csv',
                 ];
             },
             $items

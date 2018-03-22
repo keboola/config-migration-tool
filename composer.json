@@ -1,5 +1,6 @@
 {
   "name": "keboola/config-migration-tool",
+  "description": "Tool to migrate configurations of deprecated components",
   "license": "MIT",
   "require": {
     "php": ">=7.1",
@@ -9,12 +10,15 @@
     "keboola/storage-api-client": "^10.0",
     "keboola/orchestrator-php-client": "^1.2",
     "symfony/serializer": "^4.0",
+    "symfony/yaml": "^4.0",
     "guzzlehttp/guzzle": "^6.3"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.0",
-    "squizlabs/php_codesniffer": "^3.2",
-    "phpstan/phpstan": "^0.9"
+    "jakub-onderka/php-parallel-lint": "^0.9",
+    "phpstan/phpstan-shim": "^0.9",
+    "slevomat/coding-standard": "~4.0",
+    "squizlabs/php_codesniffer": "~3.2"
   },
   "authors": [
     {
@@ -27,5 +31,31 @@
       "Keboola\\ConfigMigrationTool\\": "src/Keboola/ConfigMigrationTool/",
       "Keboola\\ConfigMigrationTool\\Test\\": "tests/Keboola/ConfigMigrationTool/"
     }
+  },
+  "scripts": {
+    "tests-phpunit": "phpunit",
+    "tests-functional": "php ./tests/functional/run.php",
+    "tests": [
+      "@tests-phpunit",
+      "@tests-functional"
+    ],
+
+    "phpstan": "phpstan analyse ./src ./tests --level=max --no-progress -c phpstan.neon",
+    "phpcs": "phpcs -n --ignore=vendor --extensions=php .",
+    "phplint": "parallel-lint -j 10 --exclude vendor .",
+    "build": [
+      "@phplint",
+      "@phpcs",
+      "@phpstan",
+      "@tests"
+    ],
+    "ci": [
+      "@composer validate --no-check-all --strict",
+      "@build"
+    ]
+  },
+  "config": {
+    "sort-packages": true,
+    "optimize-autoloader": true
   }
 }

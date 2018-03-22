@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 10/05/16
- * Time: 11:33
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool;
 
@@ -13,25 +9,27 @@ use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
 use Keboola\ConfigMigrationTool\Migration\MigrationInterface;
 use Keboola\ConfigMigrationTool\Migration\DockerAppMigration;
+use Monolog\Logger;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class Application
 {
+    /** @var Logger */
     private $logger;
 
-    public function __construct($logger)
+    public function __construct(Logger $logger)
     {
         $this->logger = $logger;
     }
 
-    public function run($config)
+    public function run(array $config) : void
     {
         $migration = $this->getMigration($config);
         $migration->execute();
     }
 
-    public function action($config)
+    public function action(array $config) : array
     {
         $action = $config['action'];
         if ($action == 'supported-migrations') {
@@ -44,7 +42,7 @@ class Application
         return $migration->$action();
     }
 
-    public function getSupportedMigrations()
+    public function getSupportedMigrations() : array
     {
         $result = [];
         foreach ($this->getDefinition() as $k => $v) {
@@ -53,13 +51,13 @@ class Application
         return $result;
     }
 
-    public function getDefinition()
+    public function getDefinition() : array
     {
         $jsonDecode = new JsonDecode(true);
         return $jsonDecode->decode(file_get_contents(__DIR__ . '/definition.json'), JsonEncoder::FORMAT);
     }
 
-    public function getMigration($config)
+    public function getMigration(array $config) : MigrationInterface
     {
         if (isset($config['parameters']['component'])) {
             return $this->getLegacyMigration($config['parameters']['component']);
@@ -69,7 +67,7 @@ class Application
         throw new UserException("Missing parameters 'origin' and 'destination' or 'component'");
     }
 
-    private function getDockerAppMigration($origin, $destination)
+    private function getDockerAppMigration(string $origin, string $destination) : MigrationInterface
     {
         $config = $this->getDefinition();
         if (!isset($config[$origin])) {
@@ -87,18 +85,13 @@ class Application
         return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
     }
 
-    private function getLegacyMigration($component)
+    private function getLegacyMigration(string $component) : MigrationInterface
     {
         $componentName = $this->getComponentNameCamelCase($component);
         return $this->getMigrationClass($componentName);
     }
 
-    /**
-     * @param string $class
-     * @return MigrationInterface
-     * @throws UserException
-     */
-    private function getMigrationClass($class)
+    private function getMigrationClass(string $class) : MigrationInterface
     {
         /** @var MigrationInterface $migrationClass */
         $migrationClass = sprintf('\\Keboola\\ConfigMigrationTool\\Migration\\%sMigration', $class);
@@ -108,7 +101,7 @@ class Application
         return new $migrationClass($this->logger);
     }
 
-    private function getComponentNameCamelCase($component)
+    private function getComponentNameCamelCase(string $component) : string
     {
         $componentNameArr = explode('-', $component);
         $componentName = '';

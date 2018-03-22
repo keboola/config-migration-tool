@@ -1,24 +1,14 @@
-sudo: required
-
-language: bash
+sudo: false
 
 services:
   - docker
 
-install:
-  - docker-compose build app
-
-script:
-  - docker-compose run --rm app
+before_script:
+  - docker build . --tag=config-migration-tool
+  - docker run -e KBC_URL -e KBC_TOKEN config-migration-tool composer ci
 
 after_success:
   - docker images
-
-after_error:
-  - docker-compose logs
-
-after_failure:
-  - docker-compose logs
 
 deploy:
   provider: script

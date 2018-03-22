@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 09/01/17
- * Time: 16:06
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Configurator;
 
@@ -13,20 +9,15 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 class WrDbConfigurator
 {
+    /** @var string */
     protected $driver;
 
-    public function __construct($driver = 'mysql')
+    public function __construct(string $driver = 'mysql')
     {
         $this->driver = $driver;
     }
 
-
-    /**
-     * @param $attributes
-     * @param $prettyName
-     * @return Configuration
-     */
-    public function create($attributes, $prettyName)
+    public function create(array $attributes, string $prettyName) : Configuration
     {
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId());
@@ -37,21 +28,18 @@ class WrDbConfigurator
         return $configuration;
     }
 
-    /**
-     * @return string
-     */
-    public function getComponentId()
+    public function getComponentId() : string
     {
         return ($this->driver == 'redshift')?'keboola.wr-redshift-v2':'keboola.wr-db-' . $this->driver;
     }
 
     /**
-     * @param $credentials
-     * @param $tables
+     * @param array $credentials
+     * @param array $tables
      * @return array
      * @throws ApplicationException
      */
-    public function configure($credentials, $tables)
+    public function configure(array $credentials, array $tables) : array
     {
         // configuration can be empty
         if (!isset($credentials['host'])) {
@@ -74,11 +62,11 @@ class WrDbConfigurator
                     'database' => $credentials['database'],
                     'user' => $credentials['user'],
                     '#password' => $credentials['password'],
-                    'driver' => $credentials['driver']
+                    'driver' => $credentials['driver'],
                 ],
                 'tables' => $this->configureTables($tables),
             ],
-            'storage' => $this->configureInputMapping($tables)
+            'storage' => $this->configureInputMapping($tables),
         ];
 
         if ($this->driver == 'redshift' && isset($credentials['schema'])) {
@@ -95,7 +83,7 @@ class WrDbConfigurator
         return $configuration;
     }
 
-    protected function configureTables($tables)
+    protected function configureTables(array $tables) : array
     {
         return array_map(function ($table) {
             return [
@@ -109,14 +97,14 @@ class WrDbConfigurator
                         'type' => $column['type'],
                         'size' => $column['size'],
                         'nullable' => boolval($column['null']),
-                        'default' => $column['default']
+                        'default' => $column['default'],
                     ];
-                }, $table['columns'])
+                }, $table['columns']),
             ];
         }, $tables);
     }
 
-    protected function configureInputMapping($tables)
+    protected function configureInputMapping(array $tables) : array
     {
         return ['input' => ['tables' => array_map(
             function ($table) {
@@ -133,7 +121,7 @@ class WrDbConfigurator
                                 return (strtolower($column['type']) !== 'ignore');
                             }
                         )
-                    )
+                    ),
                 ];
             },
             $tables

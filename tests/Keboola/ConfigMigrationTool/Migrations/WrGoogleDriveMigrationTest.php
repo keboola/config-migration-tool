@@ -1,18 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 23/05/16
- * Time: 10:36
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
+use Keboola\ConfigMigrationTool\Logger\InfoHandler;
 use Keboola\ConfigMigrationTool\Migration\WrGoogleDriveMigration;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\ConfigMigrationTool\Test\WrGoogleDriveTest;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
 class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
@@ -23,21 +21,21 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
     /** @var WrGoogleDriveMigration */
     private $migration;
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
         $logger = $this->getLogger();
-        $this->orchestratorService = new OrchestratorService($logger);
+        $this->orchestratorService = new OrchestratorService();
         $this->migration = new WrGoogleDriveMigration($logger);
     }
 
-    public function testExecute()
+    public function testExecute() : void
     {
         $expectedConfigDrive = json_decode(file_get_contents(
-            ROOT_PATH . '/tests/data/wr-google-drive/expected-config-drive.json'
+            ROOT_PATH . '/data/wr-google-drive/expected-config-drive.json'
         ), true);
         $expectedConfigSheets = json_decode(file_get_contents(
-            ROOT_PATH . '/tests/data/wr-google-drive/expected-config-sheets.json'
+            ROOT_PATH . '/data/wr-google-drive/expected-config-sheets.json'
         ), true);
 
         $testConfigIds = $this->createOldConfigs();
@@ -90,7 +88,7 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
         }
     }
 
-    public function testOrchestrationUpdate()
+    public function testOrchestrationUpdate() : void
     {
         $oldComponentId = 'wr-google-drive';
         $driveComponentId = 'keboola.wr-google-drive';
@@ -105,14 +103,14 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
                         "component" => $oldComponentId,
                         "action" => "run",
                         "actionParameters" => [
-                            "config" => "testing"
+                            "config" => "testing",
                         ],
                         "continueOnFailure" => false,
                         "timeoutMinutes" => null,
-                        "active" => true
-                    ]
-                ]
-            ]
+                        "active" => true,
+                    ],
+                ],
+            ],
         ]);
 
         // test affected orchestrations - drive
@@ -158,7 +156,7 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
         $this->orchestratorService->request('delete', sprintf('orchestrations/%s', $orchestration['id']));
     }
 
-    private function assertOrchestration($updatedOrchestrations, $orchestration, $oldComponentId, $newComponentId)
+    private function assertOrchestration(array $updatedOrchestrations, array $orchestration, string $oldComponentId, string $newComponentId) : void
     {
         $this->assertNotEmpty($updatedOrchestrations);
         $orchestrationIsUpdated = false;
@@ -194,7 +192,7 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
         }
     }
 
-    public function testStatus()
+    public function testStatus() : void
     {
         $this->createOldConfigs();
         $status = $this->migration->status();
@@ -208,11 +206,11 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
         $this->assertArrayHasKey('orchestrations', $status);
     }
 
-    private function getLogger()
+    private function getLogger() : Logger
     {
         return new Logger(APP_NAME, [
-            new \Keboola\ConfigMigrationTool\Logger\InfoHandler(),
-            new \Monolog\Handler\StreamHandler('php://stderr', Logger::NOTICE)
+            new InfoHandler(),
+            new StreamHandler('php://stderr', Logger::NOTICE),
         ]);
     }
 }

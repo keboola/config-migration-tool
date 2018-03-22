@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Keboola\ConfigMigrationTool\Application;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
@@ -11,7 +13,7 @@ require_once(dirname(__FILE__) . "/bootstrap.php");
 
 $logger = new Logger(APP_NAME, [
     new \Keboola\ConfigMigrationTool\Logger\InfoHandler(),
-    new \Monolog\Handler\StreamHandler('php://stderr', Logger::NOTICE)
+    new \Monolog\Handler\StreamHandler('php://stderr', Logger::NOTICE),
 ]);
 
 try {
@@ -41,11 +43,11 @@ try {
 } catch (ApplicationException $e) {
     $logger->log('error', $e->getMessage(), (array) $e->getData());
     exit($e->getCode() > 1 ? $e->getCode(): 2);
-} catch (\Exception $e) {
+} catch (\Throwable $e) {
     $logger->log('error', $e->getMessage(), [
         'errFile' => $e->getFile(),
         'errLine' => $e->getLine(),
-        'trace' => $e->getTrace()
+        'trace' => $e->getTrace(),
     ]);
     exit(2);
 }

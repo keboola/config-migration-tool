@@ -1,8 +1,7 @@
 <?php
-/**
- * @copy Keboola
- * @author Jakub Matejka <jakub@keboola.com>
- */
+
+declare(strict_types=1);
+
 namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
@@ -14,7 +13,7 @@ use Keboola\StorageApi\ClientException;
 class GenericCopyMigration extends DockerAppMigration
 {
 
-    public function execute()
+    public function execute() : array
     {
         return $this->doExecute();
     }
@@ -25,7 +24,7 @@ class GenericCopyMigration extends DockerAppMigration
      * @throws ApplicationException
      * @throws UserException
      */
-    protected function doExecute(callable $migrationHook = null)
+    protected function doExecute(?callable $migrationHook = null) : array
     {
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
@@ -60,7 +59,7 @@ class GenericCopyMigration extends DockerAppMigration
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions($oldConfiguration, ['migrationStatus' => 'success']);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions(
                         $oldConfiguration,
@@ -71,14 +70,14 @@ class GenericCopyMigration extends DockerAppMigration
                         throw new UserException($e->getMessage(), 400, $e, [
                             'oldComponentId' => $this->originComponentId,
                             'newComponentId' => $this->destinationComponentId,
-                            'configurationId' => $oldConfig['id']
+                            'configurationId' => $oldConfig['id'],
                         ]);
                     }
 
                     throw new ApplicationException($e->getMessage(), 500, $e, [
                         'oldComponentId' => $this->originComponentId,
                         'newComponentId' => $this->destinationComponentId,
-                        'configurationId' => $oldConfig['id']
+                        'configurationId' => $oldConfig['id'],
                     ]);
                 }
             }
@@ -86,10 +85,10 @@ class GenericCopyMigration extends DockerAppMigration
         return $createdConfigurations;
     }
 
-    public function status()
+    public function status() : array
     {
         $sapiService = new StorageApiService();
-        $orchestratorService = new OrchestratorService($this->logger);
+        $orchestratorService = new OrchestratorService();
 
         $configurations = $sapiService->getConfigurations($this->originComponentId);
         return [
@@ -100,12 +99,12 @@ class GenericCopyMigration extends DockerAppMigration
                         'configName' => $item['name'],
                         'componentId' => $this->originComponentId,
                         'status' => isset($item['configuration']['migrationStatus'])
-                            ? $item['configuration']['migrationStatus'] : 'n/a'
+                            ? $item['configuration']['migrationStatus'] : 'n/a',
                     ];
                 },
                 $configurations
             ),
-            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId)
+            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId),
         ];
     }
 }

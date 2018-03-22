@@ -1,8 +1,6 @@
 <?php
-/**
- * Author: miro@keboola.com
- * Date: 13/06/2017
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test;
 
@@ -17,7 +15,7 @@ class WrGoogleDriveTest extends TestCase
     /** @var StorageApiService */
     protected $sapiService;
 
-    public function setUp()
+    public function setUp() : void
     {
         $this->sapiService = new StorageApiService();
 
@@ -29,13 +27,13 @@ class WrGoogleDriveTest extends TestCase
                 $this->sapiService->getClient()->dropTable($table['id']);
                 try {
                     $this->sapiService->deleteConfiguration('wr-google-drive', $attributes['id']);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                 }
             }
         }
     }
 
-    protected function createOldConfig()
+    protected function createOldConfig() : string
     {
         $id = uniqid('migrationtest');
 
@@ -43,7 +41,7 @@ class WrGoogleDriveTest extends TestCase
         $tableId = $sapiClient->createTable(
             'sys.c-wr-google-drive',
             $id,
-            new CsvFile(ROOT_PATH . 'tests/data/wr-google-drive/migration-test.csv')
+            new CsvFile(ROOT_PATH . '/data/wr-google-drive/migration-test.csv')
         );
 
         $sapiClient->setTableAttribute($tableId, 'id', $id);
@@ -66,7 +64,7 @@ class WrGoogleDriveTest extends TestCase
         return $id;
     }
 
-    protected function createOldConfigs()
+    protected function createOldConfigs() : array
     {
         $testTables = [];
         for ($i=0; $i<2; $i++) {

@@ -1,27 +1,24 @@
 <?php
-/**
- * Author: miro@keboola.com
- * Date: 13/06/2017
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Service;
 
 use Keboola\ConfigMigrationTool\Service\WrGoogleDriveService;
 use Keboola\ConfigMigrationTool\Test\WrGoogleDriveTest;
-use Monolog\Logger;
 
 class WrGoogleDriveServiceTest extends WrGoogleDriveTest
 {
     /** @var WrGoogleDriveService */
     private $service;
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
-        $this->service = new WrGoogleDriveService(new Logger(APP_NAME));
+        $this->service = new WrGoogleDriveService();
     }
 
-    public function testGetConfigs()
+    public function testGetConfigs() : void
     {
         $oldConfigIds = $this->createOldConfigs();
         $configs = $this->service->getConfigs();
@@ -42,7 +39,7 @@ class WrGoogleDriveServiceTest extends WrGoogleDriveTest
         }
     }
 
-    public function testGetAccount()
+    public function testGetAccount() : void
     {
         $oldConfigIds = $this->createOldConfigs();
 

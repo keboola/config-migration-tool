@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 09/01/17
- * Time: 16:52
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Configurator;
 
@@ -14,17 +10,17 @@ use PHPUnit\Framework\TestCase;
 
 class WrDbConfiguratorTest extends TestCase
 {
-    private function createOldConfig()
+    private function createOldConfig() : array
     {
         return [
             'writerId' => 'migration',
             'writer' => 'db',
             'driver' => 'mysql',
-            'description' => 'mysql db writer'
+            'description' => 'mysql db writer',
         ];
     }
 
-    public function testCreate()
+    public function testCreate() : void
     {
         $config = $this->createOldConfig();
         $configurator = new WrDbConfigurator();
@@ -36,7 +32,7 @@ class WrDbConfiguratorTest extends TestCase
         $this->assertEquals($config['description'], $result->getDescription());
     }
 
-    public function testConfigure()
+    public function testConfigure() : void
     {
         $config = $this->createOldConfig();
         $configurator = new WrDbConfigurator();
@@ -48,7 +44,7 @@ class WrDbConfiguratorTest extends TestCase
             'host' => 'hostname',
             'password' => 'password',
             'port' => '3306',
-            'user' => 'root'
+            'user' => 'root',
         ];
 
         $tables = [[
@@ -63,7 +59,7 @@ class WrDbConfiguratorTest extends TestCase
                     "type" => "INT",
                     "size" => "",
                     "null" => "",
-                    "default" => ""
+                    "default" => "",
                 ],
                 [
                     "name" => "value",
@@ -71,7 +67,7 @@ class WrDbConfiguratorTest extends TestCase
                     "type" => "INT",
                     "size" => "",
                     "null" => 1,
-                    "default" => ""
+                    "default" => "",
                 ],
                 [
                     "name" => "idUser",
@@ -79,7 +75,7 @@ class WrDbConfiguratorTest extends TestCase
                     "type" => "INT",
                     "size" => "",
                     "null" => 1,
-                    "default" => ""
+                    "default" => "",
                 ],
                 [
                     "name" => "code",
@@ -87,10 +83,10 @@ class WrDbConfiguratorTest extends TestCase
                     "type" => "IGNORE",
                     "size" => "255",
                     "null" => "",
-                    "default" => ""
-                ]
+                    "default" => "",
+                ],
             ],
-            "primaryKey" => ["id"]
+            "primaryKey" => ["id"],
         ]];
 
         $result = $configurator->configure($credentials, $tables);

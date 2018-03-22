@@ -1,16 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 17/05/16
- * Time: 10:47
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
 interface MigrationInterface
 {
-    public function execute();
+    public function execute() : array;
 
-    public function status();
+    public function status() : array;
 }

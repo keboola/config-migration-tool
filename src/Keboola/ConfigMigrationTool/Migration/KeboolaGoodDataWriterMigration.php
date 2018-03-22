@@ -1,9 +1,6 @@
 <?php
-/**
- * @package config-migration-tool
- * @copyright 2017 Keboola
- * @author Jakub Matejka <jakub@keboola.com>
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
@@ -14,7 +11,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 {
-    public function execute()
+    public function execute() : array
     {
         return $this->doExecute();
     }
@@ -22,8 +19,10 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
     /**
      * @param callable|null $migrationHook Optional callback to adjust configuration object before saving
      * @return array
+     * @throws ApplicationException
+     * @throws UserException
      */
-    protected function doExecute(callable $migrationHook = null)
+    protected function doExecute(?callable $migrationHook = null) : array
     {
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
@@ -81,7 +80,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions($oldConfiguration, ['migrationStatus' => 'success']);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions(
                         $oldConfiguration,
@@ -97,14 +96,14 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                         throw new UserException($e->getMessage(), 400, $e, [
                             'oldComponentId' => $this->originComponentId,
                             'newComponentId' => $this->destinationComponentId,
-                            'configurationId' => $oldConfig['id']
+                            'configurationId' => $oldConfig['id'],
                         ]);
                     }
 
                     throw new ApplicationException($e->getMessage(), 500, $e, [
                         'oldComponentId' => $this->originComponentId,
                         'newComponentId' => $this->destinationComponentId,
-                        'configurationId' => $oldConfig['id']
+                        'configurationId' => $oldConfig['id'],
                     ]);
                 }
             }

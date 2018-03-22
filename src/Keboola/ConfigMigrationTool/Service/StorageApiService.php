@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 26/05/16
- * Time: 10:33
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Service;
 
@@ -12,12 +8,15 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
+use Keboola\StorageApi\TableExporter;
 
 class StorageApiService
 {
     /** @var Client */
     private $client;
 
+    /** @var Components */
     private $components;
 
     public function __construct()
@@ -26,12 +25,12 @@ class StorageApiService
         $this->components = new Components($this->client);
     }
 
-    public function getClient()
+    public function getClient() : Client
     {
         return $this->client;
     }
 
-    public function getConfigurationTables($componentId)
+    public function getConfigurationTables(string $componentId) : array
     {
         $sysBuckets = $this->getConfigurationBuckets($componentId);
 
@@ -43,7 +42,7 @@ class StorageApiService
         return $tables;
     }
 
-    public function getConfigurationBuckets($componentId)
+    public function getConfigurationBuckets(string $componentId) : array
     {
         $buckets = $this->client->listBuckets();
         return array_filter($buckets, function ($bucket) use ($componentId) {
@@ -51,27 +50,33 @@ class StorageApiService
         });
     }
 
-    public function exportTable($tableId)
+    public function exportTable(string $tableId) : array
     {
-        return Client::parseCsv($this->client->exportTable($tableId));
+        $tableExporter = new TableExporter($this->client);
+        $file = sys_get_temp_dir() . uniqid('config-migration');
+        $tableExporter->exportTable($tableId, $file, []);
+        return Client::parseCsv(file_get_contents($file));
     }
 
-    public function getConfigurations($componentId)
+    public function getConfigurations(string $componentId) : array
     {
-        return $this->components->getComponentConfigurations($componentId);
+        $component = new Components($this->client);
+        $options = new ListComponentConfigurationsOptions();
+        $options->setComponentId($componentId);
+        return $component->listComponentConfigurations($options);
     }
 
-    public function getConfiguration($componentId, $configurationId)
+    public function getConfiguration(string $componentId, string $configurationId) : array
     {
         return $this->components->getConfiguration($componentId, $configurationId);
     }
 
-    public function createConfiguration(Configuration $configuration)
+    public function createConfiguration(Configuration $configuration) : array
     {
         return $this->components->addConfiguration($configuration);
     }
 
-    public function addConfigurationRow(Configuration $configuration, $id, array $rowConfiguration)
+    public function addConfigurationRow(Configuration $configuration, string $id, array $rowConfiguration) : array
     {
         $row = new ConfigurationRow($configuration);
         $row->setRowId($id)
@@ -79,7 +84,7 @@ class StorageApiService
         return $this->components->addConfigurationRow($row);
     }
 
-    public function encryptConfiguration(Configuration $configuration)
+    public function encryptConfiguration(Configuration $configuration) :Configuration
     {
         $client = new \GuzzleHttp\Client([
             'base_uri' => 'https://syrup.keboola.com/docker/',
@@ -90,17 +95,17 @@ class StorageApiService
             $configuration->getConfigurationId()
         ), [
             'headers' => [
-                'X-StorageApi-Token' => getenv('KBC_TOKEN')
+                'X-StorageApi-Token' => getenv('KBC_TOKEN'),
             ],
             'form_params' => [
-                'configuration' => \GuzzleHttp\json_encode($configuration->getConfiguration())
-            ]
+                'configuration' => \GuzzleHttp\json_encode($configuration->getConfiguration()),
+            ],
         ]);
 
         return $configuration;
     }
 
-    public function deleteConfiguration($componentId, $configurationId)
+    public function deleteConfiguration(string $componentId, string $configurationId) : void
     {
         $this->components->deleteConfiguration($componentId, $configurationId);
     }

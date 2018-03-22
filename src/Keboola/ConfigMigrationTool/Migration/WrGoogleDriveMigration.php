@@ -1,8 +1,6 @@
 <?php
-/**
- * Author: miro@keboola.com
- * Date: 13/06/2017
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
@@ -46,14 +44,14 @@ class WrGoogleDriveMigration
     {
         $this->logger = $logger;
         $this->sapiService = new StorageApiService();
-        $this->orchestratorService = new OrchestratorService($this->logger);
+        $this->orchestratorService = new OrchestratorService();
         $this->driveConfigurator = new WrGoogleDriveConfigurator();
         $this->sheetsConfigurator = new WrGoogleSheetsConfigurator();
-        $this->googleDriveService = new WrGoogleDriveService($this->logger);
+        $this->googleDriveService = new WrGoogleDriveService();
         $this->oauthService = new OAuthService();
     }
 
-    public function execute()
+    public function execute() : array
     {
         $tables = $this->sapiService->getConfigurationTables('wr-google-drive');
         $createdConfigurations = [];
@@ -96,12 +94,12 @@ class WrGoogleDriveMigration
             } catch (ClientException $e) {
                 $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
                 throw new UserException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                    'tableId' => $table['id']
+                    'tableId' => $table['id'],
                 ]);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->sapiService->getClient()->setTableAttribute($table['id'], 'migrationStatus', 'error: ' . $e->getMessage());
                 throw new ApplicationException("Error occured during migration: " . $e->getMessage(), 500, $e, [
-                    'tableId' => $table['id']
+                    'tableId' => $table['id'],
                 ]);
             }
         }
@@ -109,7 +107,7 @@ class WrGoogleDriveMigration
         return $createdConfigurations;
     }
 
-    protected function toGoogleDrive($account)
+    protected function toGoogleDrive(array $account) : ?Configuration
     {
         $driveItems = array_filter($account['items'], function ($item) {
             return ($item['type'] == 'file' || $item['operation'] == 'create');
@@ -137,7 +135,7 @@ class WrGoogleDriveMigration
         return null;
     }
 
-    protected function toGoogleSheets($account)
+    protected function toGoogleSheets(array $account) : ?Configuration
     {
         $sheetItems = array_filter($account['items'], function ($item) {
             return (strtolower($item['type']) == 'sheet' && strtolower($item['operation']) !== 'create');
@@ -160,7 +158,7 @@ class WrGoogleDriveMigration
                         }
                     }
                     $item['folder'] = $this->getFolder($account['id'], $item);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     // sheet not found in account
                     unset($sheetItems[$key]);
                     continue;
@@ -184,23 +182,23 @@ class WrGoogleDriveMigration
         return null;
     }
 
-    protected function getFolder($accountId, $item)
+    protected function getFolder(string $accountId, array $item) : array
     {
         $folderId = empty($item['targetFolder']) ? 'root' : $item['targetFolder'];
         $folder = $this->googleDriveService->getRemoteFile($accountId, $folderId);
 
         return [
             'id' => $folder['id'],
-            'title' => $folder['name']
+            'title' => $folder['name'],
         ];
     }
 
-    public function updateOrchestrations($driveConfiguration, $sheetsConfiguration)
+    public function updateOrchestrations(?Configuration $driveConfiguration, ?Configuration $sheetsConfiguration) : array
     {
         $oldComponentId = 'wr-google-drive';
         /** @var Configuration $firstConfiguration */
         $firstConfiguration = null;
-        /** @var Configuration $secondConfiguration */
+        /** @var ?Configuration $secondConfiguration */
         $secondConfiguration = null;
         $updatedOrchestrations = [];
 
@@ -224,7 +222,7 @@ class WrGoogleDriveMigration
         $orchestrations = $this->orchestratorService->listOrchestrations($oldComponentId);
 
         foreach ($orchestrations as $orchestration) {
-            $tasks = $this->orchestratorService->getTasks($orchestration['id']);
+            $tasks = $this->orchestratorService->getTasks((string)$orchestration['id']);
 
             $tasksChanged = false;
             $newTasks = [];
@@ -276,7 +274,7 @@ class WrGoogleDriveMigration
         return $updatedOrchestrations;
     }
 
-    public function status()
+    public function status() : array
     {
         $oldComponentId = 'wr-google-drive';
         $driveComponentId = 'keboola.wr-google-drive';
@@ -299,7 +297,7 @@ class WrGoogleDriveMigration
                     'configName' => $attributes['name'],
                     'componentId' => $oldComponentId,
                     'tableId' => $table['id'],
-                    'status' => isset($attributes['migrationStatus'])?$attributes['migrationStatus']:'n/a'
+                    'status' => isset($attributes['migrationStatus']) ? $attributes['migrationStatus'] : 'n/a',
                 ];
             },
             $tables
@@ -307,7 +305,7 @@ class WrGoogleDriveMigration
 
         return [
             'configurations' => $configurations,
-            'orchestrations' => $orchestrations
+            'orchestrations' => $orchestrations,
         ];
     }
 }

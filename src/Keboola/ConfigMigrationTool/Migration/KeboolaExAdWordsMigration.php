@@ -1,9 +1,6 @@
 <?php
-/**
- * @package config-migration-tool
- * @copyright 2017 Keboola
- * @author Jakub Matejka <jakub@keboola.com>
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
@@ -11,7 +8,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 class KeboolaExAdWordsMigration extends GenericCopyMigration
 {
-    public function execute()
+    public function execute() : array
     {
         $migrationHook = function (Configuration $configuration) {
             $c = $configuration->getConfiguration();

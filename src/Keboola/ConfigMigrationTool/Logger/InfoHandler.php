@@ -1,11 +1,7 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 30/05/16
- * Time: 14:18
- */
+declare(strict_types=1);
+
 namespace Keboola\ConfigMigrationTool\Logger;
 
 use Monolog\Handler\FilterHandler;

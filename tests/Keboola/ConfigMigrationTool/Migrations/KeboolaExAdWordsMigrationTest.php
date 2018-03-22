@@ -1,8 +1,6 @@
 <?php
-/**
- * @copy Keboola 2016
- * @author Jakub Matejka <jakub@keboola.com>
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
@@ -21,14 +19,19 @@ class KeboolaExAdWordsMigrationTest extends TestCase
     /** @var Components */
     private $components;
 
+    /** @var string */
     private $originComponentId;
+
+    /** @var string */
     private $destinationComponentId;
+
+    /** @var string */
     private $configurationId;
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
-        $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN')]);
+        $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->storageApiClient);
 
         $this->originComponentId = 'ex-adwords-v2';
@@ -41,12 +44,12 @@ class KeboolaExAdWordsMigrationTest extends TestCase
         $c->setName($this->configurationId);
         $c->setDescription('Migrate this account');
         $c->setConfiguration(['parameters' =>
-            ['a' => uniqid(), 'developer_token' => 'dT', 'c' => uniqid(), 'customer_id' => 'cId', 'bucket' => 'b']
+            ['a' => uniqid(), 'developer_token' => 'dT', 'c' => uniqid(), 'customer_id' => 'cId', 'bucket' => 'b'],
         ]);
         $this->components->addConfiguration($c);
     }
 
-    public function testExecute()
+    public function testExecute() : void
     {
         $migration = new KeboolaExAdWordsMigration(new Logger(APP_NAME));
         $migration
@@ -71,7 +74,7 @@ class KeboolaExAdWordsMigrationTest extends TestCase
         $this->assertEquals('cId', $destConfig1['configuration']['parameters']['customerId']);
     }
 
-    public function tearDown()
+    public function tearDown() : void
     {
         parent::tearDown();
         $this->components->deleteConfiguration($this->originComponentId, $this->configurationId);

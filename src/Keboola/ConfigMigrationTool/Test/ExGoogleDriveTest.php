@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 01/07/16
- * Time: 10:18
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test;
 
@@ -19,7 +15,7 @@ class ExGoogleDriveTest extends TestCase
     /** @var StorageApiService */
     protected $sapiService;
 
-    public function setUp()
+    public function setUp() : void
     {
         $this->sapiService = new StorageApiService();
 
@@ -32,13 +28,13 @@ class ExGoogleDriveTest extends TestCase
 
                 try {
                     $this->sapiService->deleteConfiguration('ex-google-drive', $attributes['id']);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                 }
             }
         }
     }
 
-    protected function createOldConfig()
+    protected function createOldConfig() : string
     {
         $id = uniqid('migrationtest');
 
@@ -46,13 +42,13 @@ class ExGoogleDriveTest extends TestCase
         $tableId = $sapiClient->createTable(
             'sys.c-ex-google-drive',
             $id,
-            new CsvFile(ROOT_PATH . 'tests/data/ex-google-drive/migration-test.csv')
+            new CsvFile(ROOT_PATH . '/data/ex-google-drive/migration-test.csv')
         );
 
         $sapiClient->setTableAttribute($tableId, 'id', $id);
         $sapiClient->setTableAttribute($tableId, 'accountName', $id);
         $sapiClient->setTableAttribute($tableId, 'description', 'Migrate this account');
-//        $sapiClient->setTableAttribute($tableId, 'outputBucket', 'migrationtest');
+        //$sapiClient->setTableAttribute($tableId, 'outputBucket', 'migrationtest');
         $sapiClient->setTableAttribute($tableId, 'googleId', getenv('GOOGLE_ACCOUNT_ID'));
         $sapiClient->setTableAttribute($tableId, 'googleName', 'Some User Name');
         $sapiClient->setTableAttribute($tableId, 'email', getenv('GOOGLE_ACCOUNT_EMAIL'));
@@ -71,10 +67,10 @@ class ExGoogleDriveTest extends TestCase
         return $id;
     }
 
-    protected function createOldConfigs()
+    protected function createOldConfigs() : array
     {
         $testTables = [];
-        for ($i=0; $i<5; $i++) {
+        for ($i = 0; $i < 5; $i++) {
             $testTables[] = $this->createOldConfig();
         }
 

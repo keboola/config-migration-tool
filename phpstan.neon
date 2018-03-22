@@ -1,2 +1,4 @@
 parameters:
 	ignoreErrors:
+	autoload_files:
+		- %rootDir%/../../../../tests/bootstrap.php
