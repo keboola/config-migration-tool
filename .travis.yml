@@ -1,18 +1,17 @@
 sudo: false
-
 services:
-  - docker
-
+- docker
 before_script:
-  - docker build . --tag=config-migration-tool
-  - docker run -e KBC_URL -e KBC_TOKEN config-migration-tool composer ci
-
+- docker build . --tag=config-migration-tool
+- docker run -e KBC_URL -e KBC_TOKEN config-migration-tool composer ci
 after_success:
-  - docker images
-
+- docker images
 deploy:
   provider: script
   skip_cleanup: true
-  script: ./deploy.sh
+  script: "./deploy.sh"
   on:
     tags: true
+notifications:
+  slack:
+    secure: EWIkeU2J+VclJq9hOxWxXLkXi5OM8gxfuDeVuHZ595Y9kK3nbgxNj6XY2nqo2oJiu80dw8lFZzfZQ6jHqjhSh3mszYS9x6CZlcjokeaMNag56UISlSSUtbz8FWoHwrMyqqOjZdo3o+/JBue5D8znvMkEvIYQfrda23sfEoZg5oqR1HPwZ/RenouDX0f86fUFi4TKckJx5lGPuLX857HOpk64F8zxCePIm96tn8pKj+DI1AKr8qdC9VRIuPElY/GV5YlV0jitg9Nos6C+bhNwUKGX4YAlGXDVF6hsZwOc01vVyTPP5MbmgcF7HGSaKh8hO1Qvv6OcbKM7Jhg/9sv2jChp18GFjgXe5dSVWhSCO4Ute6TMFA4PoeR0k4fsDNqdzJo+eojInI4uy7ze3rMbRGdtug7k//q7gqU3J6GF+xn2mGw0Y0iUH0aU6au2O+uhFg7b8Dgk+6TkEuWehvRIIKhvskONU53Tzmu62rF/f2VVpBeW9htHjFA1u0mSuhJSpYLNUMaNHcPm3j+rUOWlbrBTX+3mrTNkK/lBHUN6RXi7ByXTIgjYpBfTAB3Ot+Eh+EZw3rCiVPcpI2mfyXvBpsPYw/JzQgn89JUvMR/7rFn3dw4SJ7kBgHtn19W4XGiiVBaNg7PE2XTth6phKd7YosaeEqzFo6OZJpu3ZQGnho0=

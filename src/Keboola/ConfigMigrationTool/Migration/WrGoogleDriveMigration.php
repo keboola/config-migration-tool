@@ -266,7 +266,7 @@ class WrGoogleDriveMigration
                     $tasks[] = $newTask;
                 }
 
-                $this->orchestratorService->updateTasks($orchestration['id'], $tasks);
+                $this->orchestratorService->updateTasks((string)$orchestration['id'], $tasks);
                 $updatedOrchestrations[] = $orchestration;
             }
         }
