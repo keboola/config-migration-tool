@@ -10,7 +10,6 @@
     "keboola/storage-api-client": "^10.0",
     "keboola/orchestrator-php-client": "^1.2",
     "symfony/serializer": "^4.0",
-    "symfony/yaml": "^4.0",
     "guzzlehttp/guzzle": "^6.3"
   },
   "require-dev": {

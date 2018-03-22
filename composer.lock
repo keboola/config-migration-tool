@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c0bf9630b6e0e6925bb270211deb5c0e",
+    "content-hash": "6e1ff6c1d3008793db1e484b407b6230",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.52.20",
+            "version": "3.52.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "299ac47ff5171d6a25f788dc333c0a3c8db40f69"
+                "reference": "4d51b552026aefc060f2b4f3bd19e33c98088c9c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/299ac47ff5171d6a25f788dc333c0a3c8db40f69",
-                "reference": "299ac47ff5171d6a25f788dc333c0a3c8db40f69",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4d51b552026aefc060f2b4f3bd19e33c98088c9c",
+                "reference": "4d51b552026aefc060f2b4f3bd19e33c98088c9c",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-03-01T20:18:42+00:00"
+            "time": "2018-03-21T21:17:52+00:00"
         },
         {
             "name": "guzzle/guzzle",
@@ -999,64 +999,6 @@
             "description": "Symfony Serializer Component",
             "homepage": "https://symfony.com",
             "time": "2018-02-19T12:18:43+00:00"
-        },
-        {
-            "name": "symfony/yaml",
-            "version": "v4.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/yaml.git",
-                "reference": "de5f125ea39de846b90b313b2cfb031a0152d223"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/de5f125ea39de846b90b313b2cfb031a0152d223",
-                "reference": "de5f125ea39de846b90b313b2cfb031a0152d223",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1.3"
-            },
-            "conflict": {
-                "symfony/console": "<3.4"
-            },
-            "require-dev": {
-                "symfony/console": "~3.4|~4.0"
-            },
-            "suggest": {
-                "symfony/console": "For validating YAML files using the lint command"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "4.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Yaml\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Yaml Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-02-19T20:08:53+00:00"
         }
     ],
     "packages-dev": [
@@ -2510,16 +2452,16 @@
         },
         {
             "name": "slevomat/coding-standard",
-            "version": "4.5.1",
+            "version": "4.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "174135533894560bb26b77a912c0e37f0b173c27"
+                "reference": "1e609159241fa90d5a429f185b2ea9b881340a7c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/174135533894560bb26b77a912c0e37f0b173c27",
-                "reference": "174135533894560bb26b77a912c0e37f0b173c27",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/1e609159241fa90d5a429f185b2ea9b881340a7c",
+                "reference": "1e609159241fa90d5a429f185b2ea9b881340a7c",
                 "shasum": ""
             },
             "require": {
@@ -2546,7 +2488,7 @@
                 "MIT"
             ],
             "description": "Slevomat Coding Standard for PHP_CodeSniffer complements Consistence Coding Standard by providing sniffs with additional checks.",
-            "time": "2018-03-06T08:10:30+00:00"
+            "time": "2018-03-08T08:14:33+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
