@@ -86,11 +86,11 @@ class StorageApiService
         return $this->components->addConfigurationRow($row);
     }
 
-    private function getSyrupService() : string
+    private function getRunnerService() : string
     {
         $services = $this->client->indexAction()['services'];
         foreach ($services as $service) {
-            if ($service['id'] == 'syrup') {
+            if ($service['id'] == 'docker-runner') {
                 return $service['url'];
             }
         }
@@ -119,7 +119,7 @@ class StorageApiService
     public function encryptConfiguration(Configuration $configuration) : array
     {
         $client = new \GuzzleHttp\Client([
-            'base_uri' => $this->getSyrupService(),
+            'base_uri' => $this->getRunnerService(),
         ]);
         $response = $client->post(sprintf(
             '/docker/encrypt?componentId=%s&projectId=%s',
