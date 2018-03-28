@@ -62,7 +62,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $newConfig);
 
                     $this->storageApiService->createConfiguration($configuration);
-                    $this->storageApiService->encryptConfiguration($configuration);
+                    $this->storageApiService->encryptAndSaveConfiguration($configuration);
 
 
                     $this->logger->info(sprintf(

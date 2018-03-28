@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Service;
 
+use Keboola\ConfigMigrationTool\Exception\ApplicationException;
+use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -84,25 +86,55 @@ class StorageApiService
         return $this->components->addConfigurationRow($row);
     }
 
-    public function encryptConfiguration(Configuration $configuration) :Configuration
+    private function getSyrupService() : string
+    {
+        $services = $this->client->indexAction()['services'];
+        foreach ($services as $service) {
+            if ($service['id'] == 'syrup') {
+                return $service['url'];
+            }
+        }
+        throw new ApplicationException('Syrup service not found');
+    }
+
+    private function getProjectId() : string
+    {
+        $token = $this->client->verifyToken();
+        return (string)$token['owner']['id'];
+    }
+
+    public function encryptAndSaveConfiguration(Configuration $configuration) : void
+    {
+        $configurationData = $this->encryptConfiguration($configuration);
+        $configuration->setConfiguration($configurationData);
+        $this->saveConfiguration($configuration);
+    }
+
+    public function saveConfiguration(Configuration $configuration) : void
+    {
+        $components = new Components($this->client);
+        $components->updateConfiguration($configuration);
+    }
+
+    public function encryptConfiguration(Configuration $configuration) : array
     {
         $client = new \GuzzleHttp\Client([
-            'base_uri' => 'https://syrup.keboola.com/docker/',
+            'base_uri' => $this->getSyrupService(),
         ]);
-        $client->put(sprintf(
-            '%s/configs/%s',
+        $response = $client->post(sprintf(
+            '/docker/encrypt?componentId=%s&projectId=%s',
             $configuration->getComponentId(),
-            $configuration->getConfigurationId()
+            $this->getProjectId()
         ), [
             'headers' => [
-                'X-StorageApi-Token' => getenv('KBC_TOKEN'),
+                'Content-type' => 'application/json'
             ],
-            'form_params' => [
-                'configuration' => \GuzzleHttp\json_encode($configuration->getConfiguration()),
-            ],
+            'body' => \GuzzleHttp\json_encode($configuration->getConfiguration())
         ]);
-
-        return $configuration;
+        if ($response->getStatusCode() !== 200) {
+            throw new UserException("Failed to encrypt configuration: " . $response->getBody());
+        }
+        return \GuzzleHttp\json_decode($response->getBody(), true);
     }
 
     public function deleteConfiguration(string $componentId, string $configurationId) : void

@@ -123,7 +123,7 @@ class WrGoogleDriveMigration
             $newComponentConfiguration = $this->driveConfigurator->create($account);
             $this->sapiService->createConfiguration($newComponentConfiguration);
             $newComponentConfiguration->setConfiguration($this->driveConfigurator->configure($account));
-            $this->sapiService->encryptConfiguration($newComponentConfiguration);
+            $this->sapiService->encryptAndSaveConfiguration($newComponentConfiguration);
             $this->logger->info(sprintf(
                 "Configuration '%s' files has been migrated",
                 $newComponentConfiguration->getName()
@@ -170,7 +170,7 @@ class WrGoogleDriveMigration
             $newComponentConfiguration = $this->sheetsConfigurator->create($account);
             $this->sapiService->createConfiguration($newComponentConfiguration);
             $newComponentConfiguration->setConfiguration($this->sheetsConfigurator->configure($account));
-            $this->sapiService->encryptConfiguration($newComponentConfiguration);
+            $this->sapiService->encryptAndSaveConfiguration($newComponentConfiguration);
             $this->logger->info(sprintf(
                 "Configuration '%s' sheets has been migrated",
                 $newComponentConfiguration->getName()
