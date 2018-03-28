@@ -127,9 +127,9 @@ class StorageApiService
             $this->getProjectId()
         ), [
             'headers' => [
-                'Content-type' => 'application/json'
+                'Content-type' => 'application/json',
             ],
-            'body' => \GuzzleHttp\json_encode($configuration->getConfiguration())
+            'body' => \GuzzleHttp\json_encode($configuration->getConfiguration()),
         ]);
         if ($response->getStatusCode() !== 200) {
             throw new UserException("Failed to encrypt configuration: " . $response->getBody());
