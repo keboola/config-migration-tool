@@ -13,6 +13,7 @@ class WrGoogleSheetsConfigurator
         $configuration = new Configuration();
         $configuration->setComponentId($this->getComponentId());
         $configuration->setConfigurationId($account['id']);
+        $configuration->setRowsSortOrder([]);
         $configuration->setName(
             empty($account['accountNamePretty'])
                 ? $account['name']
