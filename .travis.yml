@@ -7,7 +7,7 @@ services:
 before_script:
 - export APP_IMAGE=keboola-component
 - docker build . --tag=$APP_IMAGE
-- docker run -e KBC_URL -e KBC_TOKEN -e WR_GOOGLE_DRIVE_ACCOUNT_ID -e WR_GOOGLE_DRIVE_ACCOUNT_EMAIL -e WR_GOOGLE_DRIVE_ACCESS_TOKEN -e WR_GOOGLE_DRIVE_REFRESH_TOKEN config-migration-tool composer ci
+- docker run -e KBC_URL -e KBC_TOKEN -e WR_GOOGLE_DRIVE_ACCOUNT_ID -e WR_GOOGLE_DRIVE_ACCOUNT_EMAIL -e WR_GOOGLE_DRIVE_ACCESS_TOKEN -e WR_GOOGLE_DRIVE_REFRESH_TOKEN $APP_IMAGE composer ci
 after_success:
 - docker images
 deploy:
