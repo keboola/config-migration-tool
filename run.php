@@ -17,13 +17,8 @@ $logger = new Logger('config-migration-tool', [
 ]);
 
 try {
-    $arguments = getopt("d::", ["data::"]);
-    if (!isset($arguments["data"])) {
-        throw new UserException('Data folder not set.');
-    }
-    $dataDirectory = $arguments["data"];
-
-    $configFile = "$dataDirectory/config.json";
+    $dataDirectory = getenv('KBC_DATADIR') === false ? '/data/' : (string)getenv('KBC_DATADIR');
+    $configFile = $dataDirectory  . 'config.json';
     if (!file_exists($configFile)) {
         throw new \Exception("Config file not found at path $configFile");
     }
