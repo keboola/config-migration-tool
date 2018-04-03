@@ -1,16 +1,12 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 24/05/16
- * Time: 10:27
- */
+declare(strict_types=1);
+
 namespace Keboola\ConfigMigrationTool\Helper;
 
 class TableHelper
 {
-    public static function formatAttributes($attributes)
+    public static function formatAttributes(array $attributes) : array
     {
         $formatted = [];
         foreach ($attributes as $attribute) {

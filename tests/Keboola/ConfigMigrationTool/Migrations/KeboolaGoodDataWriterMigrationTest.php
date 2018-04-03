@@ -1,8 +1,6 @@
 <?php
-/**
- * @copy Keboola 2016
- * @author Jakub Matejka <jakub@keboola.com>
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
@@ -12,8 +10,9 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 
-class KeboolaGoodDataWriterMigrationTest extends \PHPUnit_Framework_TestCase
+class KeboolaGoodDataWriterMigrationTest extends TestCase
 {
     /** @var Client */
     private $storageApiClient;
@@ -21,14 +20,20 @@ class KeboolaGoodDataWriterMigrationTest extends \PHPUnit_Framework_TestCase
     /** @var Components */
     private $components;
 
+    /** @var string */
     private $originComponentId;
+
+    /** @var string */
+
     private $destinationComponentId;
+
+    /** @var string */
     private $configurationId;
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
-        $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN')]);
+        $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->storageApiClient);
 
         $this->originComponentId = 'gooddata-writer';
@@ -44,18 +49,18 @@ class KeboolaGoodDataWriterMigrationTest extends \PHPUnit_Framework_TestCase
             [
                 'user' => [
                     'login' => uniqid(),
-                    'password' => uniqid()
+                    'password' => uniqid(),
                 ],
                 'project' => [
-                    'pid' => uniqid()
+                    'pid' => uniqid(),
                 ],
                 'dimensions' => [
                     'd1' => [
                         'title' => uniqid(),
                         'includeTime' => true,
-                        'isExported' => true
-                    ]
-                ]
+                        'isExported' => true,
+                    ],
+                ],
             ]
         );
         $this->components->addConfiguration($c);
@@ -75,29 +80,29 @@ class KeboolaGoodDataWriterMigrationTest extends \PHPUnit_Framework_TestCase
                     'title' => uniqid(),
                     'identifier' => uniqid(),
                     'sortLabel' => 'c3',
-                    'sortOrder' => 'DESC'
+                    'sortOrder' => 'DESC',
                 ],
                 'c2' => [
                     'type' => 'FACT',
                     'title' => uniqid(),
                     'dataType' => 'DECIMAL',
-                    'dataTypeSize' => '8,3'
+                    'dataTypeSize' => '8,3',
                 ],
                 'c3' => [
                     'type' => 'LABEL',
                     'title' => uniqid(),
-                    'reference' => 'c1'
+                    'reference' => 'c1',
                 ],
                 'c4' => [
                     'type' => 'DATE',
                     'format' => 'yyyy-MM-dd HH:mm:ss',
-                    'dateDimension' => 'd1'
+                    'dateDimension' => 'd1',
                 ],
                 'c5' => [
                     'type' => 'REFERENCE',
-                    'schemaReference' => 't2'
-                ]
-            ]
+                    'schemaReference' => 't2',
+                ],
+            ],
         ]);
         $this->components->addConfigurationRow($r);
 
@@ -108,18 +113,18 @@ class KeboolaGoodDataWriterMigrationTest extends \PHPUnit_Framework_TestCase
             'columns' => [
                 'c21' => [
                     'type' => 'CONNECTION_POINT',
-                    'title' => uniqid()
+                    'title' => uniqid(),
                 ],
                 'c22' => [
                     'type' => 'FACT',
-                    'title' => uniqid()
-                ]
-            ]
+                    'title' => uniqid(),
+                ],
+            ],
         ]);
         $this->components->addConfigurationRow($r);
     }
 
-    public function testExecute()
+    public function testExecute() : void
     {
         $migration = new KeboolaGoodDataWriterMigration(new Logger(APP_NAME));
         $migration
@@ -144,7 +149,7 @@ class KeboolaGoodDataWriterMigrationTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('pid', $destConfig1['configuration']['parameters']['project']);
     }
 
-    public function tearDown()
+    public function tearDown() : void
     {
         parent::tearDown();
         $this->components->deleteConfiguration($this->originComponentId, $this->configurationId);

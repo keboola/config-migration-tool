@@ -1,37 +1,38 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 26/05/16
- * Time: 10:33
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Service;
 
+use Keboola\ConfigMigrationTool\Exception\ApplicationException;
+use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
+use Keboola\StorageApi\TableExporter;
 
 class StorageApiService
 {
     /** @var Client */
     private $client;
 
+    /** @var Components */
     private $components;
 
     public function __construct()
     {
-        $this->client = new Client(['token' => getenv('KBC_TOKEN')]);
+        $this->client = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->client);
     }
 
-    public function getClient()
+    public function getClient() : Client
     {
         return $this->client;
     }
 
-    public function getConfigurationTables($componentId)
+    public function getConfigurationTables(string $componentId) : array
     {
         $sysBuckets = $this->getConfigurationBuckets($componentId);
 
@@ -43,7 +44,7 @@ class StorageApiService
         return $tables;
     }
 
-    public function getConfigurationBuckets($componentId)
+    public function getConfigurationBuckets(string $componentId) : array
     {
         $buckets = $this->client->listBuckets();
         return array_filter($buckets, function ($bucket) use ($componentId) {
@@ -51,27 +52,33 @@ class StorageApiService
         });
     }
 
-    public function exportTable($tableId)
+    public function exportTable(string $tableId) : array
     {
-        return Client::parseCsv($this->client->exportTable($tableId));
+        $tableExporter = new TableExporter($this->client);
+        $file = sys_get_temp_dir() . uniqid('config-migration');
+        $tableExporter->exportTable($tableId, $file, []);
+        return Client::parseCsv(file_get_contents($file));
     }
 
-    public function getConfigurations($componentId)
+    public function getConfigurations(string $componentId) : array
     {
-        return $this->components->getComponentConfigurations($componentId);
+        $component = new Components($this->client);
+        $options = new ListComponentConfigurationsOptions();
+        $options->setComponentId($componentId);
+        return $component->listComponentConfigurations($options);
     }
 
-    public function getConfiguration($componentId, $configurationId)
+    public function getConfiguration(string $componentId, string $configurationId) : array
     {
         return $this->components->getConfiguration($componentId, $configurationId);
     }
 
-    public function createConfiguration(Configuration $configuration)
+    public function createConfiguration(Configuration $configuration) : array
     {
         return $this->components->addConfiguration($configuration);
     }
 
-    public function addConfigurationRow(Configuration $configuration, $id, array $rowConfiguration)
+    public function addConfigurationRow(Configuration $configuration, string $id, array $rowConfiguration) : array
     {
         $row = new ConfigurationRow($configuration);
         $row->setRowId($id)
@@ -79,28 +86,58 @@ class StorageApiService
         return $this->components->addConfigurationRow($row);
     }
 
-    public function encryptConfiguration(Configuration $configuration)
+    private function getRunnerService() : string
     {
-        $client = new \GuzzleHttp\Client([
-            'base_uri' => 'https://syrup.keboola.com/docker/',
-        ]);
-        $client->put(sprintf(
-            '%s/configs/%s',
-            $configuration->getComponentId(),
-            $configuration->getConfigurationId()
-        ), [
-            'headers' => [
-                'X-StorageApi-Token' => getenv('KBC_TOKEN')
-            ],
-            'form_params' => [
-                'configuration' => \GuzzleHttp\json_encode($configuration->getConfiguration())
-            ]
-        ]);
-
-        return $configuration;
+        $services = $this->client->indexAction()['services'];
+        foreach ($services as $service) {
+            if ($service['id'] == 'docker-runner') {
+                return $service['url'];
+            }
+        }
+        throw new ApplicationException('Syrup service not found');
     }
 
-    public function deleteConfiguration($componentId, $configurationId)
+    private function getProjectId() : string
+    {
+        $token = $this->client->verifyToken();
+        return (string)$token['owner']['id'];
+    }
+
+    public function encryptAndSaveConfiguration(Configuration $configuration) : void
+    {
+        $configurationData = $this->encryptConfiguration($configuration);
+        $configuration->setConfiguration($configurationData);
+        $this->saveConfiguration($configuration);
+    }
+
+    public function saveConfiguration(Configuration $configuration) : void
+    {
+        $components = new Components($this->client);
+        $components->updateConfiguration($configuration);
+    }
+
+    public function encryptConfiguration(Configuration $configuration) : array
+    {
+        $client = new \GuzzleHttp\Client([
+            'base_uri' => $this->getRunnerService(),
+        ]);
+        $response = $client->post(sprintf(
+            '/docker/encrypt?componentId=%s&projectId=%s',
+            $configuration->getComponentId(),
+            $this->getProjectId()
+        ), [
+            'headers' => [
+                'Content-type' => 'application/json',
+            ],
+            'body' => \GuzzleHttp\json_encode($configuration->getConfiguration()),
+        ]);
+        if ($response->getStatusCode() !== 200) {
+            throw new UserException("Failed to encrypt configuration: " . $response->getBody());
+        }
+        return \GuzzleHttp\json_decode($response->getBody(), true);
+    }
+
+    public function deleteConfiguration(string $componentId, string $configurationId) : void
     {
         $this->components->deleteConfiguration($componentId, $configurationId);
     }

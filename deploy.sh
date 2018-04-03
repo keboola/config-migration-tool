@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io
 docker tag configmigrationtool_app quay.io/keboola/config-migration-tool:$TRAVIS_TAG

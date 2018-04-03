@@ -1,47 +1,40 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 26/05/16
- * Time: 10:15
- */
+declare(strict_types=1);
+
 namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
 use Keboola\StorageApi\HandlerStack;
 use Keboola\StorageApi\Options\Components\Configuration;
-use Monolog\Logger;
 
 class OrchestratorService
 {
+    /** @var Client */
     private $client;
 
-    private $logger;
-
-    public function __construct(Logger $logger)
+    public function __construct()
     {
-        $this->logger = $logger;
         $this->client = new Client([
             'base_uri' => 'https://syrup.keboola.com/orchestrator/',
             'headers' => [
-                'X-StorageApi-Token' => getenv('KBC_TOKEN')
+                'X-StorageApi-Token' => getenv('KBC_TOKEN'),
             ],
-            'handler' => HandlerStack::create()
+            'handler' => HandlerStack::create(),
         ]);
     }
 
     /**
      * Get orchestrations from the API in raw form
-     * @param $oldComponentId
+     * @param string $oldComponentId
      * @return array
      */
-    public function listOrchestrations($oldComponentId)
+    public function listOrchestrations(string $oldComponentId) : array
     {
         $orchestrations = $this->request('get', 'orchestrations');
 
         return array_filter($orchestrations, function ($orchestration) use ($oldComponentId) {
-            $tasks = $this->getTasks($orchestration['id']);
+            $tasks = $this->getTasks((string)$orchestration['id']);
             foreach ($tasks as $task) {
                 if ((isset($task['componentUrl'])
                     && (false !== strstr($task['componentUrl'], '/' . $oldComponentId . '/')))
@@ -55,11 +48,11 @@ class OrchestratorService
 
     /**
      * Get orchestrations from the API and return them in form for displaying in status
-     * @param $oldComponentId
-     * @param $newComponentId
+     * @param string $oldComponentId
+     * @param string $newComponentId
      * @return array
      */
-    public function getOrchestrations($oldComponentId, $newComponentId)
+    public function getOrchestrations(string $oldComponentId, string $newComponentId) : array
     {
         $result = [];
         $orchestrations = $this->request('get', 'orchestrations');
@@ -67,7 +60,7 @@ class OrchestratorService
         foreach ($orchestrations as $orchestration) {
             $hasOld = false;
             $hasNew = false;
-            $tasks = $this->getTasks($orchestration['id']);
+            $tasks = $this->getTasks((string)$orchestration['id']);
             foreach ($tasks as $task) {
                 if ((isset($task['componentUrl']) && (false !== strstr($task['componentUrl'], '/' . $oldComponentId . '/')))
                 || (isset($task['component']) && ($oldComponentId == $task['component']))) {
@@ -85,7 +78,7 @@ class OrchestratorService
                     'id' => $orchestration['id'],
                     'name' => $orchestration['name'],
                     'hasOld' => $hasOld,
-                    'hasNew' => $hasNew
+                    'hasNew' => $hasNew,
                 ];
             }
         }
@@ -93,7 +86,7 @@ class OrchestratorService
         return $result;
     }
 
-    public function updateOrchestrations($oldComponentId, Configuration $newConfiguration)
+    public function updateOrchestrations(string $oldComponentId, Configuration $newConfiguration) : array
     {
         $orchestrations = $this->listOrchestrations($oldComponentId);
 
@@ -108,7 +101,7 @@ class OrchestratorService
         return $updatedOrchestrations;
     }
 
-    public function updateOrchestration($orchestration, $oldComponentId, Configuration $newConfiguration)
+    public function updateOrchestration(array $orchestration, string $oldComponentId, Configuration $newConfiguration) : ?array
     {
         $tasks = $this->getTasks($orchestration['id']);
 
@@ -141,7 +134,7 @@ class OrchestratorService
         return null;
     }
 
-    public function updateTaskConfig($task, $configurationId)
+    public function updateTaskConfig(array $task, string $configurationId) : ?string
     {
         $config = null;
         if (isset($task['actionParameters']['config'])
@@ -155,22 +148,22 @@ class OrchestratorService
         return $config;
     }
 
-    public function getTasks($orchestrationId)
+    public function getTasks(string $orchestrationId) : array
     {
         return $this->request('get', sprintf('orchestrations/%s/tasks', $orchestrationId));
     }
 
-    public function updateTasks($orchestrationId, $tasks)
+    public function updateTasks(string $orchestrationId, array $tasks) : array
     {
         return $this->request('put', sprintf('orchestrations/%s/tasks', $orchestrationId), [
-            'json' => $tasks
+            'json' => $tasks,
         ]);
     }
 
-    public function request($method, $uri, $options = [])
+    public function request(string $method, string $uri, array $options = []) : array
     {
         $response = $this->client->request($method, $uri, $options);
         $body = (string)$response->getBody();
-        return $body ? \GuzzleHttp\json_decode($body, true) : null;
+        return $body ? \GuzzleHttp\json_decode($body, true) : [];
     }
 }

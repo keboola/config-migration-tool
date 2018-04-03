@@ -6,13 +6,9 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="true"
+         stopOnFailure="false"
          syntaxCheck="false"
-         bootstrap="bootstrap.php">
-
-    <php>
-        <const name="ROOT_PATH" value="./"/>
-    </php>
+         bootstrap="tests/bootstrap.php">
 
     <testsuite name="Config Migration Tool Test Suite">
         <directory>tests/Keboola</directory>

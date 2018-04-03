@@ -1,19 +1,16 @@
-app:
-  build: .
-  volumes:
-    - .:/code
-  working_dir: /code
-  entrypoint: bash -c "composer install && sh tests.sh $$TESTS_PATH"
-  tty: true
-  stdin_open: true
-  environment:
-    - KBC_TOKEN
-    - GOOGLE_KEY
-    - GOOGLE_ACCOUNT_ID
-    - GOOGLE_ACCOUNT_EMAIL
-    - GOOGLE_ACCESS_TOKEN
-    - GOOGLE_REFRESH_TOKEN
-    - WR_GOOGLE_DRIVE_ACCOUNT_ID
-    - WR_GOOGLE_DRIVE_ACCOUNT_EMAIL
-    - WR_GOOGLE_DRIVE_ACCESS_TOKEN
-    - WR_GOOGLE_DRIVE_REFRESH_TOKEN
+version: "2"
+services:
+  # for development purposes
+  dev:
+    build: 
+      context: .
+      dockerfile: Dockerfile-tests
+    volumes:
+      - .:/code
+    environment:
+      - KBC_TOKEN
+      - KBC_URL
+      - WR_GOOGLE_DRIVE_ACCOUNT_ID
+      - WR_GOOGLE_DRIVE_ACCOUNT_EMAIL
+      - WR_GOOGLE_DRIVE_ACCESS_TOKEN
+      - WR_GOOGLE_DRIVE_REFRESH_TOKEN

@@ -1,9 +1,6 @@
 <?php
-/**
- * @package config-migration-tool
- * @copyright 2017 Keboola
- * @author Jakub Matejka <jakub@keboola.com>
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
@@ -15,12 +12,18 @@ use Keboola\StorageApi\Options\Components\Configuration;
 
 abstract class DockerAppMigration implements MigrationInterface
 {
+    /** @var string */
     protected $originComponentId;
+
+    /** @var string */
     protected $destinationComponentId;
+
     /** @var Logger  */
     protected $logger;
-    /** @var OrchestratorService  */
+
+    /** @var OrchestratorService */
     protected $orchestratorService;
+
     /** @var  StorageApiService */
     protected $storageApiService;
 
@@ -28,22 +31,22 @@ abstract class DockerAppMigration implements MigrationInterface
     {
         $this->logger = $logger;
         $this->storageApiService = new StorageApiService();
-        $this->orchestratorService = new OrchestratorService($this->logger);
+        $this->orchestratorService = new OrchestratorService();
     }
 
-    public function setOriginComponentId($id)
+    public function setOriginComponentId(string $id) : DockerAppMigration
     {
         $this->originComponentId = $id;
         return $this;
     }
 
-    public function setDestinationComponentId($id)
+    public function setDestinationComponentId(string $id) : DockerAppMigration
     {
         $this->destinationComponentId = $id;
         return $this;
     }
 
-    protected function buildConfigurationObject($componentId, $config)
+    protected function buildConfigurationObject(string $componentId, array $config) : Configuration
     {
         $configuration = new Configuration();
         $configuration->setComponentId($componentId);
@@ -51,11 +54,11 @@ abstract class DockerAppMigration implements MigrationInterface
         $configuration->setName($config['name']);
         $configuration->setDescription($config['description']);
         $configuration->setConfiguration($config['configuration']);
-
+        $configuration->setRowsSortOrder([]);
         return $configuration;
     }
 
-    protected function updateConfigurationOptions(Configuration $configuration, array $options)
+    protected function updateConfigurationOptions(Configuration $configuration, array $options) : Configuration
     {
         $c = $configuration->getConfiguration();
         $c = array_replace_recursive($c, $options);
@@ -63,7 +66,7 @@ abstract class DockerAppMigration implements MigrationInterface
         return $configuration;
     }
 
-    protected function saveConfigurationOptions(Configuration $configuration, array $options)
+    protected function saveConfigurationOptions(Configuration $configuration, array $options) : void
     {
         $c = $this->updateConfigurationOptions($configuration, $options);
         $components = new Components($this->storageApiService->getClient());

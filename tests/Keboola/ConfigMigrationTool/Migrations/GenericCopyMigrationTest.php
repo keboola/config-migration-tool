@@ -1,8 +1,6 @@
 <?php
-/**
- * @copy Keboola 2016
- * @author Jakub Matejka <jakub@keboola.com>
- */
+
+declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
@@ -12,8 +10,9 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 
-class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
+class GenericCopyMigrationTest extends TestCase
 {
     /** @var Client */
     private $storageApiClient;
@@ -21,15 +20,22 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
     /** @var Components */
     private $components;
 
+    /** @var string */
     private $originComponentId;
+
+    /** @var string */
     private $destinationComponentId;
+
+    /** @var string */
     private $configurationId1;
+
+    /** @var string */
     private $configurationId2;
 
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
-        $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN')]);
+        $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->storageApiClient);
 
         $this->originComponentId = 'ex-adwords-v2';
@@ -39,7 +45,7 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
         $this->configurationId2 = $this->createTestConfiguration($this->originComponentId);
     }
 
-    protected function createTestConfiguration($componentId)
+    protected function createTestConfiguration(string $componentId) : string
     {
         $id = uniqid('migrationtest');
 
@@ -62,7 +68,7 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
         return $id;
     }
 
-    public function testExecute()
+    public function testExecute() : void
     {
         $migration = new GenericCopyMigration(new Logger(APP_NAME));
         $migration
@@ -82,7 +88,7 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
         $this->runConfigurationTest($originConfig2, $destConfig2);
     }
 
-    protected function runConfigurationTest($originConfig, $destConfig)
+    protected function runConfigurationTest(array $originConfig, array $destConfig) : void
     {
         $this->assertArrayHasKey('migrationStatus', $originConfig['configuration']);
         $this->assertEquals('success', $originConfig['configuration']['migrationStatus']);
@@ -97,7 +103,7 @@ class GenericCopyMigrationTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function tearDown()
+    public function tearDown() : void
     {
         parent::tearDown();
         $this->components->deleteConfiguration($this->originComponentId, $this->configurationId1);

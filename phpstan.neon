@@ -1,2 +1,4 @@
-includes:
-	- vendor/phpstan/phpstan-guzzle/extension.neon
+parameters:
+	ignoreErrors:
+	autoload_files:
+		- %rootDir%/../../../../tests/bootstrap.php
