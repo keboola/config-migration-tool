@@ -9,9 +9,9 @@ use Monolog\Logger;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
-require_once(dirname(__FILE__) . "/bootstrap.php");
+require_once(__DIR__ . "/vendor/autoload.php");
 
-$logger = new Logger(APP_NAME, [
+$logger = new Logger('config-migration-tool', [
     new \Keboola\ConfigMigrationTool\Logger\InfoHandler(),
     new \Monolog\Handler\StreamHandler('php://stderr', Logger::NOTICE),
 ]);
