@@ -103,7 +103,7 @@ class OrchestratorService
 
     public function updateOrchestration(array $orchestration, string $oldComponentId, Configuration $newConfiguration) : ?array
     {
-        $tasks = $this->getTasks($orchestration['id']);
+        $tasks = $this->getTasks((string)$orchestration['id']);
 
         $update = false;
         foreach ($tasks as &$task) {
@@ -127,7 +127,7 @@ class OrchestratorService
         }
 
         if ($update) {
-            $this->updateTasks($orchestration['id'], $tasks);
+            $this->updateTasks((string)$orchestration['id'], $tasks);
             return $orchestration;
         }
 
