@@ -93,11 +93,11 @@ class Application
 
     private function getMigrationClass(string $class) : MigrationInterface
     {
-        /** @var MigrationInterface $migrationClass */
         $migrationClass = sprintf('\\Keboola\\ConfigMigrationTool\\Migration\\%sMigration', $class);
         if (!class_exists($migrationClass)) {
             throw new UserException("Migration for component $class does not exist");
         }
+        /** @var MigrationInterface $migrationClass */
         return new $migrationClass($this->logger);
     }
 
