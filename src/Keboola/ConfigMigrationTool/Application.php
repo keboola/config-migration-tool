@@ -9,6 +9,7 @@ use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
 use Keboola\ConfigMigrationTool\Migration\MigrationInterface;
 use Keboola\ConfigMigrationTool\Migration\DockerAppMigration;
+use Keboola\ConfigMigrationTool\Migration\OAuthMigration;
 use Monolog\Logger;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -63,6 +64,8 @@ class Application
             return $this->getLegacyMigration($config['parameters']['component']);
         } elseif (isset($config['parameters']['origin']) && isset($config['parameters']['destination'])) {
             return $this->getDockerAppMigration($config['parameters']['origin'], $config['parameters']['destination']);
+        } elseif (isset($config['parameters']['oauth'])) {
+            return $this->getOauthMigration($config['parameters']['oauth']);
         }
         throw new UserException("Missing parameters 'origin' and 'destination' or 'component'");
     }
@@ -83,6 +86,11 @@ class Application
             }
         }
         return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
+    }
+
+    private function getOauthMigration($oauthConfig)
+    {
+        return new OAuthMigration($oauthConfig, $this->logger);
     }
 
     private function getLegacyMigration(string $component) : MigrationInterface

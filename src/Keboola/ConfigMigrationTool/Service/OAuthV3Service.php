@@ -7,7 +7,7 @@ namespace Keboola\ConfigMigrationTool\Service;
 use GuzzleHttp\Client;
 use Keboola\StorageApi\HandlerStack;
 
-class OAuthService
+class OAuthV3Service
 {
     /** @var Client */
     private $client;
@@ -26,9 +26,9 @@ class OAuthService
     private function getBaseUrl($region)
     {
         if ($region === 'us-east-1') {
-            return 'https://syrup.keboola.com/oauth-v2/';
+            return 'https://oauth.keboola.com/';
         } else if ($region === 'eu-central-1' || $region === 'ap-southeast-2') {
-            return sprintf('https://syrup.%s.keboola.com/oauth-v2/', $region);
+            return sprintf('https://oauth.%s.keboola.com/', $region);
         }
 
         throw new \Exception(sprintf('Unknown region "%s"', $region));
@@ -41,35 +41,16 @@ class OAuthService
         return \GuzzleHttp\json_decode($response->getBody()->getContents());
     }
 
-    public function createCredentials(string $componentId, array $account) : \stdClass
+    public function createCredentials(string $componentId, array $credentials) : array
     {
         $response = $this->client->post(sprintf('credentials/%s', $componentId), [
             'body' => \GuzzleHttp\json_encode([
-                "id" => $account['id'],
-                "authorizedFor" => empty($account['email']) ? $account['owner'] : $account['email'],
-                "data" => [
-                    "access_token" => $account['accessToken'],
-                    "refresh_token" => $account['refreshToken'],
-                ],
+                'id' => $credentials['id'],
+                'authorizedFor' => empty($credentials['email']) ? $credentials['owner'] : $credentials['email'],
+                'data' => $credentials['data'],
             ]),
         ]);
 
-        return \GuzzleHttp\json_decode($response->getBody()->getContents());
-    }
-
-    public function obtainCredentials(string $componentId, array $account) : \stdClass
-    {
-        // try to get credentials first
-        $credentials = null;
-        try {
-            $credentials = $this->getCredentials($componentId, $account['id']);
-        } catch (\Throwable $e) {
-        }
-
-        if ($credentials !== null) {
-            return $credentials;
-        }
-
-        return $this->createCredentials($componentId, $account);
+        return \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
     }
 }
