@@ -21,12 +21,18 @@ class OAuthMigration extends DockerAppMigration
     /** @var OAuthV3Service */
     private $oauthV3Service;
 
-    public function __construct($config, Logger $logger)
+    public function __construct(array $config, Logger $logger)
     {
-        $this->config = $config;
-        $this->oauthService = new OAuthService($config['region']);
-        $this->oauthV3Service = new OAuthV3Service($config['region']);
         parent::__construct($logger);
+        $this->config = $config;
+
+        $oauthV2Url = $this->storageApiService->getServiceUrl('syrup') . '/oauth-v2/';
+        $oauthV3Url = getenv('OAUTH_API_URL') ?: $this->storageApiService->getServiceUrl('oauth');
+
+        var_dump($oauthV3Url);
+
+        $this->oauthService = new OAuthService($oauthV2Url);
+        $this->oauthV3Service = new OAuthV3Service($oauthV3Url);
     }
 
     public function execute(): array
@@ -39,20 +45,25 @@ class OAuthMigration extends DockerAppMigration
         $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
 
         // get Credentials from old OAuth Bundle
-        $credentials = $this->oauthService->getCredentials($componentId, $configurationId);
+        $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
 
         var_dump($credentials);
 
         // add Credentials to new OAuth API
-        $this->oauthV3Service->createCredentials($componentId, [
-            'id' => $credentials->id,
-            'email' => $credentials->authorizedFor,
-            'data' => $credentials->{'#data'}
+        $newCredentials = $this->getNewCredentialsFromOld($credentials);
+//        var_dump($newCredentials);
+        $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
+
+        // save configuration with version set to 3
+        $this->saveConfigurationOptions($componentConfiguration, [
+            'authorization' => [
+                'oauth_api' =>[
+                    'version' => 3
+                ]
+            ]
         ]);
 
-        // set version to 3
-
-        // save configuration
+        return $response;
     }
 
     public function status() : array
@@ -76,5 +87,30 @@ class OAuthMigration extends DockerAppMigration
             ),
             'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId),
         ];
+    }
+
+    private function getNewCredentialsFromOld(\stdClass $credentials)
+    {
+        $newCredentials = [
+            'id' => $credentials->id,
+            'authorizedFor' => $credentials->authorized_for,
+            'data' => $credentials->data,
+        ];
+
+        var_dump($credentials);
+
+        if (!empty($credentials->app_key)) {
+            $newCredentials['appKey'] = $credentials->app_key;
+        }
+
+        if (!empty($credentials->app_secret_docker)) {
+            $newCredentials['appSecretDocker'] = $credentials->app_secret_docker;
+        }
+
+        if (!empty($credentials->auth_url)) {
+            $newCredentials['authUrl'] = $credentials->auth_url;
+        }
+
+        return $newCredentials;
     }
 }

@@ -88,7 +88,7 @@ class Application
         return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
     }
 
-    private function getOauthMigration($oauthConfig)
+    private function getOauthMigration(array $oauthConfig) : MigrationInterface
     {
         return new OAuthMigration($oauthConfig, $this->logger);
     }

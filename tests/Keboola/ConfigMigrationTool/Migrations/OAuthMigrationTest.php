@@ -23,11 +23,11 @@ class OAuthMigrationTest extends TestCase
     /** @var OAuthService */
     private $oauthService;
 
-    /** @var string */
-    private $configurationId1;
+    /** @var array */
+    private $configurations = [];
 
-    /** @var string */
-    private $configurationId2;
+    /** @var array */
+    private $oauthCredentials = [];
 
     /** @var string */
     private $componentId = 'keboola.ex-google-drive';
@@ -38,11 +38,11 @@ class OAuthMigrationTest extends TestCase
         $this->components = new Components($this->storageApiClient);
         $this->oauthService = new OAuthService();
 
-        $this->configurationId1 = $this->createTestConfiguration($this->componentId);
-        $this->configurationId2 = $this->createTestConfiguration($this->componentId);
+        $this->configurations[] = $this->createTestConfiguration($this->componentId);
+        $this->configurations[] = $this->createTestConfiguration($this->componentId);
 
-        $this->createOAuthConfig($this->configurationId1);
-        $this->createOAuthConfig($this->configurationId2);
+        $this->oauthCredentials[] = $this->createOAuthConfig($this->configurations[0]);
+        $this->oauthCredentials[] = $this->createOAuthConfig($this->configurations[1]);
     }
 
     protected function createTestConfiguration(string $componentId) : string
@@ -60,37 +60,56 @@ class OAuthMigrationTest extends TestCase
         return $id;
     }
 
-    protected function createOAuthConfig($configId) : void
+    protected function createOAuthConfig(string $configId) : \stdClass
     {
-        $this->oauthService->createCredentials($this->componentId, [
+        return $this->oauthService->createCredentials($this->componentId, [
             'id' => $configId,
             'email' => 'test@keboola.com',
             'accessToken' => '12345',
-            'refreshToken' => '567890'
+            'refreshToken' => '567890',
         ]);
     }
 
-    protected function createMigrationConfig($configId) : array
+    protected function createMigrationConfig(string $configId) : array
     {
         return [
-            'region' => 'us-east-1',
             'componentId' => $this->componentId,
-            'id' => $configId
+            'id' => $configId,
         ];
     }
 
-    public function testExecute()
+    public function testExecute() : void
     {
-        $migration = new OAuthMigration(
-            $this->createMigrationConfig($this->configurationId1),
-            new Logger(APP_NAME)
-        );
-        $migration->execute();
+        $responses = [];
 
-        $migration = new OAuthMigration(
-            $this->createMigrationConfig($this->configurationId2),
-            new Logger(APP_NAME)
-        );
-        $migration->execute();
+        foreach ($this->configurations as $index => $configurationId) {
+            $migration = new OAuthMigration(
+                $this->createMigrationConfig($configurationId),
+                new Logger(APP_NAME)
+            );
+            $response = $migration->execute();
+
+            $this->assertArrayHasKey('id', $response);
+            $this->assertArrayHasKey('authorizedFor', $response);
+            $this->assertArrayHasKey('creator', $response);
+            $this->assertArrayHasKey('created', $response);
+            $this->assertArrayHasKey('#data', $response);
+            $this->assertArrayHasKey('oauthVersion', $response);
+            $this->assertArrayHasKey('appKey', $response);
+            $this->assertArrayHasKey('#appSecret', $response);
+
+            $this->assertEquals('test@keboola.com', $response['authorizedFor']);
+            $this->assertEquals($configurationId, $response['id']);
+
+            $responses[] = $response;
+        }
+
+        $this->assertNotEmpty($responses);
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+
     }
 }

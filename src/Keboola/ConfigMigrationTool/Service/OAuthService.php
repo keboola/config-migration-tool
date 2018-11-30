@@ -12,10 +12,10 @@ class OAuthService
     /** @var Client */
     private $client;
 
-    public function __construct($region = 'us-east-1')
+    public function __construct(string $baseUrl = 'https://syrup.keboola.com/oauth-v2/')
     {
         $this->client = new Client([
-            'base_uri' => $this->getBaseUrl($region),
+            'base_uri' => $baseUrl,
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN'),
             ],
@@ -23,20 +23,16 @@ class OAuthService
         ]);
     }
 
-    private function getBaseUrl($region)
-    {
-        if ($region === 'us-east-1') {
-            return 'https://syrup.keboola.com/oauth-v2/';
-        } else if ($region === 'eu-central-1' || $region === 'ap-southeast-2') {
-            return sprintf('https://syrup.%s.keboola.com/oauth-v2/', $region);
-        }
-
-        throw new \Exception(sprintf('Unknown region "%s"', $region));
-    }
-
     public function getCredentials(string $componentId, string $id) : \stdClass
     {
         $response = $this->client->get(sprintf('credentials/%s/%s', $componentId, $id));
+
+        return \GuzzleHttp\json_decode($response->getBody()->getContents());
+    }
+
+    public function getCredentialsRaw(string $componentId, string $id) : \stdClass
+    {
+        $response = $this->client->get(sprintf('credentials/%s/%s/raw', $componentId, $id));
 
         return \GuzzleHttp\json_decode($response->getBody()->getContents());
     }

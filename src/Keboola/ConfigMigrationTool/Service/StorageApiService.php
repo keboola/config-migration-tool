@@ -86,15 +86,15 @@ class StorageApiService
         return $this->components->addConfigurationRow($row);
     }
 
-    private function getRunnerService() : string
+    public function getServiceUrl($serviceName) : string
     {
         $services = $this->client->indexAction()['services'];
         foreach ($services as $service) {
-            if ($service['id'] == 'docker-runner') {
+            if ($service['id'] == strtolower($serviceName)) {
                 return $service['url'];
             }
         }
-        throw new ApplicationException('Syrup service not found');
+        throw new ApplicationException(sprintf('Service "%s" not found', $serviceName));
     }
 
     private function getProjectId() : string
@@ -119,7 +119,7 @@ class StorageApiService
     public function encryptConfiguration(Configuration $configuration) : array
     {
         $client = new \GuzzleHttp\Client([
-            'base_uri' => $this->getRunnerService(),
+            'base_uri' => $this->getServiceUrl('docker-runner'),
         ]);
         $response = $client->post(sprintf(
             '/docker/encrypt?componentId=%s&projectId=%s',
