@@ -29,8 +29,6 @@ class OAuthMigration extends DockerAppMigration
         $oauthV2Url = $this->storageApiService->getServiceUrl('syrup') . '/oauth-v2/';
         $oauthV3Url = getenv('OAUTH_API_URL') ?: $this->storageApiService->getServiceUrl('oauth');
 
-        var_dump($oauthV3Url);
-
         $this->oauthService = new OAuthService($oauthV2Url);
         $this->oauthV3Service = new OAuthV3Service($oauthV3Url);
     }
@@ -47,11 +45,8 @@ class OAuthMigration extends DockerAppMigration
         // get Credentials from old OAuth Bundle
         $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
 
-        var_dump($credentials);
-
         // add Credentials to new OAuth API
         $newCredentials = $this->getNewCredentialsFromOld($credentials);
-//        var_dump($newCredentials);
         $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
 
         // save configuration with version set to 3
@@ -96,8 +91,6 @@ class OAuthMigration extends DockerAppMigration
             'authorizedFor' => $credentials->authorized_for,
             'data' => $credentials->data,
         ];
-
-        var_dump($credentials);
 
         if (!empty($credentials->app_key)) {
             $newCredentials['appKey'] = $credentials->app_key;

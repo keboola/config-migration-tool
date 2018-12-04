@@ -39,15 +39,29 @@ class OAuthService
 
     public function createCredentials(string $componentId, array $account) : \stdClass
     {
+        $body = [
+            "id" => $account['id'],
+            "authorizedFor" => empty($account['email']) ? $account['owner'] : $account['email'],
+            "data" => [
+                "access_token" => $account['accessToken'],
+                "refresh_token" => $account['refreshToken'],
+            ],
+        ];
+
+        if (!empty($account['appKey'])) {
+            $body['appKey'] = $account['appKey'];
+        }
+
+        if (!empty($account['appSecretDocker'])) {
+            $body['appSecretDocker'] = $account['appSecretDocker'];
+        }
+
+        if (!empty($account['authUrl'])) {
+            $body['authUrl'] = $account['authUrl'];
+        }
+
         $response = $this->client->post(sprintf('credentials/%s', $componentId), [
-            'body' => \GuzzleHttp\json_encode([
-                "id" => $account['id'],
-                "authorizedFor" => empty($account['email']) ? $account['owner'] : $account['email'],
-                "data" => [
-                    "access_token" => $account['accessToken'],
-                    "refresh_token" => $account['refreshToken'],
-                ],
-            ]),
+            'body' => \GuzzleHttp\json_encode($body),
         ]);
 
         return \GuzzleHttp\json_decode($response->getBody()->getContents());

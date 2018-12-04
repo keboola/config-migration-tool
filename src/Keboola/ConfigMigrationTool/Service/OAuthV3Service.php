@@ -23,11 +23,11 @@ class OAuthV3Service
         ]);
     }
 
-    public function getCredentials(string $componentId, string $id) : \stdClass
+    public function getCredentials(string $componentId, string $id) : array
     {
         $response = $this->client->get(sprintf('credentials/%s/%s', $componentId, $id));
 
-        return \GuzzleHttp\json_decode($response->getBody()->getContents());
+        return \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
     }
 
     public function createCredentials(string $componentId, array $credentials) : array
@@ -37,5 +37,10 @@ class OAuthV3Service
         ]);
 
         return \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
+    }
+
+    public function deleteCredentials(string $componentId, string $name)
+    {
+        return $this->client->delete(sprintf('credentials/%s/%s', $componentId, $name));
     }
 }
