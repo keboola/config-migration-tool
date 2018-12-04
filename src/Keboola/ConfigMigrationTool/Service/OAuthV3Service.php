@@ -6,6 +6,7 @@ namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
 use Keboola\StorageApi\HandlerStack;
+use Psr\Http\Message\ResponseInterface;
 
 class OAuthV3Service
 {
@@ -39,7 +40,7 @@ class OAuthV3Service
         return \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
     }
 
-    public function deleteCredentials(string $componentId, string $name)
+    public function deleteCredentials(string $componentId, string $name) : ResponseInterface
     {
         return $this->client->delete(sprintf('credentials/%s/%s', $componentId, $name));
     }

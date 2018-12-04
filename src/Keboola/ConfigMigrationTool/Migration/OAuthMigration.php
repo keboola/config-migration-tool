@@ -53,9 +53,9 @@ class OAuthMigration extends DockerAppMigration
         $this->saveConfigurationOptions($componentConfiguration, [
             'authorization' => [
                 'oauth_api' =>[
-                    'version' => 3
-                ]
-            ]
+                    'version' => 3,
+                ],
+            ],
         ]);
 
         return $response;
@@ -84,7 +84,7 @@ class OAuthMigration extends DockerAppMigration
         ];
     }
 
-    private function getNewCredentialsFromOld(\stdClass $credentials)
+    private function getNewCredentialsFromOld(\stdClass $credentials) : array
     {
         $newCredentials = [
             'id' => $credentials->id,

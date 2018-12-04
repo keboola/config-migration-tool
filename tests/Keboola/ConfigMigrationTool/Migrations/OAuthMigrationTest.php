@@ -90,7 +90,7 @@ class OAuthMigrationTest extends TestCase
             'appSecretDocker' => 'KBC::ComponentSecure::tajmostvo',
             'data' => [
                 'access_token' => 'qwertyuiop1234567890',
-            ]
+            ],
         ]);
     }
 
@@ -141,11 +141,5 @@ class OAuthMigrationTest extends TestCase
         foreach ($responses as $res) {
             $this->oauthV3Service->deleteCredentials($this->componentId, $res['id']);
         }
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-
     }
 }

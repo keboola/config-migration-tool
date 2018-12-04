@@ -86,7 +86,7 @@ class StorageApiService
         return $this->components->addConfigurationRow($row);
     }
 
-    public function getServiceUrl($serviceName) : string
+    public function getServiceUrl(string $serviceName) : string
     {
         $services = $this->client->indexAction()['services'];
         foreach ($services as $service) {
