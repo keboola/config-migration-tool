@@ -27,6 +27,9 @@ abstract class DockerAppMigration implements MigrationInterface
     /** @var  StorageApiService */
     protected $storageApiService;
 
+    /** @var array */
+    protected $imageParameters;
+
     public function __construct(Logger $logger)
     {
         $this->logger = $logger;
@@ -71,5 +74,10 @@ abstract class DockerAppMigration implements MigrationInterface
         $c = $this->updateConfigurationOptions($configuration, $options);
         $components = new Components($this->storageApiService->getClient());
         $components->updateConfiguration($c);
+    }
+
+    public function setImageParameters(array $imageParameters) : void
+    {
+        $this->imageParameters = $imageParameters;
     }
 }

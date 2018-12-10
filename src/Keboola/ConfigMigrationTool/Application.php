@@ -65,27 +65,37 @@ class Application
         if (isset($config['parameters']['component'])) {
             return $this->getLegacyMigration($config['parameters']['component']);
         } elseif (isset($config['parameters']['origin']) && isset($config['parameters']['destination'])) {
+<<<<<<< HEAD
             return $this->getDockerAppMigration($config['parameters']['origin'], $config['parameters']['destination']);
         } elseif (isset($config['parameters']['oauth'])) {
             return $this->getOauthMigration($config['parameters']['oauth']);
+=======
+            return $this->getDockerAppMigration($config);
+>>>>>>> feat: GoodData Writer and Provisioning migration
         }
         throw new UserException("Missing parameters 'origin' and 'destination' or 'component'");
     }
 
-    private function getDockerAppMigration(string $origin, string $destination) : MigrationInterface
+    private function getDockerAppMigration(array $config) : MigrationInterface
     {
-        $config = $this->getDefinition();
-        if (!isset($config[$origin])) {
+        $origin = $config['parameters']['origin'];
+        $destination = $config['parameters']['destination'];
+        $def = $this->getDefinition();
+
+        if (!isset($def[$origin])) {
             $migration = new GenericCopyMigration($this->logger);
-        } elseif (!in_array($destination, $config[$origin]['destinations'])) {
+        } elseif (!in_array($destination, $def[$origin]['destinations'])) {
             $migration = new GenericCopyMigration($this->logger);
         } else {
             /** @var DockerAppMigration $migration */
-            $migration = $this->getMigrationClass($config[$origin]['migration']);
+            $migration = $this->getMigrationClass($def[$origin]['migration']);
             if (!($migration instanceof DockerAppMigration)) {
                 $class = get_class($migration);
                 throw new ApplicationException("Migration class ${$class} is not instance of VersionMigration");
             }
+        }
+        if (isset($config['image_parameters'])) {
+            $migration->setImageParameters($config['image_parameters']);
         }
         return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
     }
