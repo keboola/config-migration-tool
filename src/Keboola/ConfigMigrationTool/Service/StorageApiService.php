@@ -17,6 +17,8 @@ class StorageApiService
 {
     public const DOCKER_RUNNER_SERVICE = 'docker-runner';
 
+    public const OAUTH_SERVICE = 'oauth';
+
     /** @var Client */
     private $client;
 
