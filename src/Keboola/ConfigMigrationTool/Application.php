@@ -53,7 +53,9 @@ class Application
 
     public function getDefinition() : array
     {
-        $jsonDecode = new JsonDecode(true);
+        $jsonDecode = new JsonDecode([
+            JsonDecode::ASSOCIATIVE => true,
+        ]);
         return $jsonDecode->decode(file_get_contents(__DIR__ . '/definition.json'), JsonEncoder::FORMAT);
     }
 
