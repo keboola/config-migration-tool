@@ -4,7 +4,6 @@ services:
   dev:
     build: 
       context: .
-      dockerfile: Dockerfile-tests
     volumes:
       - .:/code
     environment:
