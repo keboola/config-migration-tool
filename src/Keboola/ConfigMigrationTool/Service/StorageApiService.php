@@ -15,6 +15,10 @@ use Keboola\StorageApi\TableExporter;
 
 class StorageApiService
 {
+    public const DOCKER_RUNNER_SERVICE = 'docker-runner';
+
+    public const OAUTH_SERVICE = 'oauth';
+
     /** @var Client */
     private $client;
 
@@ -86,15 +90,15 @@ class StorageApiService
         return $this->components->addConfigurationRow($row);
     }
 
-    private function getRunnerService() : string
+    public function getServiceUrl(string $serviceName) : string
     {
         $services = $this->client->indexAction()['services'];
         foreach ($services as $service) {
-            if ($service['id'] == 'docker-runner') {
+            if ($service['id'] == strtolower($serviceName)) {
                 return $service['url'];
             }
         }
-        throw new ApplicationException('Syrup service not found');
+        throw new ApplicationException(sprintf('Service "%s" not found', $serviceName));
     }
 
     private function getProjectId() : string
@@ -119,7 +123,7 @@ class StorageApiService
     public function encryptConfiguration(Configuration $configuration) : array
     {
         $client = new \GuzzleHttp\Client([
-            'base_uri' => $this->getRunnerService(),
+            'base_uri' => $this->getServiceUrl(static::DOCKER_RUNNER_SERVICE),
         ]);
         $response = $client->post(sprintf(
             '/docker/encrypt?componentId=%s&projectId=%s',

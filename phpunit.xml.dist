@@ -7,10 +7,9 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         syntaxCheck="false"
          bootstrap="tests/bootstrap.php">
 
     <testsuite name="Config Migration Tool Test Suite">
-        <directory>tests/Keboola</directory>
+        <directory>./tests/Keboola</directory>
     </testsuite>
 </phpunit>
