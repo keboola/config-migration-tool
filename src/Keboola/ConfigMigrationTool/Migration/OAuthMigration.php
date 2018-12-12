@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
-use Keboola\ConfigMigrationTool\Service\OAuthService;
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
+use Keboola\ConfigMigrationTool\Test\OAuthV2Service;
 use Monolog\Logger;
 
 class OAuthMigration extends DockerAppMigration
@@ -15,7 +15,7 @@ class OAuthMigration extends DockerAppMigration
     /** @var array */
     private $config;
 
-    /** @var OAuthService */
+    /** @var OAuthV2Service */
     private $oauthService;
 
     /** @var OAuthV3Service */
@@ -29,7 +29,7 @@ class OAuthMigration extends DockerAppMigration
         $oauthV2Url = $this->storageApiService->getServiceUrl('syrup') . '/oauth-v2/';
         $oauthV3Url = getenv('OAUTH_API_URL') ?: $this->storageApiService->getServiceUrl(StorageApiService::OAUTH_SERVICE);
 
-        $this->oauthService = new OAuthService($oauthV2Url);
+        $this->oauthService = new OAuthV2Service($oauthV2Url);
         $this->oauthV3Service = new OAuthV3Service($oauthV3Url);
     }
 

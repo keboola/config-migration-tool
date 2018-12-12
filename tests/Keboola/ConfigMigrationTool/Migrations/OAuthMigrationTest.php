@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Migration\OAuthMigration;
-use Keboola\ConfigMigrationTool\Service\OAuthService;
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
+use Keboola\ConfigMigrationTool\Test\OAuthV2Service;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -21,7 +21,7 @@ class OAuthMigrationTest extends TestCase
     /** @var Components */
     private $components;
 
-    /** @var OAuthService */
+    /** @var OAuthV2Service */
     private $oauthService;
 
     /** @var array */
@@ -40,8 +40,8 @@ class OAuthMigrationTest extends TestCase
     {
         $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->storageApiClient);
-        $this->oauthService = new OAuthService();
-        $this->oauthV3Service = new OAuthV3Service();
+        $this->oauthService = new OAuthV2Service('https://syrup.keboola.com/oauth-v2/');
+        $this->oauthV3Service = new OAuthV3Service('https://oauth.keboola.com/');
 
         $this->configurations[] = $this->createTestConfiguration($this->componentId);
         $this->configurations[] = $this->createTestConfiguration($this->componentId);

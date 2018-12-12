@@ -13,7 +13,7 @@ class OAuthV3Service
     /** @var Client */
     private $client;
 
-    public function __construct(string $baseUrl = 'https://oauth.keboola.com/')
+    public function __construct(string $baseUrl)
     {
         $this->client = new Client([
             'base_uri' => $baseUrl,
