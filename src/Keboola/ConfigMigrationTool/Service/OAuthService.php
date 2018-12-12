@@ -12,10 +12,10 @@ class OAuthService
     /** @var Client */
     private $client;
 
-    public function __construct()
+    public function __construct(string $baseUrl = 'https://syrup.keboola.com/oauth-v2/')
     {
         $this->client = new Client([
-            'base_uri' => 'https://syrup.keboola.com/oauth-v2/',
+            'base_uri' => $baseUrl,
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN'),
             ],
@@ -30,17 +30,38 @@ class OAuthService
         return \GuzzleHttp\json_decode($response->getBody()->getContents());
     }
 
+    public function getCredentialsRaw(string $componentId, string $id) : \stdClass
+    {
+        $response = $this->client->get(sprintf('credentials/%s/%s/raw', $componentId, $id));
+
+        return \GuzzleHttp\json_decode($response->getBody()->getContents());
+    }
+
     public function createCredentials(string $componentId, array $account) : \stdClass
     {
+        $body = [
+            "id" => $account['id'],
+            "authorizedFor" => empty($account['email']) ? $account['owner'] : $account['email'],
+            "data" => [
+                "access_token" => $account['accessToken'],
+                "refresh_token" => $account['refreshToken'],
+            ],
+        ];
+
+        if (!empty($account['appKey'])) {
+            $body['appKey'] = $account['appKey'];
+        }
+
+        if (!empty($account['appSecretDocker'])) {
+            $body['appSecretDocker'] = $account['appSecretDocker'];
+        }
+
+        if (!empty($account['authUrl'])) {
+            $body['authUrl'] = $account['authUrl'];
+        }
+
         $response = $this->client->post(sprintf('credentials/%s', $componentId), [
-            'body' => \GuzzleHttp\json_encode([
-                "id" => $account['id'],
-                "authorizedFor" => empty($account['email']) ? $account['owner'] : $account['email'],
-                "data" => [
-                    "access_token" => $account['accessToken'],
-                    "refresh_token" => $account['refreshToken'],
-                ],
-            ]),
+            'body' => \GuzzleHttp\json_encode($body),
         ]);
 
         return \GuzzleHttp\json_decode($response->getBody()->getContents());
