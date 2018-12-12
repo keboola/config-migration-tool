@@ -11,7 +11,5 @@
 
     <testsuite name="Config Migration Tool Test Suite">
         <directory>./tests/Keboola</directory>
-        <exclude>./tests/Keboola/ConfigMigrationTool/Migrations/KeboolaGoodDataWriterMigrationTest.php</exclude>
-        <exclude>./tests/Keboola/ConfigMigrationTool/Migrations/WrGoogleDriveMigrationTest.php</exclude>
     </testsuite>
 </phpunit>

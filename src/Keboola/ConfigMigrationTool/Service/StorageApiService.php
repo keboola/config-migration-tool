@@ -15,6 +15,8 @@ use Keboola\StorageApi\TableExporter;
 
 class StorageApiService
 {
+    public const DOCKER_RUNNER_SERVICE = 'docker-runner';
+
     /** @var Client */
     private $client;
 
@@ -119,7 +121,7 @@ class StorageApiService
     public function encryptConfiguration(Configuration $configuration) : array
     {
         $client = new \GuzzleHttp\Client([
-            'base_uri' => $this->getServiceUrl('docker-runner'),
+            'base_uri' => $this->getServiceUrl(static::DOCKER_RUNNER_SERVICE),
         ]);
         $response = $client->post(sprintf(
             '/docker/encrypt?componentId=%s&projectId=%s',
