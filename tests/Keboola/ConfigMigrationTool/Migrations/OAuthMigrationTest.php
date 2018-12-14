@@ -106,6 +106,8 @@ class OAuthMigrationTest extends TestCase
     {
         $responses = [];
 
+        $this->assertCount(4, $this->configurations);
+
         foreach ($this->configurations as $index => $configurationId) {
             $migration = new OAuthMigration(
                 $this->createMigrationConfig($configurationId),
