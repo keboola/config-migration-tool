@@ -165,11 +165,11 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         $projectMeta = $this->getProjectMeta($newConfig);
         $authToken = $this->getAuthTokenFromProjectMeta($projectMeta);
         $provisioningParams = $this->getAddProjectToProvisioningParams($newConfig, $authToken);
-        $provisioning->addProject($provisioningParams);
+        $provisioning->addProject($provisioningParams['pid'], $provisioningParams);
 
         foreach ($writer->listProjects($newConfig['id']) as $project) {
             if ($project['id'] !== $newConfig['configuration']['parameters']['project']['pid']) {
-                $params = ['pid' => $project['id']];
+                $params = [];
                 if ($project['authToken'] === 'keboola_production') {
                     $params['keboolaToken'] = 'production';
                 } elseif ($project['authToken'] === 'keboola_demo') {
@@ -177,7 +177,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 } else {
                     $params['customToken'] = $project['authToken'];
                 }
-                $provisioning->addProject($params);
+                $provisioning->addProject($project['id'], $params);
             }
         }
     }
@@ -187,17 +187,14 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         LegacyGoodDataWriterService $writer,
         array $newConfig
     ): void {
-        $provisioning->addUser([
-            'email' => $newConfig['configuration']['parameters']['user']['login'],
-            'uid' => $newConfig['configuration']['parameters']['user']['uid'],
-        ]);
+        $provisioning->addUser(
+            $newConfig['configuration']['parameters']['user']['login'],
+            ['uid' => $newConfig['configuration']['parameters']['user']['uid']]
+        );
 
         foreach ($writer->listUsers($newConfig['id']) as $user) {
             if ($user['email'] !== $newConfig['configuration']['parameters']['user']['login']) {
-                $provisioning->addUser([
-                    'email' => $user['email'],
-                    'uid' => $user['uid'],
-                ]);
+                $provisioning->addUser($user['email'], ['uid' => $user['uid']]);
             }
         }
     }

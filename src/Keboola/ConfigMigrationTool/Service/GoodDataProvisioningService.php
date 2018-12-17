@@ -24,13 +24,13 @@ class GoodDataProvisioningService
         ]);
     }
 
-    public function addProject(array $params) : void
+    public function addProject(string $pid, array $params) : void
     {
-        $this->client->request('PATCH', 'projects', ['json' => $params]);
+        $this->client->request('PUT', "projects/$pid", ['json' => $params]);
     }
 
-    public function addUser(array $params) : void
+    public function addUser(string $email, array $params) : void
     {
-        $this->client->request('PATCH', 'users', ['json' => $params]);
+        $this->client->request('PUT', "users/$email", ['json' => $params]);
     }
 }
