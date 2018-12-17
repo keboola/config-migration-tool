@@ -12,12 +12,13 @@ class GoodDataProvisioningService
     /** @var Client */
     private $client;
 
-    public function __construct(string $baseUri)
+    public function __construct(string $baseUri, string $manageToken)
     {
         $this->client = new Client([
             'base_uri' => $baseUri . '/',
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN'),
+                'X-KBC-ManageApiToken' => $manageToken,
             ],
             'handler' => HandlerStack::create(),
         ]);
@@ -25,9 +26,11 @@ class GoodDataProvisioningService
 
     public function addProject(array $params) : void
     {
-        $provisioningParams = [
-            'json' => $params,
-        ];
-        $this->client->request('POST', 'projects', $provisioningParams);
+        $this->client->request('PATCH', 'projects', ['json' => $params]);
+    }
+
+    public function addUser(array $params) : void
+    {
+        $this->client->request('PATCH', 'users', ['json' => $params]);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Service\GoodDataProvisioningService;
+use Keboola\ConfigMigrationTool\Service\LegacyGoodDataWriterService;
 use Keboola\GoodData\Client as GDClient;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
@@ -15,7 +16,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
     /** @var GoodDataProvisioningService */
     protected $provisioningService;
 
-    public function execute() : array
+    public function execute(): array
     {
         return $this->doExecute();
     }
@@ -27,9 +28,13 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
      * @throws UserException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function doExecute(?callable $migrationHook = null) : array
+    protected function doExecute(?callable $migrationHook = null): array
     {
-        $provisioning = new GoodDataProvisioningService($this->imageParameters['gooddata_provisioning_url']);
+        $provisioning = new GoodDataProvisioningService(
+            $this->imageParameters['gooddata_provisioning_url'],
+            $this->imageParameters['manage_token']
+        );
+        $writer = new LegacyGoodDataWriterService($this->imageParameters['gooddata_writer_url']);
 
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
@@ -40,7 +45,8 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $newConfig);
 
                     $this->checkGoodDataConfiguration($newConfig);
-                    $this->addProjectToProvisioning($provisioning, $newConfig);
+                    $this->addProjectsToProvisioning($provisioning, $writer, $newConfig);
+                    $this->addUsersToProvisioning($provisioning, $writer, $newConfig);
 
                     $this->storageApiService->createConfiguration($configuration);
                     $this->storageApiService->encryptAndSaveConfiguration($configuration);
@@ -90,7 +96,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         return $createdConfigurations;
     }
 
-    public function transformConfiguration(array $oldConfig) : array
+    public function transformConfiguration(array $oldConfig): array
     {
         $newConfig = $oldConfig;
         $newConfig['configuration'] = [];
@@ -125,7 +131,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         return $newConfig;
     }
 
-    public function checkGoodDataConfiguration(array $config) : void
+    public function checkGoodDataConfiguration(array $config): void
     {
         if (!isset($config['configuration']['parameters']['user']['login'])) {
             throw new UserException("GoodData login is missing from configuration {$config['id']}");
@@ -138,7 +144,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         }
     }
 
-    public function getAddProjectToProvisioningParams(array $config, string $authToken) : array
+    public function getAddProjectToProvisioningParams(array $config, string $authToken): array
     {
         $params = [
             'pid' => $config['configuration']['parameters']['project']['pid'],
@@ -151,15 +157,52 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         return $params;
     }
 
-    public function addProjectToProvisioning(GoodDataProvisioningService $provisioning, array $newConfig) : void
-    {
+    public function addProjectsToProvisioning(
+        GoodDataProvisioningService $provisioning,
+        LegacyGoodDataWriterService $writer,
+        array $newConfig
+    ): void {
         $projectMeta = $this->getProjectMeta($newConfig);
         $authToken = $this->getAuthTokenFromProjectMeta($projectMeta);
         $provisioningParams = $this->getAddProjectToProvisioningParams($newConfig, $authToken);
         $provisioning->addProject($provisioningParams);
+
+        foreach ($writer->listProjects($newConfig['id']) as $project) {
+            if ($project['id'] !== $newConfig['configuration']['parameters']['project']['pid']) {
+                $params = ['pid' => $project['id']];
+                if ($project['authToken'] === 'keboola_production') {
+                    $params['keboolaToken'] = 'production';
+                } elseif ($project['authToken'] === 'keboola_demo') {
+                    $params['keboolaToken'] = 'demo';
+                } else {
+                    $params['customToken'] = $project['authToken'];
+                }
+                $provisioning->addProject($params);
+            }
+        }
     }
 
-    public function getProjectMeta(array $config) : array
+    public function addUsersToProvisioning(
+        GoodDataProvisioningService $provisioning,
+        LegacyGoodDataWriterService $writer,
+        array $newConfig
+    ): void {
+        $provisioning->addUser([
+            'email' => $newConfig['configuration']['parameters']['user']['login'],
+            'uid' => $newConfig['configuration']['parameters']['user']['uid'],
+        ]);
+
+        foreach ($writer->listUsers($newConfig['id']) as $user) {
+            if ($user['email'] !== $newConfig['configuration']['parameters']['user']['login']) {
+                $provisioning->addUser([
+                    'email' => $user['email'],
+                    'uid' => $user['uid'],
+                ]);
+            }
+        }
+    }
+
+    public function getProjectMeta(array $config): array
     {
         $gd = new GDClient($config['configuration']['parameters']['project']['backendUrl']
             ?? $this->imageParameters['gooddata_url']);
@@ -179,7 +222,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         }
     }
 
-    public function getAuthTokenFromProjectMeta(array $projectMeta) : string
+    public function getAuthTokenFromProjectMeta(array $projectMeta): string
     {
         if ($projectMeta['content']['authorizationToken'] == $this->imageParameters['production_token']) {
             return 'production';
