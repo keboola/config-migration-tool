@@ -65,13 +65,9 @@ class Application
         if (isset($config['parameters']['component'])) {
             return $this->getLegacyMigration($config['parameters']['component']);
         } elseif (isset($config['parameters']['origin']) && isset($config['parameters']['destination'])) {
-<<<<<<< HEAD
-            return $this->getDockerAppMigration($config['parameters']['origin'], $config['parameters']['destination']);
+            return $this->getDockerAppMigration($config);
         } elseif (isset($config['parameters']['oauth'])) {
             return $this->getOauthMigration($config['parameters']['oauth']);
-=======
-            return $this->getDockerAppMigration($config);
->>>>>>> feat: GoodData Writer and Provisioning migration
         }
         throw new UserException("Missing parameters 'origin' and 'destination' or 'component'");
     }
