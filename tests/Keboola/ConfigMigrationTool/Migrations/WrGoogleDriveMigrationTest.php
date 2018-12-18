@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
+use Keboola\ConfigMigrationTool\Application;
 use Keboola\ConfigMigrationTool\Logger\InfoHandler;
 use Keboola\ConfigMigrationTool\Migration\WrGoogleDriveMigration;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
@@ -198,6 +199,26 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
     {
         $this->createOldConfigs();
         $status = $this->migration->status();
+
+        $this->assertNotEmpty($status);
+        $this->assertArrayHasKey('configId', $status['configurations'][0]);
+        $this->assertArrayHasKey('configName', $status['configurations'][0]);
+        $this->assertArrayHasKey('componentId', $status['configurations'][0]);
+        $this->assertArrayHasKey('tableId', $status['configurations'][0]);
+        $this->assertArrayHasKey('status', $status['configurations'][0]);
+        $this->assertArrayHasKey('orchestrations', $status);
+    }
+
+    public function testAppActionStatus() : void
+    {
+        $this->createOldConfigs();
+        $app = new Application($this->getLogger());
+        $status = $app->action([
+            'action' => 'status',
+            'parameters' => [
+                'component' => 'wr-google-drive'
+            ]
+        ]);
 
         $this->assertNotEmpty($status);
         $this->assertArrayHasKey('configId', $status['configurations'][0]);

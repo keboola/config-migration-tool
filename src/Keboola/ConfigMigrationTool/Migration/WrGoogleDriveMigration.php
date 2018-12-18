@@ -17,7 +17,7 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
 
-class WrGoogleDriveMigration
+class WrGoogleDriveMigration implements MigrationInterface
 {
     /** @var Logger */
     private $logger;
