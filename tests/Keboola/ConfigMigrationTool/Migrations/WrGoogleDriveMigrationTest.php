@@ -216,8 +216,8 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
         $status = $app->action([
             'action' => 'status',
             'parameters' => [
-                'component' => 'wr-google-drive'
-            ]
+                'component' => 'wr-google-drive',
+            ],
         ]);
 
         $this->assertNotEmpty($status);
