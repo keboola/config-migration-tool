@@ -187,10 +187,12 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         LegacyGoodDataWriterService $writer,
         array $newConfig
     ): void {
-        $provisioning->addUser(
-            $newConfig['configuration']['parameters']['user']['login'],
-            ['uid' => $newConfig['configuration']['parameters']['user']['uid']]
-        );
+        $login = $newConfig['configuration']['parameters']['user']['login'];
+        // Add user to Provisioning only if it was created by Writer (conforms to the format used by it)
+        if ($login === getenv('KBC_PROJECTID') . "-" . $newConfig['id']
+            . '@' . $this->imageParameters['project_access_domain']) {
+            $provisioning->addUser($login, ['uid' => $newConfig['configuration']['parameters']['user']['uid']]);
+        }
 
         foreach ($writer->listUsers($newConfig['id']) as $user) {
             if ($user['email'] !== $newConfig['configuration']['parameters']['user']['login']) {
