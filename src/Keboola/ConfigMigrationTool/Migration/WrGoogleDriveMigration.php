@@ -17,7 +17,7 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Monolog\Logger;
 
-class WrGoogleDriveMigration
+class WrGoogleDriveMigration implements MigrationInterface
 {
     /** @var Logger */
     private $logger;
@@ -54,6 +54,7 @@ class WrGoogleDriveMigration
     public function execute() : array
     {
         $tables = $this->sapiService->getConfigurationTables('wr-google-drive');
+
         $createdConfigurations = [];
         foreach ($tables as $table) {
             $attributes = TableHelper::formatAttributes($table['attributes']);
@@ -166,7 +167,7 @@ class WrGoogleDriveMigration
             }
 
             $account['items'] = $sheetItems;
-            
+
             $newComponentConfiguration = $this->sheetsConfigurator->create($account);
             $this->sapiService->createConfiguration($newComponentConfiguration);
             $newComponentConfiguration->setConfiguration($this->sheetsConfigurator->configure($account));
