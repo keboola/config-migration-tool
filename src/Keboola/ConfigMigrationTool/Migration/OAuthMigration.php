@@ -37,8 +37,8 @@ class OAuthMigration extends DockerAppMigration
     {
         $responses = [];
         foreach ($this->config['configurations'] as $configuration) {
-            $componentId = $this->config['componentId'];
-            $configurationId = $this->config['id'];
+            $componentId = $configuration['componentId'];
+            $configurationId = $configuration['id'];
 
             // load configuration from SAPI
             $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);

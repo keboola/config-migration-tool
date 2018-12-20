@@ -48,10 +48,10 @@ class OAuthMigrationTest extends TestCase
         $this->configurations[] = $this->createTestConfiguration($this->componentId);
         $this->configurations[] = $this->createTestConfiguration($this->componentId);
 
-        $this->oauthCredentials[] = $this->createOAuthConfig($this->configurations[0]);
-        $this->oauthCredentials[] = $this->createOAuthConfig($this->configurations[1]);
-        $this->oauthCredentials[] = $this->createOAuthConfigCustom($this->configurations[2]);
-        $this->oauthCredentials[] = $this->createOAuthConfigCustom($this->configurations[3]);
+        $this->oauthCredentials[] = $this->createCredentials($this->configurations[0]);
+        $this->oauthCredentials[] = $this->createCredentials($this->configurations[1]);
+        $this->oauthCredentials[] = $this->createCredentialsCustom($this->configurations[2]);
+        $this->oauthCredentials[] = $this->createCredentialsCustom($this->configurations[3]);
     }
 
     protected function createTestConfiguration(string $componentId) : string
@@ -69,7 +69,7 @@ class OAuthMigrationTest extends TestCase
         return $id;
     }
 
-    protected function createOAuthConfig(string $configId) : \stdClass
+    protected function createCredentials(string $configId) : \stdClass
     {
         return $this->oauthService->createCredentials($this->componentId, [
             'id' => $configId,
@@ -79,7 +79,7 @@ class OAuthMigrationTest extends TestCase
         ]);
     }
 
-    protected function createOAuthConfigCustom(string $configId): \stdClass
+    protected function createCredentialsCustom(string $configId): \stdClass
     {
         return $this->oauthService->createCredentials($this->componentId, [
             'id' => $configId,
@@ -94,30 +94,39 @@ class OAuthMigrationTest extends TestCase
         ]);
     }
 
-    protected function createMigrationConfig(string $configId) : array
+    protected function createMigrationConfig() : array
     {
         return [
-            'componentId' => $this->componentId,
-            'id' => $configId,
+            'configurations' => array_map(
+                function (string $configId) {
+                    return [
+                        'componentId' => $this->componentId,
+                        'id' => $configId,
+                    ];
+                },
+                $this->configurations
+            ),
         ];
     }
 
     public function testExecute() : void
     {
-        $responses = [];
-
         $this->assertCount(4, $this->configurations);
 
-        foreach ($this->configurations as $index => $configurationId) {
-            $migration = new OAuthMigration(
-                $this->createMigrationConfig($configurationId),
-                new Logger(APP_NAME)
-            );
-            $response = $migration->execute();
+        $migration = new OAuthMigration(
+            $this->createMigrationConfig(),
+            new Logger(APP_NAME)
+        );
+        $responses = $migration->execute();
 
+        $this->assertCount(4, $responses);
+
+        foreach ($responses as $index => $response) {
             $this->assertArrayHasKey('id', $response);
             $this->assertArrayHasKey('authorizedFor', $response);
             $this->assertArrayHasKey('creator', $response);
+            $this->assertArrayHasKey('id', $response['creator']);
+            $this->assertArrayHasKey('description', $response['creator']);
             $this->assertArrayHasKey('created', $response);
             $this->assertArrayHasKey('#data', $response);
             $this->assertArrayHasKey('oauthVersion', $response);
@@ -125,7 +134,7 @@ class OAuthMigrationTest extends TestCase
             $this->assertArrayHasKey('#appSecret', $response);
 
             $this->assertEquals('test@keboola.com', $response['authorizedFor']);
-            $this->assertEquals($configurationId, $response['id']);
+            $this->assertContains($response['id'], $this->configurations);
 
             $oldCredentials = $this->oauthCredentials[$index];
             $this->assertEquals($oldCredentials->{'#data'}, $response['#data']);
@@ -133,11 +142,7 @@ class OAuthMigrationTest extends TestCase
             if ($index > 1) {
                 $this->assertEquals('KBC::ComponentSecure::tajmostvo', $response['#appSecret']);
             }
-
-            $responses[] = $response;
         }
-
-        $this->assertNotEmpty($responses);
 
         //cleanup
         foreach ($responses as $res) {
