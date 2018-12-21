@@ -121,10 +121,22 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
             }
         }
         if (!empty($oldConfig['rows'])) {
+            $newConfig['storage'] = ['input' => ['tables' => []]];
             foreach ($oldConfig['rows'] as $r) {
                 unset($r['configuration']['export']);
                 unset($r['configuration']['isExported']);
                 $newConfig['configuration']['parameters']['tables'][$r['id']] = $r['configuration'];
+                $mapping = [
+                    'source' => $r['id'],
+                    'columns' => array_keys($r['columns']),
+                ];
+                if (!empty($r['configuration']['incrementalLoad'])) {
+                    $mapping['days'] = $r['configuration']['incrementalLoad'];
+                }
+                if (empty($r['configuration']['export'])) {
+                    $mapping['limit'] = 1;
+                }
+                $newConfig['storage']['input']['tables'][] = $mapping;
             }
             $newConfig['rows'] = [];
         }
