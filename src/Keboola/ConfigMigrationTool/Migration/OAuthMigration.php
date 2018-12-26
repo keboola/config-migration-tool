@@ -35,30 +35,35 @@ class OAuthMigration extends DockerAppMigration
 
     public function execute(): array
     {
-        $componentId = $this->config['componentId'];
-        $configurationId = $this->config['id'];
+        $responses = [];
+        foreach ($this->config['configurations'] as $configuration) {
+            $componentId = $configuration['componentId'];
+            $configurationId = $configuration['id'];
 
-        // load configuration from SAPI
-        $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
-        $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
+            // load configuration from SAPI
+            $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
+            $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
 
-        // get Credentials from old OAuth Bundle
-        $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
+            // get Credentials from old OAuth Bundle
+            $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
 
-        // add Credentials to new OAuth API
-        $newCredentials = $this->getNewCredentialsFromOld($credentials);
-        $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
+            // add Credentials to new OAuth API
+            $newCredentials = $this->getNewCredentialsFromOld($credentials);
+            $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
 
-        // save configuration with version set to 3
-        $this->saveConfigurationOptions($componentConfiguration, [
-            'authorization' => [
-                'oauth_api' =>[
-                    'version' => 3,
+            // save configuration with version set to 3
+            $this->saveConfigurationOptions($componentConfiguration, [
+                'authorization' => [
+                    'oauth_api' =>[
+                        'version' => 3,
+                    ],
                 ],
-            ],
-        ]);
+            ]);
 
-        return $response;
+            $responses[] = $response;
+        }
+
+        return $responses;
     }
 
     public function status() : array
