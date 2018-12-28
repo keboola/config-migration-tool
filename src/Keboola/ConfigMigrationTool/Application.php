@@ -7,9 +7,13 @@ namespace Keboola\ConfigMigrationTool;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
+use Keboola\ConfigMigrationTool\Migration\KeboolaGoodDataWriterMigration;
 use Keboola\ConfigMigrationTool\Migration\MigrationInterface;
 use Keboola\ConfigMigrationTool\Migration\DockerAppMigration;
 use Keboola\ConfigMigrationTool\Migration\OAuthMigration;
+use Keboola\ConfigMigrationTool\Service\GoodDataProvisioningService;
+use Keboola\ConfigMigrationTool\Service\GoodDataService;
+use Keboola\ConfigMigrationTool\Service\LegacyGoodDataWriterService;
 use Monolog\Logger;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -92,6 +96,17 @@ class Application
         }
         if (isset($config['image_parameters'])) {
             $migration->setImageParameters($config['image_parameters']);
+        }
+        if ($destination === 'keboola.gooddata-writer') {
+            /** @var KeboolaGoodDataWriterMigration $migration */
+            $migration->setProvisioning(new GoodDataProvisioningService(
+                $config['image_parameters']['gooddata_provisioning_url'],
+                $config['image_parameters']['manage_token']
+            ));
+            $migration->setLegacyWriter(
+                new LegacyGoodDataWriterService($config['image_parameters']['gooddata_writer_url'])
+            );
+            $migration->setGoodData(new GoodDataService());
         }
         return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
     }

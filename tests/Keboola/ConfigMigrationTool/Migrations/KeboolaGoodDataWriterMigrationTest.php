@@ -6,7 +6,16 @@ namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migration\KeboolaGoodDataWriterMigration;
+use Keboola\ConfigMigrationTool\Service\GoodDataProvisioningService;
+use Keboola\ConfigMigrationTool\Service\GoodDataService;
+use Keboola\ConfigMigrationTool\Service\LegacyGoodDataWriterService;
+use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Monolog\Logger;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class KeboolaGoodDataWriterMigrationTest extends TestCase
@@ -14,21 +23,32 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
     /** @var array */
     private $oldConfig;
 
-    ///** @var string */
-    //private $originComponentId;
+    /** @var string */
+    private $originComponentId;
 
-    ///** @var string */
-    //private $destinationComponentId;
+    /** @var string */
+    private $destinationComponentId;
+
+    /** @var Client */
+    private $storageApiClient;
+
+    /** @var Components */
+    private $components;
+
+    /** @var GoodDataService */
+    private $goodData;
+
 
     public function setUp() : void
     {
         parent::setUp();
 
-        //$this->originComponentId = 'gooddata-writer';
-        //$this->destinationComponentId = 'keboola.gooddata-writer';
+        $this->originComponentId = 'gooddata-writer';
+        $this->destinationComponentId = 'keboola.gooddata-writer';
 
         $configurationBody = [
             'user' => [
+                'uid' => 'uid',
                 'login' => getenv('WRGD_LOGIN'),
                 'password' => getenv('WRGD_PASSWORD'),
             ],
@@ -48,10 +68,10 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         ];
         $tableConfiguration1 = [
             'title' => uniqid(),
-            'export' => true,
-            'isExported' => true,
+            'export' => 1,
+            'isExported' => 1,
             'grain' => 'c1,c2,c3',
-            'ignoreFilter' => true,
+            'ignoreFilter' => 1,
             'anchorIdentifier' => uniqid(),
             'columns' => [
                 'c1' => [
@@ -85,6 +105,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         ];
         $tableConfiguration2 = [
             'title' => uniqid(),
+            'export' => 1,
             'columns' => [
                 'c21' => [
                     'type' => 'CONNECTION_POINT',
@@ -95,6 +116,16 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
                     'title' => uniqid(),
                 ],
             ],
+            'incrementalLoad' => 3,
+        ];
+        $tableConfiguration3 = [
+            'title' => uniqid(),
+            'columns' => [
+                'c31' => [
+                    'type' => 'IGNORE',
+                ],
+            ],
+            'export' => 0,
         ];
 
         $configId = uniqid('migrationtest-wrgd-');
@@ -110,29 +141,41 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
                     'id' => 't2',
                     'configuration' => $tableConfiguration2,
                 ],
+                [
+                    'id' => 't3',
+                    'configuration' => $tableConfiguration3,
+                ],
             ],
         ];
 
-        /*$this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
+        $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->storageApiClient);
 
         $c = new Configuration();
         $c->setComponentId($this->originComponentId);
-        $c->setConfigurationId($this->configuration['id']);
-        $c->setName($this->configuration['id']);
+        $c->setConfigurationId($this->oldConfig['id']);
+        $c->setName($this->oldConfig['id']);
         $c->setDescription('Migrate this account');
-        $c->setConfiguration($this->configuration['configuration']);
+        $c->setConfiguration($this->oldConfig['configuration']);
         $this->components->addConfiguration($c);
 
         $r = new ConfigurationRow($c);
         $r->setRowId('t1');
-        $r->setConfiguration($this->configuration['rows'][0]['configuration']);
+        $r->setConfiguration($this->oldConfig['rows'][0]['configuration']);
         $this->components->addConfigurationRow($r);
 
         $r = new ConfigurationRow($c);
         $r->setRowId('t2');
-        $r->setConfiguration($this->configuration['rows'][1]['configuration']);
-        $this->components->addConfigurationRow($r);*/
+        $r->setConfiguration($this->oldConfig['rows'][1]['configuration']);
+        $this->components->addConfigurationRow($r);
+
+
+        $this->goodData = new GoodDataService();
+        $this->goodData->login(
+            getenv('WRGD_GOODDATA_URI'),
+            getenv('WRGD_LOGIN'),
+            getenv('WRGD_PASSWORD')
+        );
     }
 
     public function testTransformConfiguration() : void
@@ -154,12 +197,34 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->assertArrayNotHasKey('domain', $result['configuration']['parameters']);
 
         $this->assertArrayHasKey('tables', $result['configuration']['parameters']);
-        $this->assertCount(2, $result['configuration']['parameters']['tables']);
+        $this->assertCount(3, $result['configuration']['parameters']['tables']);
         $this->assertArrayHasKey('columns', $result['configuration']['parameters']['tables']['t1']);
         $this->assertCount(5, $result['configuration']['parameters']['tables']['t1']['columns']);
         $this->assertArrayHasKey('columns', $result['configuration']['parameters']['tables']['t2']);
         $this->assertCount(2, $result['configuration']['parameters']['tables']['t2']['columns']);
         $this->assertCount(0, $result['rows']);
+
+        $this->assertArrayHasKey('storage', $result);
+        $this->assertArrayHasKey('input', $result['storage']);
+        $this->assertArrayHasKey('tables', $result['storage']['input']);
+        $this->assertCount(3, $result['storage']['input']['tables']);
+
+        $this->assertArrayHasKey('source', $result['storage']['input']['tables'][0]);
+        $this->assertEquals('t1', $result['storage']['input']['tables'][0]['source']);
+        $this->assertArrayHasKey('columns', $result['storage']['input']['tables'][0]);
+        $this->assertCount(5, $result['storage']['input']['tables'][0]['columns']);
+        $this->assertArrayNotHasKey('limit', $result['storage']['input']['tables'][0]);
+        $this->assertArrayNotHasKey('days', $result['storage']['input']['tables'][0]);
+
+        $this->assertEquals('t2', $result['storage']['input']['tables'][1]['source']);
+        $this->assertArrayNotHasKey('limit', $result['storage']['input']['tables'][1]);
+        $this->assertArrayHasKey('days', $result['storage']['input']['tables'][1]);
+        $this->assertEquals(3, $result['storage']['input']['tables'][1]['days']);
+
+        $this->assertEquals('t3', $result['storage']['input']['tables'][2]['source']);
+        $this->assertArrayHasKey('limit', $result['storage']['input']['tables'][2]);
+        $this->assertEquals(1, $result['storage']['input']['tables'][2]['limit']);
+        $this->assertArrayNotHasKey('days', $result['storage']['input']['tables'][2]);
     }
 
     public function testCheckGoodDataConfigurationValid() : void
@@ -224,16 +289,16 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $result = $migration->getAddProjectToProvisioningParams($newConfig, 'demo');
         $this->assertArrayHasKey('pid', $result);
         $this->assertEquals(getenv('WRGD_PID'), $result['pid']);
-        $this->assertArrayHasKey('keboolaToken', $result);
-        $this->assertEquals('demo', $result['keboolaToken']);
+        $this->assertArrayHasKey('keboolaToken', $result['params']);
+        $this->assertEquals('demo', $result['params']['keboolaToken']);
 
         $result = $migration->getAddProjectToProvisioningParams($newConfig, 'production');
-        $this->assertArrayHasKey('keboolaToken', $result);
-        $this->assertEquals('production', $result['keboolaToken']);
+        $this->assertArrayHasKey('keboolaToken', $result['params']);
+        $this->assertEquals('production', $result['params']['keboolaToken']);
 
         $result = $migration->getAddProjectToProvisioningParams($newConfig, 'token123');
-        $this->assertArrayHasKey('customToken', $result);
-        $this->assertEquals('token123', $result['customToken']);
+        $this->assertArrayHasKey('customToken', $result['params']);
+        $this->assertEquals('token123', $result['params']['customToken']);
     }
 
     public function testGetProjectMeta() : void
@@ -242,6 +307,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $migration->setImageParameters(['gooddata_url' => getenv('WRGD_GOODDATA_URI')]);
         $newConfig = $migration->transformConfiguration($this->oldConfig);
 
+        $migration->setGoodData($this->goodData);
         $result = $migration->getProjectMeta($newConfig);
         $this->assertArrayHasKey('content', $result);
         $this->assertArrayHasKey('state', $result['content']);
@@ -251,35 +317,150 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->assertEquals('/gdc/projects/' . getenv('WRGD_PID'), $result['links']['self']);
     }
 
-    /*public function testExecute() : void
+    private function initMigration() : KeboolaGoodDataWriterMigration
     {
         $migration = new KeboolaGoodDataWriterMigration(new Logger(APP_NAME));
         $migration
             ->setOriginComponentId($this->originComponentId)
             ->setDestinationComponentId($this->destinationComponentId);
         $migration->setImageParameters([
-            "gooddata_provisioning_url" => "https://x666avoo5e.execute-api.eu-west-1.amazonaws.com/dev",
-            "gooddata_url" => "https://secure.gooddata.com",
-            "production_token" => "KB_PROD",
-            "demo_token" => "KB_DEMO"
+            'gooddata_provisioning_url' => 'https://provisioning',
+            'gooddata_url' => 'https://secure.gooddata.com',
+            'production_token' => 'KB_PROD',
+            'demo_token' => 'KB_DEMO',
+            'project_access_domain' => 'test.keboola.com',
         ]);
+
+        return $migration;
+    }
+
+    private function updateConfiguration(array $params) : void
+    {
+        $config = array_replace_recursive($this->oldConfig['configuration'], $params);
+        $c = new Configuration();
+        $c->setComponentId($this->originComponentId);
+        $c->setConfigurationId($this->oldConfig['id']);
+        $c->setName($this->oldConfig['id']);
+        $c->setDescription('Migrate this account');
+        $c->setConfiguration($config);
+        $this->components->updateConfiguration($c);
+    }
+
+    private function getGoodDataMock(?array $getProjectResult = null) : MockObject
+    {
+        $mock = $this->createMock(GoodDataService::class);
+        $mock->method('login')->willReturn(null);
+        $mock->method('getProject')->willReturn($getProjectResult);
+        return $mock;
+    }
+
+    private function getLegacyWriterMock(?array $listProjectsResult = [], ?array $listUsersResult = []) : MockObject
+    {
+        $mock = $this->createMock(LegacyGoodDataWriterService::class);
+        $mock->method('listProjects')->willReturn($listProjectsResult);
+        $mock->method('listUsers')->willReturn($listUsersResult);
+        $mock->expects($this->once())->method('listProjects');
+        $mock->expects($this->once())->method('listUsers');
+        return $mock;
+    }
+
+    private function getProvisioningMock() : MockObject
+    {
+        $mock = $this->createMock(GoodDataProvisioningService::class);
+        $mock->method('addProject')->willReturn(null);
+        $mock->method('addUser')->willReturn(null);
+        return $mock;
+    }
+
+    public function testExecute() : void
+    {
+        $login = getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com';
+        $this->updateConfiguration(['user' => ['login' => $login]]);
+
+        $migration = $this->initMigration();
+        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'KB_DEMO']]));
+        $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
+            'email' => getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com',
+            'uid' => uniqid(),
+        ]]));
+
+        $provisioningMock = $this->getProvisioningMock();
+        $provisioningMock->expects($this->once())->method('addProject');
+        $provisioningMock->expects($this->once())->method('addUser');
+        $migration->setProvisioning($provisioningMock);
 
         $createdConfigurations = $migration->execute();
         $this->assertNotEmpty($createdConfigurations);
         $this->assertGreaterThanOrEqual(1, count($createdConfigurations));
 
-        $originConfig1 = $this->components->getConfiguration($this->originComponentId, $this->configuration['id']);
+        $originConfig1 = $this->components->getConfiguration($this->originComponentId, $this->oldConfig['id']);
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
         $this->assertEquals('success', $originConfig1['configuration']['migrationStatus']);
-        $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->configuration['id']);
+        $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->oldConfig['id']);
         $this->assertNotEmpty($destConfig1);
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
+    }
+
+    public function testExecuteDoNotAddCustomTokenProjectToProvisioning() : void
+    {
+        $login = getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com';
+        $this->updateConfiguration(['user' => ['login' => $login]]);
+
+        $migration = $this->initMigration();
+        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'custom']]));
+        $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
+            'email' => getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com',
+            'uid' => uniqid(),
+        ]]));
+
+        $provisioningMock = $this->getProvisioningMock();
+        $provisioningMock->expects($this->once())->method('addProject')->with(
+            $this->equalTo(getenv('WRGD_PID')),
+            $this->equalTo(['customToken' => 'custom'])
+        );
+        $provisioningMock->expects($this->once())->method('addUser');
+        $migration->setProvisioning($provisioningMock);
+
+        $createdConfigurations = $migration->execute();
+        $this->assertNotEmpty($createdConfigurations);
+        $this->assertGreaterThanOrEqual(1, count($createdConfigurations));
+    }
+
+    public function testExecuteDoNotAddForeignUserToProvisioning() : void
+    {
+        $login = uniqid() . '@test.keboola.com';
+        $this->updateConfiguration(['user' => ['login' => $login]]);
+
+        $migration = $this->initMigration();
+        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'KB_PROD']]));
+        $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
+            'email' => $login,
+            'uid' => uniqid(),
+        ]]));
+
+        $provisioningMock = $this->getProvisioningMock();
+        $provisioningMock->expects($this->once())->method('addProject')->with(
+            $this->equalTo(getenv('WRGD_PID')),
+            $this->equalTo(['keboolaToken' => 'production'])
+        );
+        $provisioningMock->expects($this->never())->method('addUser');
+        $migration->setProvisioning($provisioningMock);
+
+        $createdConfigurations = $migration->execute();
+        $this->assertNotEmpty($createdConfigurations);
+        $this->assertGreaterThanOrEqual(1, count($createdConfigurations));
     }
 
     public function tearDown() : void
     {
         parent::tearDown();
-        $this->components->deleteConfiguration($this->originComponentId, $this->configuration['id']);
-        $this->components->deleteConfiguration($this->destinationComponentId, $this->configuration['id']);
-    }*/
+        try {
+            $this->components->deleteConfiguration($this->originComponentId, $this->oldConfig['id']);
+        } catch (ClientException $e) {
+        }
+        try {
+            $this->components->deleteConfiguration($this->destinationComponentId, $this->oldConfig['id']);
+        } catch (ClientException $e) {
+        }
+    }
 }

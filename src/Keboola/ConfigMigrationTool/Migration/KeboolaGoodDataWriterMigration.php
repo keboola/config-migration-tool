@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Service\GoodDataProvisioningService;
+use Keboola\ConfigMigrationTool\Service\GoodDataService;
 use Keboola\ConfigMigrationTool\Service\LegacyGoodDataWriterService;
-use Keboola\GoodData\Client as GDClient;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\StorageApi\ClientException;
@@ -14,11 +14,32 @@ use Keboola\StorageApi\ClientException;
 class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 {
     /** @var GoodDataProvisioningService */
-    protected $provisioningService;
+    protected $provisioning;
+
+    /** @var LegacyGoodDataWriterService */
+    protected $legacyWriter;
+
+    /** @var GoodDataService */
+    protected $goodData;
 
     public function execute(): array
     {
         return $this->doExecute();
+    }
+
+    public function setProvisioning(GoodDataProvisioningService $provisioning) : void
+    {
+        $this->provisioning = $provisioning;
+    }
+
+    public function setLegacyWriter(LegacyGoodDataWriterService $legacyWriter) : void
+    {
+        $this->legacyWriter = $legacyWriter;
+    }
+
+    public function setGoodData(GoodDataService $goodData) : void
+    {
+        $this->goodData = $goodData;
     }
 
     /**
@@ -30,12 +51,6 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
      */
     protected function doExecute(?callable $migrationHook = null): array
     {
-        $provisioning = new GoodDataProvisioningService(
-            $this->imageParameters['gooddata_provisioning_url'],
-            $this->imageParameters['manage_token']
-        );
-        $writer = new LegacyGoodDataWriterService($this->imageParameters['gooddata_writer_url']);
-
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
             if (!isset($oldConfig['configuration']['migrationStatus'])
@@ -45,8 +60,8 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $newConfig);
 
                     $this->checkGoodDataConfiguration($newConfig);
-                    $this->addProjectsToProvisioning($provisioning, $writer, $newConfig);
-                    $this->addUsersToProvisioning($provisioning, $writer, $newConfig);
+                    $this->addProjectsToProvisioning($this->provisioning, $this->legacyWriter, $newConfig);
+                    $this->addUsersToProvisioning($this->provisioning, $this->legacyWriter, $newConfig);
 
                     $this->storageApiService->createConfiguration($configuration);
                     $this->storageApiService->encryptAndSaveConfiguration($configuration);
@@ -123,12 +138,9 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         if (!empty($oldConfig['rows'])) {
             $newConfig['storage'] = ['input' => ['tables' => []]];
             foreach ($oldConfig['rows'] as $r) {
-                unset($r['configuration']['export']);
-                unset($r['configuration']['isExported']);
-                $newConfig['configuration']['parameters']['tables'][$r['id']] = $r['configuration'];
                 $mapping = [
                     'source' => $r['id'],
-                    'columns' => array_keys($r['columns']),
+                    'columns' => array_keys($r['configuration']['columns']),
                 ];
                 if (!empty($r['configuration']['incrementalLoad'])) {
                     $mapping['days'] = $r['configuration']['incrementalLoad'];
@@ -137,6 +149,10 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     $mapping['limit'] = 1;
                 }
                 $newConfig['storage']['input']['tables'][] = $mapping;
+
+                unset($r['configuration']['export']);
+                unset($r['configuration']['isExported']);
+                $newConfig['configuration']['parameters']['tables'][$r['id']] = $r['configuration'];
             }
             $newConfig['rows'] = [];
         }
@@ -160,11 +176,12 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
     {
         $params = [
             'pid' => $config['configuration']['parameters']['project']['pid'],
+            'params' => [],
         ];
         if (in_array($authToken, ['demo', 'production'])) {
-            $params['keboolaToken'] = $authToken;
+            $params['params']['keboolaToken'] = $authToken;
         } else {
-            $params['customToken'] = $authToken;
+            $params['params']['customToken'] = $authToken;
         }
         return $params;
     }
@@ -177,7 +194,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         $projectMeta = $this->getProjectMeta($newConfig);
         $authToken = $this->getAuthTokenFromProjectMeta($projectMeta);
         $provisioningParams = $this->getAddProjectToProvisioningParams($newConfig, $authToken);
-        $provisioning->addProject($provisioningParams['pid'], $provisioningParams);
+        $provisioning->addProject($provisioningParams['pid'], $provisioningParams['params']);
 
         foreach ($writer->listProjects($newConfig['id']) as $project) {
             if ($project['id'] !== $newConfig['configuration']['parameters']['project']['pid']) {
@@ -215,10 +232,10 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 
     public function getProjectMeta(array $config): array
     {
-        $gd = new GDClient($config['configuration']['parameters']['project']['backendUrl']
-            ?? $this->imageParameters['gooddata_url']);
         try {
-            $gd->login(
+            $this->goodData->login(
+                $config['configuration']['parameters']['project']['backendUrl']
+                    ?? $this->imageParameters['gooddata_url'],
                 $config['configuration']['parameters']['user']['login'],
                 $config['configuration']['parameters']['user']['#password']
             );
@@ -227,7 +244,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         }
         $pid = $config['configuration']['parameters']['project']['pid'];
         try {
-            return $gd->getProjects()->getProject($pid)['project'];
+            return $this->goodData->getProject($pid);
         } catch (\Keboola\GoodData\Exception $e) {
             throw new UserException("GoodData project $pid of configuration {$config['id']} is not accessible. ({$e->getMessage()})");
         }
