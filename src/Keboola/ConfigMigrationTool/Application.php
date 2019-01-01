@@ -7,9 +7,13 @@ namespace Keboola\ConfigMigrationTool;
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
+use Keboola\ConfigMigrationTool\Migration\KeboolaGoodDataWriterMigration;
 use Keboola\ConfigMigrationTool\Migration\MigrationInterface;
 use Keboola\ConfigMigrationTool\Migration\DockerAppMigration;
 use Keboola\ConfigMigrationTool\Migration\OAuthMigration;
+use Keboola\ConfigMigrationTool\Service\GoodDataProvisioningService;
+use Keboola\ConfigMigrationTool\Service\GoodDataService;
+use Keboola\ConfigMigrationTool\Service\LegacyGoodDataWriterService;
 use Monolog\Logger;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -65,27 +69,44 @@ class Application
         if (isset($config['parameters']['component'])) {
             return $this->getLegacyMigration($config['parameters']['component']);
         } elseif (isset($config['parameters']['origin']) && isset($config['parameters']['destination'])) {
-            return $this->getDockerAppMigration($config['parameters']['origin'], $config['parameters']['destination']);
+            return $this->getDockerAppMigration($config);
         } elseif (isset($config['parameters']['oauth'])) {
             return $this->getOauthMigration($config['parameters']['oauth']);
         }
         throw new UserException("Missing parameters 'origin' and 'destination' or 'component'");
     }
 
-    private function getDockerAppMigration(string $origin, string $destination) : MigrationInterface
+    private function getDockerAppMigration(array $config) : MigrationInterface
     {
-        $config = $this->getDefinition();
-        if (!isset($config[$origin])) {
+        $origin = $config['parameters']['origin'];
+        $destination = $config['parameters']['destination'];
+        $def = $this->getDefinition();
+
+        if (!isset($def[$origin])) {
             $migration = new GenericCopyMigration($this->logger);
-        } elseif (!in_array($destination, $config[$origin]['destinations'])) {
+        } elseif (!in_array($destination, $def[$origin]['destinations'])) {
             $migration = new GenericCopyMigration($this->logger);
         } else {
             /** @var DockerAppMigration $migration */
-            $migration = $this->getMigrationClass($config[$origin]['migration']);
+            $migration = $this->getMigrationClass($def[$origin]['migration']);
             if (!($migration instanceof DockerAppMigration)) {
                 $class = get_class($migration);
                 throw new ApplicationException("Migration class ${$class} is not instance of VersionMigration");
             }
+        }
+        if (isset($config['image_parameters'])) {
+            $migration->setImageParameters($config['image_parameters']);
+        }
+        if ($destination === 'keboola.gooddata-writer') {
+            /** @var KeboolaGoodDataWriterMigration $migration */
+            $migration->setProvisioning(new GoodDataProvisioningService(
+                $config['image_parameters']['gooddata_provisioning_url'],
+                $config['image_parameters']['manage_token']
+            ));
+            $migration->setLegacyWriter(
+                new LegacyGoodDataWriterService($config['image_parameters']['gooddata_writer_url'])
+            );
+            $migration->setGoodData(new GoodDataService());
         }
         return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
     }

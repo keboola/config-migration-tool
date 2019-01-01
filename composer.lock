@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f24ff96b3372ffd1e737676d7e72238e",
+    "content-hash": "2ee053e6742cf7230a7bfad281195818",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.80.2",
+            "version": "3.81.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "2f1509337ed63ab186ed6306eb5d6ea674a3fdab"
+                "reference": "0e07e92ec7042316ffc79ef290cf7bbb7d7be24b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2f1509337ed63ab186ed6306eb5d6ea674a3fdab",
-                "reference": "2f1509337ed63ab186ed6306eb5d6ea674a3fdab",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/0e07e92ec7042316ffc79ef290cf7bbb7d7be24b",
+                "reference": "0e07e92ec7042316ffc79ef290cf7bbb7d7be24b",
                 "shasum": ""
             },
             "require": {
@@ -87,7 +87,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-12-03T23:05:45+00:00"
+            "time": "2018-12-14T22:50:05+00:00"
         },
         {
             "name": "guzzle/guzzle",
@@ -300,16 +300,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.5.0",
+            "version": "1.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "53662d6688033a5eccde987bdd5a4a98ebe2d952"
+                "reference": "9f83dded91781a01c63574e387eaa769be769115"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/53662d6688033a5eccde987bdd5a4a98ebe2d952",
-                "reference": "53662d6688033a5eccde987bdd5a4a98ebe2d952",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/9f83dded91781a01c63574e387eaa769be769115",
+                "reference": "9f83dded91781a01c63574e387eaa769be769115",
                 "shasum": ""
             },
             "require": {
@@ -363,7 +363,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2018-12-03T05:07:51+00:00"
+            "time": "2018-12-04T20:46:45+00:00"
         },
         {
             "name": "keboola/csv",
@@ -395,6 +395,90 @@
             "description": "Keboola CSV reader and writer",
             "homepage": "http://keboola.com",
             "time": "2016-04-21T20:46:22+00:00"
+        },
+        {
+            "name": "keboola/gooddata-php-client",
+            "version": "2.9.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/gooddata-php-client.git",
+                "reference": "5de5bfed7cba014496f108d4065d23ccd2c0c5b0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/gooddata-php-client/zipball/5de5bfed7cba014496f108d4065d23ccd2c0c5b0",
+                "reference": "5de5bfed7cba014496f108d4065d23ccd2c0c5b0",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "~6.0",
+                "pear/crypt_gpg": "^1.6.0",
+                "php": ">=5.6",
+                "psr/log": "~1.0.0",
+                "symfony/process": "^4.0||^3.0||^2.7"
+            },
+            "require-dev": {
+                "codeclimate/php-test-reporter": "dev-master",
+                "keboola/php-temp": "^0.1.6",
+                "monolog/monolog": "~1.11",
+                "phpunit/php-code-coverage": "^4",
+                "phpunit/phpunit": "^5",
+                "squizlabs/php_codesniffer": "^3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\GoodData\\": "src/Keboola/GoodData"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jakub Matějka",
+                    "email": "jakub@keboola.com"
+                }
+            ],
+            "description": "PHP Client for GoodData API",
+            "keywords": [
+                "gooddata"
+            ],
+            "time": "2018-09-04T11:55:23+00:00"
+        },
+        {
+            "name": "keboola/gooddata-writer-php-client",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/gooddata-writer-php-client.git",
+                "reference": "cee4bc31fa840db788f740ae1fce29cc4f73c2b0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/gooddata-writer-php-client/zipball/cee4bc31fa840db788f740ae1fce29cc4f73c2b0",
+                "reference": "cee4bc31fa840db788f740ae1fce29cc4f73c2b0",
+                "shasum": ""
+            },
+            "require": {
+                "guzzle/guzzle": "~3.7"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.5",
+                "squizlabs/php_codesniffer": "2.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Keboola": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "description": "PHP Client for KBC GoodData Writer",
+            "homepage": "https://connection.keboola.com",
+            "time": "2016-05-09T08:51:46+00:00"
         },
         {
             "name": "keboola/orchestrator-php-client",
@@ -430,16 +514,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "10.3.1",
+            "version": "10.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "23f82f325f26c53fb7cc4807015a431a943343fb"
+                "reference": "88a0ce4cfb1aed542afac97e129bcfa8971d4ffb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/23f82f325f26c53fb7cc4807015a431a943343fb",
-                "reference": "23f82f325f26c53fb7cc4807015a431a943343fb",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/88a0ce4cfb1aed542afac97e129bcfa8971d4ffb",
+                "reference": "88a0ce4cfb1aed542afac97e129bcfa8971d4ffb",
                 "shasum": ""
             },
             "require": {
@@ -473,7 +557,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2018-11-30T14:50:42+00:00"
+            "time": "2018-12-13T10:51:30+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -609,6 +693,180 @@
             "time": "2016-12-03T22:08:25+00:00"
         },
         {
+            "name": "pear/console_commandline",
+            "version": "v1.2.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pear/Console_CommandLine.git",
+                "reference": "7a8afa50bdc8dbfdc0cf394f1101106e8b8f8e67"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pear/Console_CommandLine/zipball/7a8afa50bdc8dbfdc0cf394f1101106e8b8f8e67",
+                "reference": "7a8afa50bdc8dbfdc0cf394f1101106e8b8f8e67",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-xml": "*",
+                "pear/pear_exception": "^1.0.0",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Console": "./"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "include-path": [
+                ""
+            ],
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Richard Quadling",
+                    "email": "RQuadling@GMail.com"
+                },
+                {
+                    "name": "David Jean Louis",
+                    "email": "izimobil@gmail.com"
+                }
+            ],
+            "description": "A full featured command line options and arguments parser.",
+            "homepage": "https://github.com/pear/Console_CommandLine",
+            "keywords": [
+                "console"
+            ],
+            "time": "2016-07-14T06:00:57+00:00"
+        },
+        {
+            "name": "pear/crypt_gpg",
+            "version": "v1.6.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pear/Crypt_GPG.git",
+                "reference": "bf07ab51207446ed33ea0075083df9bbc2358617"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pear/Crypt_GPG/zipball/bf07ab51207446ed33ea0075083df9bbc2358617",
+                "reference": "bf07ab51207446ed33ea0075083df9bbc2358617",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "pear/console_commandline": "*",
+                "pear/pear_exception": "*",
+                "php": ">=5.4.8"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "suggest": {
+                "ext-posix": "May require the posix PHP extension"
+            },
+            "bin": [
+                "scripts/crypt-gpg-pinentry"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Crypt": "./"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "include-path": [
+                "./"
+            ],
+            "license": [
+                "LGPL-2.1"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Gauthier",
+                    "email": "mike@silverorange.com"
+                },
+                {
+                    "name": "Nathan Fredrickson",
+                    "email": "nathan@silverorange.com"
+                },
+                {
+                    "name": "Aleksander Machniak",
+                    "email": "alec@alec.pl"
+                }
+            ],
+            "description": "Provides an object oriented interface to the GNU Privacy Guard (GnuPG). It requires the GnuPG executable to be on the system.",
+            "homepage": "https://github.com/pear/Crypt_GPG",
+            "keywords": [
+                "PGP",
+                "encryption",
+                "gnupg",
+                "gpg"
+            ],
+            "time": "2018-05-29T07:07:50+00:00"
+        },
+        {
+            "name": "pear/pear_exception",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pear/PEAR_Exception.git",
+                "reference": "8c18719fdae000b690e3912be401c76e406dd13b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pear/PEAR_Exception/zipball/8c18719fdae000b690e3912be401c76e406dd13b",
+                "reference": "8c18719fdae000b690e3912be401c76e406dd13b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=4.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "type": "class",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "PEAR": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "include-path": [
+                "."
+            ],
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Helgi Thormar",
+                    "email": "dufuz@php.net"
+                },
+                {
+                    "name": "Greg Beaver",
+                    "email": "cellog@php.net"
+                }
+            ],
+            "description": "The PEAR Exception base class.",
+            "homepage": "https://github.com/pear/PEAR_Exception",
+            "keywords": [
+                "exception"
+            ],
+            "time": "2015-02-10T20:07:52+00:00"
+        },
+        {
             "name": "psr/http-message",
             "version": "1.0.1",
             "source": {
@@ -660,16 +918,16 @@
         },
         {
             "name": "psr/log",
-            "version": "1.1.0",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd"
+                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
-                "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
                 "shasum": ""
             },
             "require": {
@@ -703,7 +961,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2018-11-20T15:27:04+00:00"
+            "time": "2016-10-10T12:19:37+00:00"
         },
         {
             "name": "ralouphie/getallheaders",
@@ -747,16 +1005,16 @@
         },
         {
             "name": "symfony/config",
-            "version": "v4.2.0",
+            "version": "v4.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/config.git",
-                "reference": "10ba96d42cc9a482bce05c8179f06e24e665c920"
+                "reference": "005d9a083d03f588677d15391a716b1ac9b887c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/config/zipball/10ba96d42cc9a482bce05c8179f06e24e665c920",
-                "reference": "10ba96d42cc9a482bce05c8179f06e24e665c920",
+                "url": "https://api.github.com/repos/symfony/config/zipball/005d9a083d03f588677d15391a716b1ac9b887c0",
+                "reference": "005d9a083d03f588677d15391a716b1ac9b887c0",
                 "shasum": ""
             },
             "require": {
@@ -806,20 +1064,20 @@
             ],
             "description": "Symfony Config Component",
             "homepage": "https://symfony.com",
-            "time": "2018-11-26T10:55:26+00:00"
+            "time": "2018-11-30T22:21:14+00:00"
         },
         {
             "name": "symfony/contracts",
-            "version": "v1.0.1",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/contracts.git",
-                "reference": "3edf0ab943d1985a356721952cba36ff31bd6e5f"
+                "reference": "1aa7ab2429c3d594dd70689604b5cf7421254cdf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/contracts/zipball/3edf0ab943d1985a356721952cba36ff31bd6e5f",
-                "reference": "3edf0ab943d1985a356721952cba36ff31bd6e5f",
+                "url": "https://api.github.com/repos/symfony/contracts/zipball/1aa7ab2429c3d594dd70689604b5cf7421254cdf",
+                "reference": "1aa7ab2429c3d594dd70689604b5cf7421254cdf",
                 "shasum": ""
             },
             "require": {
@@ -874,20 +1132,20 @@
                 "interoperability",
                 "standards"
             ],
-            "time": "2018-11-24T09:35:08+00:00"
+            "time": "2018-12-05T08:06:11+00:00"
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v4.2.0",
+            "version": "v4.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "9b788b5f7cd6be22918f3d18ee3ff0a78e060137"
+                "reference": "921f49c3158a276d27c0d770a5a347a3b718b328"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/9b788b5f7cd6be22918f3d18ee3ff0a78e060137",
-                "reference": "9b788b5f7cd6be22918f3d18ee3ff0a78e060137",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/921f49c3158a276d27c0d770a5a347a3b718b328",
+                "reference": "921f49c3158a276d27c0d770a5a347a3b718b328",
                 "shasum": ""
             },
             "require": {
@@ -938,11 +1196,11 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2018-11-26T10:55:26+00:00"
+            "time": "2018-12-01T08:52:38+00:00"
         },
         {
             "name": "symfony/filesystem",
-            "version": "v4.2.0",
+            "version": "v4.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
@@ -1050,7 +1308,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v4.2.0",
+            "version": "v4.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
@@ -1099,16 +1357,16 @@
         },
         {
             "name": "symfony/serializer",
-            "version": "v4.2.0",
+            "version": "v4.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/serializer.git",
-                "reference": "830a3add86777766b4fc6490e3f5e72d693704c2"
+                "reference": "1452962563adc7cfa8ab1307ac1664e2a93b8d69"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/serializer/zipball/830a3add86777766b4fc6490e3f5e72d693704c2",
-                "reference": "830a3add86777766b4fc6490e3f5e72d693704c2",
+                "url": "https://api.github.com/repos/symfony/serializer/zipball/1452962563adc7cfa8ab1307ac1664e2a93b8d69",
+                "reference": "1452962563adc7cfa8ab1307ac1664e2a93b8d69",
                 "shasum": ""
             },
             "require": {
@@ -1175,7 +1433,7 @@
             ],
             "description": "Symfony Serializer Component",
             "homepage": "https://symfony.com",
-            "time": "2018-11-11T19:52:12+00:00"
+            "time": "2018-12-02T13:25:28+00:00"
         }
     ],
     "packages-dev": [
@@ -1963,16 +2221,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "7.4.5",
+            "version": "7.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "61d34e8dd6eb3555900f0f2a2fa9e7e570730102"
+                "reference": "c23d78776ad415d5506e0679723cb461d71f488f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/61d34e8dd6eb3555900f0f2a2fa9e7e570730102",
-                "reference": "61d34e8dd6eb3555900f0f2a2fa9e7e570730102",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c23d78776ad415d5506e0679723cb461d71f488f",
+                "reference": "c23d78776ad415d5506e0679723cb461d71f488f",
                 "shasum": ""
             },
             "require": {
@@ -2017,7 +2275,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "7.4-dev"
+                    "dev-master": "7.5-dev"
                 }
             },
             "autoload": {
@@ -2043,7 +2301,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2018-12-03T05:01:24+00:00"
+            "time": "2018-12-12T07:20:32+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",

@@ -1,4 +1,6 @@
 parameters:
 	ignoreErrors:
+		- '#Call to an undefined method Keboola\\ConfigMigrationTool\\Migration\\DockerAppMigration::(.+)#'
+		- '#Parameter \#1 (.+) of method Keboola\\ConfigMigrationTool\\Migration\\KeboolaGoodDataWriterMigration::(.+) expects (.+), PHPUnit\\Framework\\MockObject\\MockObject given.#'
 	autoload_files:
 		- %rootDir%/../../../../tests/bootstrap.php
