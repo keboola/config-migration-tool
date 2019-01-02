@@ -143,7 +143,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     'columns' => array_keys($r['configuration']['columns']),
                 ];
                 if (!empty($r['configuration']['incrementalLoad'])) {
-                    $mapping['days'] = $r['configuration']['incrementalLoad'];
+                    $mapping['changed_since'] = "-{$r['configuration']['incrementalLoad']} days";
                 }
                 if (empty($r['configuration']['export'])) {
                     $mapping['limit'] = 1;

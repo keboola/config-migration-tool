@@ -216,17 +216,17 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->assertArrayHasKey('columns', $result['configuration']['storage']['input']['tables'][0]);
         $this->assertCount(5, $result['configuration']['storage']['input']['tables'][0]['columns']);
         $this->assertArrayNotHasKey('limit', $result['configuration']['storage']['input']['tables'][0]);
-        $this->assertArrayNotHasKey('days', $result['configuration']['storage']['input']['tables'][0]);
+        $this->assertArrayNotHasKey('changed_since', $result['configuration']['storage']['input']['tables'][0]);
 
         $this->assertEquals('t2', $result['configuration']['storage']['input']['tables'][1]['source']);
         $this->assertArrayNotHasKey('limit', $result['configuration']['storage']['input']['tables'][1]);
-        $this->assertArrayHasKey('days', $result['configuration']['storage']['input']['tables'][1]);
-        $this->assertEquals(3, $result['configuration']['storage']['input']['tables'][1]['days']);
+        $this->assertArrayHasKey('changed_since', $result['configuration']['storage']['input']['tables'][1]);
+        $this->assertEquals('-3 days', $result['configuration']['storage']['input']['tables'][1]['changed_since']);
 
         $this->assertEquals('t3', $result['configuration']['storage']['input']['tables'][2]['source']);
         $this->assertArrayHasKey('limit', $result['configuration']['storage']['input']['tables'][2]);
         $this->assertEquals(1, $result['configuration']['storage']['input']['tables'][2]['limit']);
-        $this->assertArrayNotHasKey('days', $result['configuration']['storage']['input']['tables'][2]);
+        $this->assertArrayNotHasKey('changed_since', $result['configuration']['storage']['input']['tables'][2]);
     }
 
     public function testCheckGoodDataConfigurationValid() : void
