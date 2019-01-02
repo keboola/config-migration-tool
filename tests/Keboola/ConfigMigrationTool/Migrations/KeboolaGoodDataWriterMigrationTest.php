@@ -206,6 +206,9 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->assertCount(2, $result['configuration']['parameters']['tables']['t2']['columns']);
         $this->assertCount(0, $result['rows']);
 
+        $this->assertArrayHasKey('grain', $result['configuration']['parameters']['tables']['t1']);
+        $this->assertEquals(['c1', 'c2', 'c3'], $result['configuration']['parameters']['tables']['t1']['grain']);
+
         $this->assertArrayHasKey('storage', $result['configuration']);
         $this->assertArrayHasKey('input', $result['configuration']['storage']);
         $this->assertArrayHasKey('tables', $result['configuration']['storage']['input']);

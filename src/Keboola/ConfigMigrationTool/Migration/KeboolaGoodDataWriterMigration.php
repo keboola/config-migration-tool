@@ -150,6 +150,10 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 }
                 $newConfig['configuration']['storage']['input']['tables'][] = $mapping;
 
+                if (!empty($r['configuration']['grain'])) {
+                    $r['configuration']['grain'] = explode(',', $r['configuration']['grain']);
+                }
+
                 unset($r['configuration']['export']);
                 unset($r['configuration']['isExported']);
                 $newConfig['configuration']['parameters']['tables'][$r['id']] = $r['configuration'];
