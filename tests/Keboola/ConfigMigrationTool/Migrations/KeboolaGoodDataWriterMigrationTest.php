@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpParamsInspection */
 
 declare(strict_types=1);
 
@@ -204,27 +204,27 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->assertCount(2, $result['configuration']['parameters']['tables']['t2']['columns']);
         $this->assertCount(0, $result['rows']);
 
-        $this->assertArrayHasKey('storage', $result);
-        $this->assertArrayHasKey('input', $result['storage']);
-        $this->assertArrayHasKey('tables', $result['storage']['input']);
-        $this->assertCount(3, $result['storage']['input']['tables']);
+        $this->assertArrayHasKey('storage', $result['configuration']);
+        $this->assertArrayHasKey('input', $result['configuration']['storage']);
+        $this->assertArrayHasKey('tables', $result['configuration']['storage']['input']);
+        $this->assertCount(3, $result['configuration']['storage']['input']['tables']);
 
-        $this->assertArrayHasKey('source', $result['storage']['input']['tables'][0]);
-        $this->assertEquals('t1', $result['storage']['input']['tables'][0]['source']);
-        $this->assertArrayHasKey('columns', $result['storage']['input']['tables'][0]);
-        $this->assertCount(5, $result['storage']['input']['tables'][0]['columns']);
-        $this->assertArrayNotHasKey('limit', $result['storage']['input']['tables'][0]);
-        $this->assertArrayNotHasKey('days', $result['storage']['input']['tables'][0]);
+        $this->assertArrayHasKey('source', $result['configuration']['storage']['input']['tables'][0]);
+        $this->assertEquals('t1', $result['configuration']['storage']['input']['tables'][0]['source']);
+        $this->assertArrayHasKey('columns', $result['configuration']['storage']['input']['tables'][0]);
+        $this->assertCount(5, $result['configuration']['storage']['input']['tables'][0]['columns']);
+        $this->assertArrayNotHasKey('limit', $result['configuration']['storage']['input']['tables'][0]);
+        $this->assertArrayNotHasKey('days', $result['configuration']['storage']['input']['tables'][0]);
 
-        $this->assertEquals('t2', $result['storage']['input']['tables'][1]['source']);
-        $this->assertArrayNotHasKey('limit', $result['storage']['input']['tables'][1]);
-        $this->assertArrayHasKey('days', $result['storage']['input']['tables'][1]);
-        $this->assertEquals(3, $result['storage']['input']['tables'][1]['days']);
+        $this->assertEquals('t2', $result['configuration']['storage']['input']['tables'][1]['source']);
+        $this->assertArrayNotHasKey('limit', $result['configuration']['storage']['input']['tables'][1]);
+        $this->assertArrayHasKey('days', $result['configuration']['storage']['input']['tables'][1]);
+        $this->assertEquals(3, $result['configuration']['storage']['input']['tables'][1]['days']);
 
-        $this->assertEquals('t3', $result['storage']['input']['tables'][2]['source']);
-        $this->assertArrayHasKey('limit', $result['storage']['input']['tables'][2]);
-        $this->assertEquals(1, $result['storage']['input']['tables'][2]['limit']);
-        $this->assertArrayNotHasKey('days', $result['storage']['input']['tables'][2]);
+        $this->assertEquals('t3', $result['configuration']['storage']['input']['tables'][2]['source']);
+        $this->assertArrayHasKey('limit', $result['configuration']['storage']['input']['tables'][2]);
+        $this->assertEquals(1, $result['configuration']['storage']['input']['tables'][2]['limit']);
+        $this->assertArrayNotHasKey('days', $result['configuration']['storage']['input']['tables'][2]);
     }
 
     public function testCheckGoodDataConfigurationValid() : void
@@ -396,9 +396,13 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $originConfig1 = $this->components->getConfiguration($this->originComponentId, $this->oldConfig['id']);
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
         $this->assertEquals('success', $originConfig1['configuration']['migrationStatus']);
+
         $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->oldConfig['id']);
         $this->assertNotEmpty($destConfig1);
-        $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
+        $this->assertArrayHasKey('storage', $destConfig1['configuration']);
+        $this->assertArrayHasKey('input', $destConfig1['configuration']['storage']);
+        $this->assertArrayHasKey('tables', $destConfig1['configuration']['storage']['input']);
+        $this->assertCount(2, $destConfig1['configuration']['storage']['input']['tables']);
     }
 
     public function testExecuteDoNotAddCustomTokenProjectToProvisioning() : void
