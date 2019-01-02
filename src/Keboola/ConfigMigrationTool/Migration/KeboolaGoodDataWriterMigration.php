@@ -136,19 +136,23 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
             }
         }
         if (!empty($oldConfig['rows'])) {
-            $newConfig['storage'] = ['input' => ['tables' => []]];
+            $newConfig['configuration']['storage'] = ['input' => ['tables' => []]];
             foreach ($oldConfig['rows'] as $r) {
                 $mapping = [
                     'source' => $r['id'],
                     'columns' => array_keys($r['configuration']['columns']),
                 ];
                 if (!empty($r['configuration']['incrementalLoad'])) {
-                    $mapping['days'] = $r['configuration']['incrementalLoad'];
+                    $mapping['changed_since'] = "-{$r['configuration']['incrementalLoad']} days";
                 }
                 if (empty($r['configuration']['export'])) {
                     $mapping['limit'] = 1;
                 }
-                $newConfig['storage']['input']['tables'][] = $mapping;
+                $newConfig['configuration']['storage']['input']['tables'][] = $mapping;
+
+                if (!empty($r['configuration']['grain'])) {
+                    $r['configuration']['grain'] = explode(',', $r['configuration']['grain']);
+                }
 
                 unset($r['configuration']['export']);
                 unset($r['configuration']['isExported']);
@@ -235,7 +239,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         try {
             $this->goodData->login(
                 $config['configuration']['parameters']['project']['backendUrl']
-                    ?? $this->imageParameters['gooddata_url'],
+                ?? $this->imageParameters['gooddata_url'],
                 $config['configuration']['parameters']['user']['login'],
                 $config['configuration']['parameters']['user']['#password']
             );
