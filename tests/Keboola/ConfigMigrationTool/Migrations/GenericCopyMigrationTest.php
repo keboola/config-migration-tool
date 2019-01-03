@@ -116,6 +116,7 @@ class GenericCopyMigrationTest extends TestCase
         // create orchestration
         $orchestration = $orchestratorService->request('post', 'orchestrations', [
             'json' => [
+                "tokenId" => getenv('KBC_TOKEN_ID'),
                 "name" => "Adwords Migration Test",
                 "tasks" => [
                     [
