@@ -25,7 +25,7 @@ class OAuthMigration extends DockerAppMigration
         parent::__construct($logger);
         $this->config = $config;
 
-        $oauthV2Url = $this->storageApiService->getServiceUrl('syrup') . '/oauth-v2/';
+        $oauthV2Url = $this->storageApiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/oauth-v2/';
         $oauthV3Url = getenv('OAUTH_API_URL') ?: $this->storageApiService->getServiceUrl(StorageApiService::OAUTH_SERVICE);
 
         $this->oauthService = new OAuthV2Service($oauthV2Url);

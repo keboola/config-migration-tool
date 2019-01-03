@@ -27,7 +27,7 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
         parent::setUp();
         $logger = $this->getLogger();
         $sapiService = new StorageApiService();
-        $orchestratorUrl = $sapiService->getServiceUrl('syrup') . '/orchestrator/';
+        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
         $this->orchestratorService = new OrchestratorService($orchestratorUrl);
         $this->migration = new WrGoogleDriveMigration($logger);
     }

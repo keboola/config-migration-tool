@@ -108,7 +108,7 @@ class GenericCopyMigrationTest extends TestCase
     public function testOrchestrationUpdate() : void
     {
         $sapiService = new StorageApiService();
-        $orchestratorUrl = $sapiService->getServiceUrl('syrup') . '/orchestrator/';
+        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
         $orchestratorService = new OrchestratorService($orchestratorUrl);
         $oldComponentId = 'keboola.ex-google-adwords-v201710';
         $newComponentId = 'keboola.ex-google-adwords-reports-v201802';

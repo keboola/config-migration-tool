@@ -45,7 +45,7 @@ class WrGoogleDriveMigration implements MigrationInterface
         $this->logger = $logger;
         $this->sapiService = new StorageApiService();
 
-        $syrupUrl = $this->sapiService->getServiceUrl('syrup');
+        $syrupUrl = $this->sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE);
         $orchestratorUrl =  $syrupUrl . '/orchestrator/';
         $oauthV2Url = $syrupUrl . '/oauth-v2/';
         $wrGoogleDriveUrl = $syrupUrl . '/wr-google-drive/';

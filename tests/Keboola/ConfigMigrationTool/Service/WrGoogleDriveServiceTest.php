@@ -17,7 +17,7 @@ class WrGoogleDriveServiceTest extends WrGoogleDriveTest
     {
         parent::setUp();
         $sapiService = new StorageApiService();
-        $wrGoogleDriveUrl = $sapiService->getServiceUrl('syrup') . '/wr-google-drive/';
+        $wrGoogleDriveUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/wr-google-drive/';
         $this->service = new WrGoogleDriveService($wrGoogleDriveUrl);
     }
 

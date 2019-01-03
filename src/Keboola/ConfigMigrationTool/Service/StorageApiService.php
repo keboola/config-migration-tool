@@ -19,6 +19,8 @@ class StorageApiService
 
     public const OAUTH_SERVICE = 'oauth';
 
+    public const SYRUP_SERVICE = 'syrup';
+
     /** @var Client */
     private $client;
 
