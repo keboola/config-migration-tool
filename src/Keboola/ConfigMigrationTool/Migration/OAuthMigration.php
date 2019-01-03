@@ -82,7 +82,7 @@ class OAuthMigration extends DockerAppMigration
                     ];
                 },
                 $configurations
-            )
+            ),
         ];
     }
 

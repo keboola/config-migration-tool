@@ -13,7 +13,7 @@ class OrchestratorService
     /** @var Client */
     private $client;
 
-    public function __construct($baseUrl = 'https://syrup.keboola.com/orchestrator/')
+    public function __construct(?string $baseUrl = 'https://syrup.keboola.com/orchestrator/')
     {
         $this->client = new Client([
             'base_uri' => $baseUrl,
