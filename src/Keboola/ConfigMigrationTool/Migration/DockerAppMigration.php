@@ -34,7 +34,9 @@ abstract class DockerAppMigration implements MigrationInterface
     {
         $this->logger = $logger;
         $this->storageApiService = new StorageApiService();
-        $this->orchestratorService = new OrchestratorService();
+
+        $orchestratorUrl = $this->storageApiService->getServiceUrl('syrup') . '/orchestrator/';
+        $this->orchestratorService = new OrchestratorService($orchestratorUrl);
     }
 
     public function setOriginComponentId(string $id) : DockerAppMigration

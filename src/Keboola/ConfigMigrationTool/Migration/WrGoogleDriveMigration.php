@@ -44,11 +44,18 @@ class WrGoogleDriveMigration implements MigrationInterface
     {
         $this->logger = $logger;
         $this->sapiService = new StorageApiService();
-        $this->orchestratorService = new OrchestratorService();
+
+        $syrupUrl = $this->sapiService->getServiceUrl('syrup');
+        $orchestratorUrl =  $syrupUrl . '/orchestrator/';
+        $oauthV2Url = $syrupUrl . '/oauth-v2/';
+        $wrGoogleDriveUrl = $syrupUrl . '/wr-google-drive/';
+
+        $this->orchestratorService = new OrchestratorService($orchestratorUrl);
+        $this->googleDriveService = new WrGoogleDriveService($wrGoogleDriveUrl);
+        $this->oauthService = new OAuthService($oauthV2Url);
+
         $this->driveConfigurator = new WrGoogleDriveConfigurator();
         $this->sheetsConfigurator = new WrGoogleSheetsConfigurator();
-        $this->googleDriveService = new WrGoogleDriveService();
-        $this->oauthService = new OAuthService();
     }
 
     public function execute() : array

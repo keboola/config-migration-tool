@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Test\Service;
 
+use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\ConfigMigrationTool\Service\WrGoogleDriveService;
 use Keboola\ConfigMigrationTool\Test\WrGoogleDriveTest;
 
@@ -15,7 +16,9 @@ class WrGoogleDriveServiceTest extends WrGoogleDriveTest
     public function setUp() : void
     {
         parent::setUp();
-        $this->service = new WrGoogleDriveService();
+        $sapiService = new StorageApiService();
+        $wrGoogleDriveUrl = $sapiService->getServiceUrl('syrup') . '/wr-google-drive/';
+        $this->service = new WrGoogleDriveService($wrGoogleDriveUrl);
     }
 
     public function testGetConfigs() : void
