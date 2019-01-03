@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\ConfigMigrationTool\Test;
+namespace Keboola\ConfigMigrationTool\Service;
 
 use GuzzleHttp\Client;
 use Keboola\StorageApi\HandlerStack;
