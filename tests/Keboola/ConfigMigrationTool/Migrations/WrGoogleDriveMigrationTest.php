@@ -218,6 +218,15 @@ class WrGoogleDriveMigrationTest extends WrGoogleDriveTest
             'parameters' => [
                 'component' => 'wr-google-drive',
             ],
+            'image_parameters' => [
+                'gooddata_provisioning_url' => 'https://gooddata-provisioning.keboola.com',
+                'gooddata_url' => 'https://secure.gooddata.com',
+                '#production_token' => 'production',
+                '#demo_token' => 'demo',
+                'gooddata_writer_url' => 'https://syrup.keboola.com/gooddata-writer',
+                '#manage_token' => 'token',
+                'project_access_domain' => 'kbc.keboola.com',
+            ],
         ]);
 
         $this->assertNotEmpty($status);

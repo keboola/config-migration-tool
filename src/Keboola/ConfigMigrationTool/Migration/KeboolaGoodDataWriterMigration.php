@@ -256,10 +256,10 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 
     public function getAuthTokenFromProjectMeta(array $projectMeta): string
     {
-        if ($projectMeta['content']['authorizationToken'] == $this->imageParameters['production_token']) {
+        if ($projectMeta['content']['authorizationToken'] == $this->imageParameters['#production_token']) {
             return 'production';
         }
-        if ($projectMeta['content']['authorizationToken'] == $this->imageParameters['demo_token']) {
+        if ($projectMeta['content']['authorizationToken'] == $this->imageParameters['#demo_token']) {
             return 'demo';
         }
         return $projectMeta['content']['authorizationToken'];

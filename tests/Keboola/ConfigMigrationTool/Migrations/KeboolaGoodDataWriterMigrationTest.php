@@ -273,7 +273,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
     public function testGetAuthTokenFromProjectMeta() : void
     {
         $migration = new KeboolaGoodDataWriterMigration(new Logger(APP_NAME));
-        $migration->setImageParameters(['production_token' => 'tp1', 'demo_token' => 'td1']);
+        $migration->setImageParameters(['#production_token' => 'tp1', '#demo_token' => 'td1']);
 
         $token = $migration->getAuthTokenFromProjectMeta(['content' => ['authorizationToken' => 'tp1']]);
         $this->assertEquals('production', $token);
@@ -331,8 +331,8 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $migration->setImageParameters([
             'gooddata_provisioning_url' => 'https://provisioning',
             'gooddata_url' => 'https://secure.gooddata.com',
-            'production_token' => 'KB_PROD',
-            'demo_token' => 'KB_DEMO',
+            '#production_token' => 'KB_PROD',
+            '#demo_token' => 'KB_DEMO',
             'project_access_domain' => 'test.keboola.com',
         ]);
 

@@ -28,14 +28,36 @@ class Application
         $this->logger = $logger;
     }
 
+    public function validateImageParameters(array $config) : void
+    {
+        $required = [
+            '#demo_token',
+            '#manage_token',
+            '#production_token',
+            'gooddata_provisioning_url',
+            'gooddata_url',
+            'gooddata_writer_url',
+            'project_access_domain',
+        ];
+        foreach ($required as $r) {
+            if (!isset($config['image_parameters'][$r])) {
+                throw new \Exception("Parameter $r is missing from image parameters");
+            }
+        }
+    }
+
     public function run(array $config) : void
     {
+        $this->validateImageParameters($config);
+
         $migration = $this->getMigration($config);
         $migration->execute();
     }
 
     public function action(array $config) : array
     {
+        $this->validateImageParameters($config);
+
         $action = $config['action'];
         if ($action == 'supported-migrations') {
             return $this->getSupportedMigrations();
@@ -94,14 +116,12 @@ class Application
                 throw new ApplicationException("Migration class ${$class} is not instance of VersionMigration");
             }
         }
-        if (isset($config['image_parameters'])) {
-            $migration->setImageParameters($config['image_parameters']);
-        }
+        $migration->setImageParameters($config['image_parameters']);
         if ($destination === 'keboola.gooddata-writer') {
             /** @var KeboolaGoodDataWriterMigration $migration */
             $migration->setProvisioning(new GoodDataProvisioningService(
                 $config['image_parameters']['gooddata_provisioning_url'],
-                $config['image_parameters']['manage_token']
+                $config['image_parameters']['#manage_token']
             ));
             $migration->setLegacyWriter(
                 new LegacyGoodDataWriterService($config['image_parameters']['gooddata_writer_url'])
