@@ -9,7 +9,17 @@
          stopOnFailure="false"
          bootstrap="tests/bootstrap.php">
 
-    <testsuite name="Config Migration Tool Test Suite">
-        <directory>./tests/Keboola</directory>
-    </testsuite>
+    <testsuites>
+        <testsuite name="TestSuiteUS">
+            <directory>./tests/Keboola</directory>
+        </testsuite>
+        <testsuite name="TestSuiteEU">
+            <file>./tests/Keboola/Migrations/GenericCopyMigrationTest.php</file>
+            <file>./tests/Keboola/ConfigMigrationTool/Migrations/KeboolaExAdWordsMigrationTest.php</file>
+            <file>./tests/Keboola/ConfigMigrationTool/Migrations/KeboolaGoodDataWriterMigrationTest.php</file>
+            <file>./tests/Keboola/ConfigMigrationTool/Migrations/OAuthMigrationTest.php</file>
+            <file>./tests/Keboola/ConfigMigrationTool/ApplicationTest.php</file>
+        </testsuite>
+    </testsuites>
+
 </phpunit>
