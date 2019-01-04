@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
+use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\ConfigMigrationTool\Test\OAuthV2Service;
 use Monolog\Logger;
@@ -68,6 +69,8 @@ class OAuthMigration extends DockerAppMigration
     public function status() : array
     {
         $sapiService = new StorageApiService();
+        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
+        $orchestratorService = new OrchestratorService($orchestratorUrl);
 
         $configurations = $sapiService->getConfigurations($this->originComponentId);
         return [
@@ -83,6 +86,7 @@ class OAuthMigration extends DockerAppMigration
                 },
                 $configurations
             ),
+            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId),
         ];
     }
 
