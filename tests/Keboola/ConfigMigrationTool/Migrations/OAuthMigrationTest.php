@@ -6,8 +6,8 @@ namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Migration\OAuthMigration;
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
-use Keboola\ConfigMigrationTool\Service\OAuthV2Service;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
+use Keboola\ConfigMigrationTool\Test\OAuthV2Service;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;

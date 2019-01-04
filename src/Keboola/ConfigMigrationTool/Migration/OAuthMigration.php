@@ -6,7 +6,7 @@ namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
-use Keboola\ConfigMigrationTool\Service\OAuthV2Service;
+use Keboola\ConfigMigrationTool\Test\OAuthV2Service;
 use Monolog\Logger;
 
 class OAuthMigration extends DockerAppMigration
