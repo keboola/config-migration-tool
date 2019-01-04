@@ -6,6 +6,7 @@ namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
 use Keboola\ConfigMigrationTool\Service\OrchestratorService;
+use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -106,13 +107,16 @@ class GenericCopyMigrationTest extends TestCase
 
     public function testOrchestrationUpdate() : void
     {
-        $orchestratorService = new OrchestratorService();
+        $sapiService = new StorageApiService();
+        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
+        $orchestratorService = new OrchestratorService($orchestratorUrl);
         $oldComponentId = 'keboola.ex-google-adwords-v201710';
         $newComponentId = 'keboola.ex-google-adwords-reports-v201802';
 
         // create orchestration
         $orchestration = $orchestratorService->request('post', 'orchestrations', [
             'json' => [
+                "tokenId" => getenv('KBC_TOKEN_ID'),
                 "name" => "Adwords Migration Test",
                 "tasks" => [
                     [

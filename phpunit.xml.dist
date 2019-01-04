@@ -9,7 +9,17 @@
          stopOnFailure="false"
          bootstrap="tests/bootstrap.php">
 
-    <testsuite name="Config Migration Tool Test Suite">
-        <directory>./tests/Keboola</directory>
-    </testsuite>
+    <testsuites>
+        <testsuite name="TestSuiteUS">
+            <directory>./tests/Keboola</directory>
+        </testsuite>
+        <testsuite name="TestSuiteEU">
+            <directory>./tests/Keboola</directory>
+            <exclude>./tests/Keboola/ConfigMigrationTool/Configurator/WrGoogleDriveConfiguratorTest.php</exclude>
+            <exclude>./tests/Keboola/ConfigMigrationTool/Configurator/WrGoogleSheetsConfiguratorTest.php</exclude>
+            <exclude>./tests/Keboola/ConfigMigrationTool/Migrations/WrGoogleDriveMigrationTest.php</exclude>
+            <exclude>./tests/Keboola/ConfigMigrationTool/Service/WrGoogleDriveServiceTest.php</exclude>
+        </testsuite>
+    </testsuites>
+
 </phpunit>

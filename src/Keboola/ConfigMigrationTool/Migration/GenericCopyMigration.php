@@ -91,7 +91,9 @@ class GenericCopyMigration extends DockerAppMigration
     public function status() : array
     {
         $sapiService = new StorageApiService();
-        $orchestratorService = new OrchestratorService();
+
+        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
+        $orchestratorService = new OrchestratorService($orchestratorUrl);
 
         $configurations = $sapiService->getConfigurations($this->originComponentId);
         return [

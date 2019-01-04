@@ -12,10 +12,10 @@ class OAuthService
     /** @var Client */
     private $client;
 
-    public function __construct()
+    public function __construct(string $baseUrl)
     {
         $this->client = new Client([
-            'base_uri' => 'https://syrup.keboola.com/oauth-v2/',
+            'base_uri' => $baseUrl,
             'headers' => [
                 'X-StorageApi-Token' => getenv('KBC_TOKEN'),
             ],
