@@ -14,7 +14,7 @@ class WrGoogleDriveService
     /** @var Client */
     private $client;
 
-    public function __construct(?string $baseUrl = 'https://syrup.keboola.com/wr-google-drive/')
+    public function __construct(string $baseUrl)
     {
         $this->client = new Client([
             'base_uri' => $baseUrl,

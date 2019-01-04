@@ -12,7 +12,7 @@ class OAuthService
     /** @var Client */
     private $client;
 
-    public function __construct(?string $baseUrl = 'https://syrup.keboola.com/oauth-v2/')
+    public function __construct(string $baseUrl)
     {
         $this->client = new Client([
             'base_uri' => $baseUrl,
