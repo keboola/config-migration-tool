@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
+use GuzzleHttp\Exception\RequestException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
@@ -40,16 +41,23 @@ class OAuthMigration extends DockerAppMigration
             $componentId = $configuration['componentId'];
             $configurationId = $configuration['id'];
 
-            // load configuration from SAPI
-            $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
-            $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
-
             // get Credentials from old OAuth Bundle
-            $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
+            try {
+                $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
+            } catch (RequestException $e) {
+                if ($e->getCode() === 400 && strstr($e->getMessage(), 'No data found for api') !== false) {
+                    // component is not registered in OAuth API - skip
+                    continue;
+                }
+            }
 
             // add Credentials to new OAuth API
             $newCredentials = $this->getNewCredentialsFromOld($credentials);
             $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
+
+            // load configuration from SAPI
+            $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
+            $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
 
             // save configuration with version set to 3
             $this->saveConfigurationOptions($componentConfiguration, [
