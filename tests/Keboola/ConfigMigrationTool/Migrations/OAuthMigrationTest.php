@@ -74,7 +74,7 @@ class OAuthMigrationTest extends TestCase
 
         return [
             'id' => $id,
-            'componentId' => $componentId
+            'componentId' => $componentId,
         ];
     }
 
@@ -106,7 +106,7 @@ class OAuthMigrationTest extends TestCase
     protected function createMigrationConfig(array $configurations) : array
     {
         return [
-            'configurations' => $configurations
+            'configurations' => $configurations,
         ];
     }
 
@@ -158,8 +158,8 @@ class OAuthMigrationTest extends TestCase
             $this->createMigrationConfig([
                 [
                     'id' => '12345',
-                    'componentId' => 'nonExistingComponent'
-                ]
+                    'componentId' => 'nonExistingComponent',
+                ],
             ]),
             new Logger(APP_NAME)
         );

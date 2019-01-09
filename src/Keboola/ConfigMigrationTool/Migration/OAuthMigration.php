@@ -44,31 +44,31 @@ class OAuthMigration extends DockerAppMigration
             // get Credentials from old OAuth Bundle
             try {
                 $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
+
+                // add Credentials to new OAuth API
+                $newCredentials = $this->getNewCredentialsFromOld($credentials);
+                $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
+
+                // load configuration from SAPI
+                $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
+                $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
+
+                // save configuration with version set to 3
+                $this->saveConfigurationOptions($componentConfiguration, [
+                    'authorization' => [
+                        'oauth_api' =>[
+                            'version' => 3,
+                        ],
+                    ],
+                ]);
+
+                $responses[] = $response;
             } catch (RequestException $e) {
                 if ($e->getCode() === 400 && strstr($e->getMessage(), 'No data found for api') !== false) {
                     // component is not registered in OAuth API - skip
                     continue;
                 }
             }
-
-            // add Credentials to new OAuth API
-            $newCredentials = $this->getNewCredentialsFromOld($credentials);
-            $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
-
-            // load configuration from SAPI
-            $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
-            $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
-
-            // save configuration with version set to 3
-            $this->saveConfigurationOptions($componentConfiguration, [
-                'authorization' => [
-                    'oauth_api' =>[
-                        'version' => 3,
-                    ],
-                ],
-            ]);
-
-            $responses[] = $response;
         }
 
         return $responses;
