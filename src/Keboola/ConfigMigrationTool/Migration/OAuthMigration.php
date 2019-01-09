@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
+use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
-use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\ConfigMigrationTool\Test\OAuthV2Service;
 use Monolog\Logger;
@@ -68,26 +68,7 @@ class OAuthMigration extends DockerAppMigration
 
     public function status() : array
     {
-        $sapiService = new StorageApiService();
-        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
-        $orchestratorService = new OrchestratorService($orchestratorUrl);
-
-        $configurations = $sapiService->getConfigurations($this->originComponentId);
-        return [
-            'configurations' => array_map(
-                function ($item) {
-                    return [
-                        'configId' => $item['id'],
-                        'configName' => $item['name'],
-                        'componentId' => $this->originComponentId,
-                        'status' => isset($item['configuration']['migrationStatus'])
-                            ? $item['configuration']['migrationStatus'] : 'n/a',
-                    ];
-                },
-                $configurations
-            ),
-            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId),
-        ];
+        throw new UserException('Not implemented');
     }
 
     private function getNewCredentialsFromOld(\stdClass $credentials) : array

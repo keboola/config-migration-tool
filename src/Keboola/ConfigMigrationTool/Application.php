@@ -95,7 +95,7 @@ class Application
         } elseif (isset($config['parameters']['oauth'])) {
             return $this->getOauthMigration($config['parameters']['oauth']);
         }
-        throw new UserException("Missing parameters 'origin' and 'destination' or 'component'");
+        throw new UserException("Missing parameters 'origin' and 'destination' or 'component' or 'oauth'");
     }
 
     private function getDockerAppMigration(array $config) : MigrationInterface
