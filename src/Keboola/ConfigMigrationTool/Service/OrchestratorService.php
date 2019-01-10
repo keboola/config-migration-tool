@@ -139,10 +139,10 @@ class OrchestratorService
         $config = null;
         if (isset($task['actionParameters']['config'])
             && ($task['actionParameters']['config'] == $configurationId)) {
-            $config = $task['actionParameters']['config'];
+            $config = (string) $task['actionParameters']['config'];
         } elseif (isset($task['actionParameters']['account'])
             && ($task['actionParameters']['account'] == $configurationId)) {
-            $config = $task['actionParameters']['account'];
+            $config = (string) $task['actionParameters']['account'];
         }
 
         return $config;
