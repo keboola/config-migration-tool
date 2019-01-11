@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
+use GuzzleHttp\Exception\RequestException;
+use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
-use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\ConfigMigrationTool\Test\OAuthV2Service;
 use Monolog\Logger;
@@ -40,27 +41,34 @@ class OAuthMigration extends DockerAppMigration
             $componentId = $configuration['componentId'];
             $configurationId = $configuration['id'];
 
-            // load configuration from SAPI
-            $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
-            $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
-
             // get Credentials from old OAuth Bundle
-            $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
+            try {
+                $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
 
-            // add Credentials to new OAuth API
-            $newCredentials = $this->getNewCredentialsFromOld($credentials);
-            $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
+                // add Credentials to new OAuth API
+                $newCredentials = $this->getNewCredentialsFromOld($credentials);
+                $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
 
-            // save configuration with version set to 3
-            $this->saveConfigurationOptions($componentConfiguration, [
-                'authorization' => [
-                    'oauth_api' =>[
-                        'version' => 3,
+                // load configuration from SAPI
+                $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
+                $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
+
+                // save configuration with version set to 3
+                $this->saveConfigurationOptions($componentConfiguration, [
+                    'authorization' => [
+                        'oauth_api' =>[
+                            'version' => 3,
+                        ],
                     ],
-                ],
-            ]);
+                ]);
 
-            $responses[] = $response;
+                $responses[] = $response;
+            } catch (RequestException $e) {
+                if ($e->getCode() === 400 && strstr($e->getMessage(), 'No data found for api') !== false) {
+                    // component is not registered in OAuth API - skip
+                    continue;
+                }
+            }
         }
 
         return $responses;
@@ -68,26 +76,7 @@ class OAuthMigration extends DockerAppMigration
 
     public function status() : array
     {
-        $sapiService = new StorageApiService();
-        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
-        $orchestratorService = new OrchestratorService($orchestratorUrl);
-
-        $configurations = $sapiService->getConfigurations($this->originComponentId);
-        return [
-            'configurations' => array_map(
-                function ($item) {
-                    return [
-                        'configId' => $item['id'],
-                        'configName' => $item['name'],
-                        'componentId' => $this->originComponentId,
-                        'status' => isset($item['configuration']['migrationStatus'])
-                            ? $item['configuration']['migrationStatus'] : 'n/a',
-                    ];
-                },
-                $configurations
-            ),
-            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId),
-        ];
+        throw new UserException('Not implemented');
     }
 
     private function getNewCredentialsFromOld(\stdClass $credentials) : array
