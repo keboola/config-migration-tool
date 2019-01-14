@@ -68,7 +68,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $newConfig);
 
                     $this->checkGoodDataConfiguration($newConfig);
-                    $this->addProjectsToProvisioning($this->provisioning, $this->legacyWriter, $newConfig);
+                    $this->addProjectToProvisioning($this->provisioning, $newConfig);
                     $this->addUsersToProvisioning($this->provisioning, $this->legacyWriter, $newConfig);
 
                     $this->storageApiService->createConfiguration($configuration);
@@ -206,34 +206,14 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         return $params;
     }
 
-    public function addProjectsToProvisioning(
+    public function addProjectToProvisioning(
         GoodDataProvisioningService $provisioning,
-        LegacyGoodDataWriterService $writer,
         array $newConfig
     ): void {
         $projectMeta = $this->getProjectMeta($newConfig);
         $authToken = $this->getAuthTokenFromProjectMeta($projectMeta);
         $provisioningParams = $this->getAddProjectToProvisioningParams($newConfig, $authToken);
         $provisioning->addProject($provisioningParams['pid'], $provisioningParams['params']);
-
-        $projects = $writer->listProjects($newConfig['id']);
-        foreach ($projects as $project) {
-            if (!isset($project['id']) || !isset($project['authToken'])) {
-                throw new UserException("Configuration {$newConfig['id']} returned invalid response from list projects API call (" . json_encode($projects) . ")");
-            }
-            if ($project['id'] !== $newConfig['configuration']['parameters']['project']['pid']) {
-                $params = [];
-                if ($project['authToken'] === 'keboola_production') {
-                    $params['keboolaToken'] = 'production';
-                } elseif ($project['authToken'] === 'keboola_demo') {
-                    $params['keboolaToken'] = 'demo';
-                } else {
-                    $params['customToken'] = $project['authToken'];
-                }
-                $provisioning->addProject($project['id'], $params);
-            }
-        }
-        $this->updateProductionLimit($provisioning->getProductionProjectsCount());
     }
 
     public function addUsersToProvisioning(
