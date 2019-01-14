@@ -220,7 +220,11 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         $provisioningParams = $this->getAddProjectToProvisioningParams($newConfig, $authToken);
         $provisioning->addProject($provisioningParams['pid'], $provisioningParams['params']);
 
-        foreach ($writer->listProjects($newConfig['id']) as $project) {
+        $projects = $writer->listProjects($newConfig['id']);
+        foreach ($projects as $project) {
+            if (!isset($project['id']) || !isset($project['authToken'])) {
+                throw new UserException("Configuration {$newConfig['id']} returned invalid response from list projects API call (" . json_encode($projects) . ")");
+            }
             if ($project['id'] !== $newConfig['configuration']['parameters']['project']['pid']) {
                 $params = [];
                 if ($project['authToken'] === 'keboola_production') {
