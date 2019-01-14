@@ -269,7 +269,11 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         }
         $pid = $config['configuration']['parameters']['project']['pid'];
         try {
-            return $this->goodData->getProject($pid);
+            $result = $this->goodData->getProject($pid);
+            if ($result['content']['state'] == 'DELETED') {
+                throw new UserException("GoodData project $pid of configuration {$config['id']} is not accessible.");
+            }
+            return $result;
         } catch (\Keboola\GoodData\Exception $e) {
             throw new UserException("GoodData project $pid of configuration {$config['id']} is not accessible. ({$e->getMessage()})");
         }
