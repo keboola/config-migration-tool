@@ -101,18 +101,14 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                         // Ignore
                     }
                     if ($e instanceof ClientException || $e instanceof UserException) {
-                        throw new UserException($e->getMessage(), 400, $e, [
+                        $this->logger->warn("Migration of configuration {$oldConfig['id']} skipped because of an error: {$e->getMessage()}");
+                    } else {
+                        throw new ApplicationException($e->getMessage(), 500, $e, [
                             'oldComponentId' => $this->originComponentId,
                             'newComponentId' => $this->destinationComponentId,
                             'configurationId' => $oldConfig['id'],
                         ]);
                     }
-
-                    throw new ApplicationException($e->getMessage(), 500, $e, [
-                        'oldComponentId' => $this->originComponentId,
-                        'newComponentId' => $this->destinationComponentId,
-                        'configurationId' => $oldConfig['id'],
-                    ]);
                 }
             }
         }
