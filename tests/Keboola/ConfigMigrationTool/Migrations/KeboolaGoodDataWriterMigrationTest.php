@@ -392,7 +392,9 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
         $migration = $this->initMigration();
         $migration->setManageApi($this->getManageApiMock());
-        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'KB_DEMO']]));
+        $migration->setGoodData($this->getGoodDataMock(
+            ['content' =>  ['authorizationToken' => 'KB_DEMO', 'state' => 'ENABLED']]
+        ));
         $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
             'email' => getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com',
             'uid' => uniqid(),
@@ -426,7 +428,9 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
         $migration = $this->initMigration();
         $migration->setManageApi($this->getManageApiMock());
-        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'custom']]));
+        $migration->setGoodData($this->getGoodDataMock(
+            ['content' => ['authorizationToken' => 'custom', 'state' => 'ENABLED']]
+        ));
         $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
             'email' => getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com',
             'uid' => uniqid(),
@@ -452,7 +456,9 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
         $migration = $this->initMigration();
         $migration->setManageApi($this->getManageApiMock());
-        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'KB_PROD']]));
+        $migration->setGoodData($this->getGoodDataMock(
+            ['content' => ['authorizationToken' => 'KB_PROD', 'state' => 'ENABLED']]
+        ));
         $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
             'email' => $login,
             'uid' => uniqid(),
