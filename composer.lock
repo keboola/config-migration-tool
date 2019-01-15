@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2ee053e6742cf7230a7bfad281195818",
+    "content-hash": "d5e5b528ff7ee258064314c5a12d27af",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -479,6 +479,43 @@
             "description": "PHP Client for KBC GoodData Writer",
             "homepage": "https://connection.keboola.com",
             "time": "2016-05-09T08:51:46+00:00"
+        },
+        {
+            "name": "keboola/kbc-manage-api-php-client",
+            "version": "2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/kbc-manage-api-php-client.git",
+                "reference": "2d890c9b36356ad4acd86029a31f76b2c852bd5d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/kbc-manage-api-php-client/zipball/2d890c9b36356ad4acd86029a31f76b2c852bd5d",
+                "reference": "2d890c9b36356ad4acd86029a31f76b2c852bd5d",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.1"
+            },
+            "require-dev": {
+                "keboola/storage-api-client": "^7.0",
+                "phpunit/phpunit": "^5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\ManageApi\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Martin Halamicek",
+                    "email": "martin@keboola.com"
+                }
+            ],
+            "description": "Keboola Management API Client",
+            "time": "2018-12-17T12:17:08+00:00"
         },
         {
             "name": "keboola/orchestrator-php-client",

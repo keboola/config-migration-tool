@@ -12,6 +12,9 @@ class GoodDataProvisioningService
     /** @var Client */
     private $client;
 
+    /** @var int  */
+    private $productionProjectsCount;
+
     public function __construct(string $baseUri, string $manageToken)
     {
         $this->client = new Client([
@@ -22,15 +25,24 @@ class GoodDataProvisioningService
             ],
             'handler' => HandlerStack::create(),
         ]);
+        $this->productionProjectsCount = 0;
     }
 
     public function addProject(string $pid, array $params) : void
     {
+        if (isset($params['keboolaToken']) && $params['keboolaToken'] == 'production') {
+            $this->productionProjectsCount++;
+        }
         $this->client->request('PUT', "projects/$pid", ['json' => $params]);
     }
 
     public function addUser(string $email, array $params) : void
     {
         $this->client->request('PUT', "users/$email", ['json' => $params]);
+    }
+
+    public function getProductionProjectsCount(): int
+    {
+        return $this->productionProjectsCount;
     }
 }

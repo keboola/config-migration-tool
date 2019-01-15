@@ -22,24 +22,32 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
     /** @var GoodDataService */
     protected $goodData;
 
+    /** @var \Keboola\ManageApi\Client */
+    protected $manageApi;
+
     public function execute(): array
     {
         return $this->doExecute();
     }
 
-    public function setProvisioning(GoodDataProvisioningService $provisioning) : void
+    public function setProvisioning(GoodDataProvisioningService $provisioning): void
     {
         $this->provisioning = $provisioning;
     }
 
-    public function setLegacyWriter(LegacyGoodDataWriterService $legacyWriter) : void
+    public function setLegacyWriter(LegacyGoodDataWriterService $legacyWriter): void
     {
         $this->legacyWriter = $legacyWriter;
     }
 
-    public function setGoodData(GoodDataService $goodData) : void
+    public function setGoodData(GoodDataService $goodData): void
     {
         $this->goodData = $goodData;
+    }
+
+    public function setManageApi(\Keboola\ManageApi\Client $manageApi): void
+    {
+        $this->manageApi = $manageApi;
     }
 
     /**
@@ -176,6 +184,18 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         }
     }
 
+    public function updateProductionLimit(int $limit): void
+    {
+        if ($limit > 0) {
+            $this->manageApi->setProjectLimits(getenv('KBC_PROJECTID'), [
+                [
+                    "name" => "goodData.prodProjectsCount",
+                    "value" => $limit,
+                ],
+            ]);
+        }
+    }
+
     public function getAddProjectToProvisioningParams(array $config, string $authToken): array
     {
         $params = [
@@ -213,6 +233,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 $provisioning->addProject($project['id'], $params);
             }
         }
+        $this->updateProductionLimit($provisioning->getProductionProjectsCount());
     }
 
     public function addUsersToProvisioning(

@@ -374,6 +374,14 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $mock = $this->createMock(GoodDataProvisioningService::class);
         $mock->method('addProject')->willReturn(null);
         $mock->method('addUser')->willReturn(null);
+        $mock->method('getProductionProjectsCount')->willReturn(0);
+        return $mock;
+    }
+
+    private function getManageApiMock() : MockObject
+    {
+        $mock = $this->createMock(\Keboola\ManageApi\Client::class);
+        $mock->method('setProjectLimits');
         return $mock;
     }
 
@@ -383,6 +391,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->updateConfiguration(['user' => ['login' => $login]]);
 
         $migration = $this->initMigration();
+        $migration->setManageApi($this->getManageApiMock());
         $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'KB_DEMO']]));
         $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
             'email' => getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com',
@@ -416,6 +425,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->updateConfiguration(['user' => ['login' => $login]]);
 
         $migration = $this->initMigration();
+        $migration->setManageApi($this->getManageApiMock());
         $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'custom']]));
         $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
             'email' => getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com',
@@ -441,6 +451,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->updateConfiguration(['user' => ['login' => $login]]);
 
         $migration = $this->initMigration();
+        $migration->setManageApi($this->getManageApiMock());
         $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'KB_PROD']]));
         $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
             'email' => $login,

@@ -127,6 +127,10 @@ class Application
                 new LegacyGoodDataWriterService($config['image_parameters']['gooddata_writer_url'])
             );
             $migration->setGoodData(new GoodDataService());
+            $migration->setManageApi(new \Keboola\ManageApi\Client([
+                'token' => $config['image_parameters']['#manage_token'],
+                'url' => getenv('KBC_URL'),
+            ]));
         }
         return $migration->setOriginComponentId($origin)->setDestinationComponentId($destination);
     }
