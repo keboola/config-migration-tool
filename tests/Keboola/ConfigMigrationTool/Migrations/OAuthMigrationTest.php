@@ -154,6 +154,7 @@ class OAuthMigrationTest extends TestCase
 
     public function testExecuteWithNonExistingComponent() : void
     {
+        $this->expectException('Keboola\\ConfigMigrationTool\\Exception\\UserException');
         $migration = new OAuthMigration(
             $this->createMigrationConfig([
                 [
@@ -163,7 +164,6 @@ class OAuthMigrationTest extends TestCase
             ]),
             new Logger(APP_NAME)
         );
-        $responses = $migration->execute();
-        $this->assertEmpty($responses);
+        $migration->execute();
     }
 }

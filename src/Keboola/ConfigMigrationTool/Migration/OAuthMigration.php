@@ -47,8 +47,8 @@ class OAuthMigration extends DockerAppMigration
                 $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
             } catch (RequestException $e) {
                 if ($e->getCode() === 400 && strstr($e->getMessage(), 'No data found for api') !== false) {
-                    // component is not registered in OAuth API - skip
-                    continue;
+                    // component is not registered in OAuth API
+                    throw new UserException($e->getMessage());
                 }
                 throw $e;
             }
@@ -60,7 +60,7 @@ class OAuthMigration extends DockerAppMigration
                 $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
             } catch (RequestException $e) {
                 if ($e->getCode() === 400 && strstr($e->getMessage(), 'already exists for component') !== false) {
-                    // component credentials already exist - do nothing
+                    // component credentials already exist - do nothing`
                     $response = ['already exists'];
                 } else {
                     throw $e;
@@ -82,7 +82,7 @@ class OAuthMigration extends DockerAppMigration
                 ]);
             } catch (ClientException $e) {
                 if (strstr($e->getMessage(), sprintf('Configuration %s not found', $configurationId)) !== false) {
-                    // configurations was probably deleted while migrations was running
+                    // configurations was probably deleted while migration was running
                     continue;
                 }
                 throw $e;
