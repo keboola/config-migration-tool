@@ -9,6 +9,7 @@ use Keboola\ConfigMigrationTool\Exception\UserException;
 use Keboola\ConfigMigrationTool\Service\OAuthV3Service;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\ConfigMigrationTool\Test\OAuthV2Service;
+use Keboola\StorageApi\ClientException;
 use Monolog\Logger;
 
 class OAuthMigration extends DockerAppMigration
@@ -44,12 +45,30 @@ class OAuthMigration extends DockerAppMigration
             // get Credentials from old OAuth Bundle
             try {
                 $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
+            } catch (RequestException $e) {
+                if ($e->getCode() === 400 && strstr($e->getMessage(), 'No data found for api') !== false) {
+                    // component is not registered in OAuth API - skip
+                    continue;
+                }
+                throw $e;
+            }
 
-                // add Credentials to new OAuth API
-                $newCredentials = $this->getNewCredentialsFromOld($credentials);
+            // add Credentials to new OAuth API
+            $newCredentials = $this->getNewCredentialsFromOld($credentials);
+
+            try {
                 $response = $this->oauthV3Service->createCredentials($componentId, $newCredentials);
+            } catch (RequestException $e) {
+                if ($e->getCode() === 400 && strstr($e->getMessage(), 'already exists for component') !== false) {
+                    // component credentials already exist - do nothing
+                    $response = ['already exists'];
+                } else {
+                    throw $e;
+                }
+            }
 
-                // load configuration from SAPI
+            // load configuration from SAPI
+            try {
                 $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
                 $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
 
@@ -61,14 +80,15 @@ class OAuthMigration extends DockerAppMigration
                         ],
                     ],
                 ]);
-
-                $responses[] = $response;
-            } catch (RequestException $e) {
-                if ($e->getCode() === 400 && strstr($e->getMessage(), 'No data found for api') !== false) {
-                    // component is not registered in OAuth API - skip
+            } catch (ClientException $e) {
+                if (strstr($e->getMessage(), sprintf('Configuration %s not found', $configurationId)) !== false) {
+                    // configurations was probably deleted while migrations was running
                     continue;
                 }
+                throw $e;
             }
+
+            $responses[] = $response;
         }
 
         return $responses;
