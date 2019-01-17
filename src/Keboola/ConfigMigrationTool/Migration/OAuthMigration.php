@@ -71,6 +71,7 @@ class OAuthMigration extends DockerAppMigration
             try {
                 $componentConfigurationJson = $this->storageApiService->getConfiguration($componentId, $configurationId);
                 $componentConfiguration = $this->buildConfigurationObject($componentId, $componentConfigurationJson);
+                $componentConfiguration->setChangeDescription('OAuth migration');
 
                 // save configuration with version set to 3
                 $this->saveConfigurationOptions($componentConfiguration, [
