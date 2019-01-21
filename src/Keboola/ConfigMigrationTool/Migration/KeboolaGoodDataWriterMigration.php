@@ -68,7 +68,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $newConfig);
 
                     $this->checkGoodDataConfiguration($newConfig);
-                    $this->addProjectsToProvisioning($this->provisioning, $this->legacyWriter, $newConfig);
+                    $this->addProjectToProvisioning($this->provisioning, $newConfig);
                     $this->addUsersToProvisioning($this->provisioning, $this->legacyWriter, $newConfig);
 
                     $this->storageApiService->createConfiguration($configuration);
@@ -101,18 +101,14 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                         // Ignore
                     }
                     if ($e instanceof ClientException || $e instanceof UserException) {
-                        throw new UserException($e->getMessage(), 400, $e, [
+                        $this->logger->warn("Migration of configuration {$oldConfig['id']} skipped because of an error: {$e->getMessage()}");
+                    } else {
+                        throw new ApplicationException($e->getMessage(), 500, $e, [
                             'oldComponentId' => $this->originComponentId,
                             'newComponentId' => $this->destinationComponentId,
                             'configurationId' => $oldConfig['id'],
                         ]);
                     }
-
-                    throw new ApplicationException($e->getMessage(), 500, $e, [
-                        'oldComponentId' => $this->originComponentId,
-                        'newComponentId' => $this->destinationComponentId,
-                        'configurationId' => $oldConfig['id'],
-                    ]);
                 }
             }
         }
@@ -210,30 +206,14 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         return $params;
     }
 
-    public function addProjectsToProvisioning(
+    public function addProjectToProvisioning(
         GoodDataProvisioningService $provisioning,
-        LegacyGoodDataWriterService $writer,
         array $newConfig
     ): void {
         $projectMeta = $this->getProjectMeta($newConfig);
         $authToken = $this->getAuthTokenFromProjectMeta($projectMeta);
         $provisioningParams = $this->getAddProjectToProvisioningParams($newConfig, $authToken);
         $provisioning->addProject($provisioningParams['pid'], $provisioningParams['params']);
-
-        foreach ($writer->listProjects($newConfig['id']) as $project) {
-            if ($project['id'] !== $newConfig['configuration']['parameters']['project']['pid']) {
-                $params = [];
-                if ($project['authToken'] === 'keboola_production') {
-                    $params['keboolaToken'] = 'production';
-                } elseif ($project['authToken'] === 'keboola_demo') {
-                    $params['keboolaToken'] = 'demo';
-                } else {
-                    $params['customToken'] = $project['authToken'];
-                }
-                $provisioning->addProject($project['id'], $params);
-            }
-        }
-        $this->updateProductionLimit($provisioning->getProductionProjectsCount());
     }
 
     public function addUsersToProvisioning(
@@ -269,7 +249,11 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         }
         $pid = $config['configuration']['parameters']['project']['pid'];
         try {
-            return $this->goodData->getProject($pid);
+            $result = $this->goodData->getProject($pid);
+            if ($result['content']['state'] == 'DELETED') {
+                throw new UserException("GoodData project $pid of configuration {$config['id']} is not accessible.");
+            }
+            return $result;
         } catch (\Keboola\GoodData\Exception $e) {
             throw new UserException("GoodData project $pid of configuration {$config['id']} is not accessible. ({$e->getMessage()})");
         }

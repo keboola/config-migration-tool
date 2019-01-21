@@ -359,12 +359,10 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         return $mock;
     }
 
-    private function getLegacyWriterMock(?array $listProjectsResult = [], ?array $listUsersResult = []) : MockObject
+    private function getLegacyWriterMock(?array $listUsersResult = []) : MockObject
     {
         $mock = $this->createMock(LegacyGoodDataWriterService::class);
-        $mock->method('listProjects')->willReturn($listProjectsResult);
         $mock->method('listUsers')->willReturn($listUsersResult);
-        $mock->expects($this->once())->method('listProjects');
         $mock->expects($this->once())->method('listUsers');
         return $mock;
     }
@@ -392,8 +390,10 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
         $migration = $this->initMigration();
         $migration->setManageApi($this->getManageApiMock());
-        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'KB_DEMO']]));
-        $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
+        $migration->setGoodData($this->getGoodDataMock(
+            ['content' =>  ['authorizationToken' => 'KB_DEMO', 'state' => 'ENABLED']]
+        ));
+        $migration->setLegacyWriter($this->getLegacyWriterMock([[
             'email' => getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com',
             'uid' => uniqid(),
         ]]));
@@ -426,8 +426,10 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
         $migration = $this->initMigration();
         $migration->setManageApi($this->getManageApiMock());
-        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'custom']]));
-        $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
+        $migration->setGoodData($this->getGoodDataMock(
+            ['content' => ['authorizationToken' => 'custom', 'state' => 'ENABLED']]
+        ));
+        $migration->setLegacyWriter($this->getLegacyWriterMock([[
             'email' => getenv('KBC_PROJECTID') . "-" . $this->oldConfig['id'] . '@test.keboola.com',
             'uid' => uniqid(),
         ]]));
@@ -452,8 +454,10 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
         $migration = $this->initMigration();
         $migration->setManageApi($this->getManageApiMock());
-        $migration->setGoodData($this->getGoodDataMock(['content' => ['authorizationToken' => 'KB_PROD']]));
-        $migration->setLegacyWriter($this->getLegacyWriterMock([], [[
+        $migration->setGoodData($this->getGoodDataMock(
+            ['content' => ['authorizationToken' => 'KB_PROD', 'state' => 'ENABLED']]
+        ));
+        $migration->setLegacyWriter($this->getLegacyWriterMock([[
             'email' => $login,
             'uid' => uniqid(),
         ]]));
