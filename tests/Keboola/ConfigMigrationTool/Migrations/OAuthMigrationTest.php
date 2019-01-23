@@ -75,6 +75,7 @@ class OAuthMigrationTest extends TestCase
         return [
             'id' => $id,
             'componentId' => $componentId,
+            'oauthId' => $id
         ];
     }
 
