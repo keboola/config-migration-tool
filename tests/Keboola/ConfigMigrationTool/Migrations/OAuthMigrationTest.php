@@ -75,6 +75,7 @@ class OAuthMigrationTest extends TestCase
         return [
             'id' => $id,
             'componentId' => $componentId,
+            'oauthId' => $id,
         ];
     }
 
@@ -160,6 +161,7 @@ class OAuthMigrationTest extends TestCase
                 [
                     'id' => '12345',
                     'componentId' => 'nonExistingComponent',
+                    'oauthId' => '12345',
                 ],
             ]),
             new Logger(APP_NAME)

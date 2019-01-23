@@ -41,10 +41,11 @@ class OAuthMigration extends DockerAppMigration
         foreach ($this->config['configurations'] as $configuration) {
             $componentId = $configuration['componentId'];
             $configurationId = $configuration['id'];
+            $oauthId = $configuration['oauthId'];
 
             // get Credentials from old OAuth Bundle
             try {
-                $credentials = $this->oauthService->getCredentialsRaw($componentId, $configurationId);
+                $credentials = $this->oauthService->getCredentialsRaw($componentId, $oauthId);
             } catch (RequestException $e) {
                 if ($e->getCode() === 400 && strstr($e->getMessage(), 'No data found for api') !== false) {
                     // component is not registered in OAuth API
