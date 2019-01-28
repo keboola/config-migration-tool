@@ -40,6 +40,9 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
     /** @var GoodDataService */
     private $goodData;
 
+    /** @var string */
+    private $extractorId;
+
 
     public function setUp() : void
     {
@@ -398,6 +401,16 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
             'uid' => uniqid(),
         ]]));
 
+        // Extractor
+        $this->extractorId = 'c_' . uniqid();
+        $c = new Configuration();
+        $c->setComponentId('keboola.ex-gooddata');
+        $c->setConfigurationId($this->extractorId);
+        $c->setName('migration test');
+        $c->setDescription('Migrate this account');
+        $c->setConfiguration(['parameters' => ['pid' => getenv('WRGD_PID')]]);
+        $this->components->addConfiguration($c);
+
         $provisioningMock = $this->getProvisioningMock();
         $provisioningMock->expects($this->once())->method('addProject');
         $provisioningMock->expects($this->once())->method('addUser');
@@ -417,6 +430,14 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->assertArrayHasKey('input', $destConfig1['configuration']['storage']);
         $this->assertArrayHasKey('tables', $destConfig1['configuration']['storage']['input']);
         $this->assertCount(2, $destConfig1['configuration']['storage']['input']['tables']);
+
+        // Check Extractor
+        $exConfig = $this->components->getConfiguration('keboola.ex-gooddata', $this->extractorId);
+        $this->assertArrayHasKey('configuration', $exConfig);
+        $this->assertArrayHasKey('parameters', $exConfig['configuration']);
+        $this->assertArrayHasKey('pid', $exConfig['configuration']['parameters']);
+        $this->assertEquals(getenv('WRGD_PID'), $exConfig['configuration']['parameters']['pid']);
+        $this->assertArrayNotHasKey('writer_id', $exConfig['configuration']['parameters']);
     }
 
     public function testExecuteDoNotAddCustomTokenProjectToProvisioning() : void
@@ -484,6 +505,10 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         }
         try {
             $this->components->deleteConfiguration($this->destinationComponentId, $this->oldConfig['id']);
+        } catch (ClientException $e) {
+        }
+        try {
+            $this->components->deleteConfiguration('keboola.ex-gooddata', $this->extractorId);
         } catch (ClientException $e) {
         }
     }
