@@ -59,6 +59,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
      */
     protected function doExecute(?callable $migrationHook = null): array
     {
+        $pidsForExtractor = [];
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
             if (!isset($oldConfig['configuration']['migrationStatus'])
@@ -70,6 +71,8 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                     $this->checkGoodDataConfiguration($newConfig);
                     $this->addProjectToProvisioning($this->provisioning, $newConfig);
                     $this->addUsersToProvisioning($this->provisioning, $this->legacyWriter, $newConfig);
+
+                    $pidsForExtractor[$newConfig['id']] = $newConfig['configuration']['parameters']['project']['pid'];
 
                     $this->storageApiService->createConfiguration($configuration);
                     $this->storageApiService->encryptAndSaveConfiguration($configuration);
@@ -112,6 +115,25 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 }
             }
         }
+
+        foreach ($this->storageApiService->getConfigurations('keboola.ex-gooddata') as $config) {
+            if (!empty($config['configuration']['parameters']['writer_id'])) {
+                $writerId = $config['configuration']['parameters']['writer_id'];
+                if (!isset($pidsForExtractor[$writerId])) {
+                    $this->logger->warn("Migration of extractor {$config['id']} skipped because it has writer_id = '{$writerId}' which was not found between Writer configurations.");
+                    continue;
+                }
+
+                $config['configuration']['parameters']['pid'] = $pidsForExtractor[$writerId];
+                unset($config['configuration']['parameters']['writer_id']);
+
+                $configuration = $this->buildConfigurationObject('keboola.ex-gooddata', $config);
+                $this->storageApiService->saveConfiguration($configuration);
+
+                $this->logger->info("Configuration of GoodData extractor {$config['id']} updated.");
+            }
+        }
+
         return $createdConfigurations;
     }
 
