@@ -170,7 +170,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
             $newConfig['configuration']['storage'] = ['input' => ['tables' => []]];
             foreach ($oldConfig['rows'] as $r) {
                 $r['configuration']['columns'] = array_filter($r['configuration']['columns'], function ($column) {
-                    $column['type'] !== 'IGNORE' && $column['type'] !== 'ignore';
+                    return $column['type'] !== 'IGNORE' && $column['type'] !== 'ignore';
                 });
                 $mapping = [
                     'source' => $r['id'],
