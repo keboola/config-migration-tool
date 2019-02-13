@@ -80,6 +80,9 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
             'ignoreFilter' => 1,
             'anchorIdentifier' => uniqid(),
             'columns' => [
+                'ignoredColumn' => [
+                    'type' => 'IGNORE'
+                ],
                 'c1' => [
                     'type' => 'ATTRIBUTE',
                     'title' => uniqid(),
@@ -87,11 +90,17 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
                     'sortLabel' => 'c3',
                     'sortOrder' => 'DESC',
                 ],
+                'ignoredColumn2' => [
+                    'type' => 'IGNORE'
+                ],
                 'c2' => [
                     'type' => 'FACT',
                     'title' => uniqid(),
                     'dataType' => 'DECIMAL',
                     'dataTypeSize' => '8,3',
+                ],
+                'ignoredColumn3' => [
+                    'type' => 'IGNORE'
                 ],
                 'c3' => [
                     'type' => 'LABEL',
@@ -113,9 +122,15 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
             'title' => uniqid(),
             'export' => 1,
             'columns' => [
+                'ignoredColumn' => [
+                    'type' => 'IGNORE'
+                ],
                 'c21' => [
                     'type' => 'CONNECTION_POINT',
                     'title' => uniqid(),
+                ],
+                'ignoredColumn2' => [
+                    'type' => 'IGNORE'
                 ],
                 'c22' => [
                     'type' => 'FACT',
