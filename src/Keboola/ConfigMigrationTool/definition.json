@@ -14,5 +14,9 @@
   "gooddata-writer": {
     "destinations": ["keboola.gooddata-writer"],
     "migration": "KeboolaGoodDataWriter"
+  },
+  "keboola.wr-google-bigquery": {
+    "destinations": ["keboola.wr-google-bigquery-v2"],
+    "migration": "KeboolaGoogleBigQueryWriter"
   }
 }
