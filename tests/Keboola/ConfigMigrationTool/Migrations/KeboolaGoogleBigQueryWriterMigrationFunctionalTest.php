@@ -124,12 +124,12 @@ class KeboolaGoogleBigQueryWriterMigrationFunctionalTest extends TestCase
         $migration->execute();
 
         $configurations = $components->listComponentConfigurations(
-            (new ListComponentConfigurationsOptions())->setComponentId('keboola.wr-google-bigquery-v2')
+            (new ListComponentConfigurationsOptions())->setComponentId(self::REPLACEMENT_COMPONENT_ID)
         );
         $this->assertCount(1, $configurations);
         $this->assertEquals($configId, $configurations[0]['id']);
 
-        $configuration = $components->getConfiguration('keboola.wr-google-bigquery-v2', $configurations[0]['id']);
+        $configuration = $components->getConfiguration(self::REPLACEMENT_COMPONENT_ID, $configurations[0]['id']);
         $this->assertNotEmpty($configuration['configuration']);
         $this->assertCount(2, $configuration['rows']);
         $this->assertEquals('r1', $configuration['rows'][0]['id']);
