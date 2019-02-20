@@ -130,12 +130,19 @@ class KeboolaGoogleBigQueryWriterMigrationFunctionalTest extends TestCase
         $this->assertEquals($configId, $configurations[0]['id']);
 
         $configuration = $components->getConfiguration(self::REPLACEMENT_COMPONENT_ID, $configurations[0]['id']);
-        $this->assertNotEmpty($configuration['configuration']);
+        $this->assertEquals([
+            'parameters' => [
+                'dataset' => 'travis_test',
+            ],
+        ], $configuration['configuration']);
+
         $this->assertCount(2, $configuration['rows']);
+
         $this->assertEquals('r1', $configuration['rows'][0]['id']);
-        $this->assertNotEmpty($configuration['rows'][0]['configuration']);
+        $this->assertEquals($row1->getConfiguration(), $configuration['rows'][0]['configuration']);
+
         $this->assertEquals('r2', $configuration['rows'][1]['id']);
-        $this->assertNotEmpty($configuration['rows'][1]['configuration']);
+        $this->assertEquals($row2->getConfiguration(), $configuration['rows'][1]['configuration']);
     }
 
     public function tearDown() : void

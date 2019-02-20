@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
+use Keboola\StorageApi\Options\Components\Configuration;
+
 class KeboolaGoogleBigQueryWriterMigration extends GenericCopyMigration
 {
-    public function execute(): array
+    public function execute() : array
     {
-        return $this->doExecute();
+        return parent::doExecute(function (Configuration $configuration) {
+            return KeboolaGoogleBigQueryWriterMigration::transform($configuration);
+        });
     }
 
-    public function transformConfiguration(array $oldConfig): array
+    public static function transform(Configuration $configuration): Configuration
     {
-        $newConfig = $oldConfig;
-        if (isset($newConfig["configuration"]["authorization"])) {
-            unset($newConfig["configuration"]["authorization"]);
+        $configurationData = $configuration->getConfiguration();
+        if (isset($configurationData["parameters"]["project"])) {
+            unset($configurationData["parameters"]["project"]);
         }
-        if (isset($newConfig["configuration"]["parameters"]["project"])) {
-            unset($newConfig["configuration"]["parameters"]["project"]);
-        }
-        return $newConfig;
+        $configuration->setConfiguration($configurationData);
+        return $configuration;
     }
 }
