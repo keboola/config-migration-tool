@@ -11,36 +11,25 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
+use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 
 class KeboolaGoogleBigQueryWriterMigrationTest extends TestCase
 {
-    /** @var array */
-    private $oldConfig;
-    /** @var string */
-    private $originComponentId;
-    /** @var string */
-    private $destinationComponentId;
-    /** @var Client */
-    private $storageApiClient;
-    /** @var Components */
-    private $components;
 
-    public function setUp(): void
+    public const DEPRECATED_COMPONENT_ID = 'keboola.wr-google-bigquery';
+    public const REPLACEMENT_COMPONENT_ID = 'keboola.wr-google-bigquery-v2';
+
+    public function testTransformConfiguration(): void
     {
-        parent::setUp();
-
-        $this->originComponentId = 'keboola.wr-google-bigquery';
-        $this->destinationComponentId = 'keboola.wr-google-bigquery-v2';
-
-        $configId = uniqid('migrationtest-keboola-google-biguery-writer-');
-        $this->oldConfig = [
-            'id' => $configId,
+        $currentConfig = [
+            'id' => 'c1',
             'configuration' => [
                 'authorization' => [
                     'oauth_api' => [
-                        'id' => '415775277',
+                        'id' => '1',
                     ],
                 ],
                 'parameters' => [
@@ -118,39 +107,152 @@ class KeboolaGoogleBigQueryWriterMigrationTest extends TestCase
             ],
         ];
 
-        $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
-        $this->components = new Components($this->storageApiClient);
-
-        $c = new Configuration();
-        $c->setComponentId($this->originComponentId);
-        $c->setConfigurationId($this->oldConfig['id']);
-        $c->setName($this->oldConfig['id']);
-        $c->setDescription('Migrate this account');
-        $c->setConfiguration($this->oldConfig['configuration']);
-        $this->components->addConfiguration($c);
-
-        $r = new ConfigurationRow($c);
-        $r->setRowId('t1');
-        $r->setConfiguration($this->oldConfig['rows'][0]['configuration']);
-        $this->components->addConfigurationRow($r);
-
-        $r = new ConfigurationRow($c);
-        $r->setRowId('t2');
-        $r->setConfiguration($this->oldConfig['rows'][1]['configuration']);
-        $this->components->addConfigurationRow($r);
-    }
-
-    public function testTransformConfiguration(): void
-    {
         $migration = new KeboolaGoogleBigQueryWriterMigration(new Logger(APP_NAME));
-        $result = $migration->transformConfiguration($this->oldConfig);
+        $result = $migration->transformConfiguration($currentConfig);
 
         $this->assertEquals([
             'parameters' => [
                 'dataset' => 'travis_test',
             ],
         ], $result['configuration']);
-        $this->assertEquals($this->oldConfig['rows'][0]['configuration'], $result['rows'][0]['configuration']);
-        $this->assertEquals($this->oldConfig['rows'][1]['configuration'], $result['rows'][1]['configuration']);
+        $this->assertEquals($currentConfig['rows'][0]['configuration'], $result['rows'][0]['configuration']);
+        $this->assertEquals($currentConfig['rows'][1]['configuration'], $result['rows'][1]['configuration']);
+    }
+
+    public function testDoExecute(): void
+    {
+        $storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
+        $components = new Components($storageApiClient);
+
+        $configId = uniqid('migrationtest-keboola-google-biguery-writer-');
+
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.wr-google-bigquery');
+        $configuration->setConfigurationId($configId);
+        $configuration->setName($configId);
+        $configuration->setDescription('Migrate this account');
+        $configuration->setConfiguration([
+            'authorization' => [
+                'oauth_api' => [
+                    'id' => '1',
+                ],
+            ],
+            'parameters' => [
+                'project' => 'bigquery-writer-158018',
+                'dataset' => 'travis_test',
+            ],
+        ]);
+        $components->addConfiguration($configuration);
+
+        $row1 = new ConfigurationRow($configuration);
+        $row1->setRowId('r1');
+        $row1->setConfiguration([
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-data.source1',
+                            'destination' => 'source1.csv',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'tables' => [
+                    0 => [
+                        'dbName' => 'test1',
+                        'tableId' => 'in.c-data.source1',
+                        'items' => [
+                            'name' => 'col1',
+                            'dbName' => 'col1',
+                            'type' => 'STRING',
+                        ],
+                        [
+                            'name' => 'col2',
+                            'dbName' => 'col2',
+                            'type' => 'INTEGER',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $components->addConfigurationRow($row1);
+
+        $row2 = new ConfigurationRow($configuration);
+        $row2->setRowId('r2');
+        $row2->setConfiguration([
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-data.source2',
+                            'destination' => 'source2.csv',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'tables' => [
+                    0 => [
+                        'dbName' => 'test2',
+                        'tableId' => 'in.c-data.source2',
+                        'items' => [
+                            'name' => 'col1',
+                            'dbName' => 'col1',
+                            'type' => 'STRING',
+                        ],
+                        [
+                            'name' => 'col2',
+                            'dbName' => 'col2',
+                            'type' => 'INTEGER',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $components->addConfigurationRow($row2);
+
+        $logger = new Logger(APP_NAME);
+        $logger->setHandlers([new NullHandler()]);
+        $migration = new KeboolaGoogleBigQueryWriterMigration($logger);
+        $migration
+            ->setOriginComponentId(self::DEPRECATED_COMPONENT_ID)
+            ->setDestinationComponentId(self::REPLACEMENT_COMPONENT_ID);
+        $migration->execute();
+
+        $configurations = $components->listComponentConfigurations(
+            (new ListComponentConfigurationsOptions())->setComponentId('keboola.wr-google-bigquery-v2')
+        );
+        $this->assertCount(1, $configurations);
+        $this->assertEquals($configId, $configurations[0]['id']);
+
+        $configuration = $components->getConfiguration('keboola.wr-google-bigquery-v2', $configurations[0]['id']);
+        $this->assertNotEmpty($configuration['configuration']);
+        $this->assertCount(2, $configuration['rows']);
+        $this->assertEquals('r1', $configuration['rows'][0]['id']);
+        $this->assertNotEmpty($configuration['rows'][0]['configuration']);
+        $this->assertEquals('r2', $configuration['rows'][1]['id']);
+        $this->assertNotEmpty($configuration['rows'][1]['configuration']);
+    }
+
+    public function tearDown() : void
+    {
+        parent::tearDown();
+        $storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
+        $components = new Components($storageApiClient);
+
+        $configurations = $components->listComponentConfigurations(
+            (new ListComponentConfigurationsOptions())->setComponentId(self::DEPRECATED_COMPONENT_ID)
+        );
+        foreach ($configurations as $configuration) {
+            $components->deleteConfiguration(self::DEPRECATED_COMPONENT_ID, $configuration['id']);
+        }
+
+        $configurations = $components->listComponentConfigurations(
+            (new ListComponentConfigurationsOptions())->setComponentId(self::REPLACEMENT_COMPONENT_ID)
+        );
+        foreach ($configurations as $configuration) {
+            $components->deleteConfiguration(self::REPLACEMENT_COMPONENT_ID, $configuration['id']);
+        }
     }
 }
