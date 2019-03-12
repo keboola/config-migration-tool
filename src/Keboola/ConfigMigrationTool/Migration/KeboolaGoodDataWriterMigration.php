@@ -185,6 +185,9 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 
                 unset($r['configuration']['export']);
                 unset($r['configuration']['isExported']);
+                unset($r['configuration']['incrementalLoad']);
+                unset($r['configuration']['tableId']);
+                unset($r['configuration']['ignoreFilter']);
                 $newConfig['configuration']['parameters']['tables'][$r['id']] = $r['configuration'];
             }
             $newConfig['rows'] = [];
