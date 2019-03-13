@@ -68,6 +68,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
                     'title' => uniqid(),
                     'includeTime' => true,
                     'isExported' => true,
+                    'customTemplate' => '',
                 ],
             ],
         ];
@@ -215,7 +216,10 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
             $result['configuration']['parameters']['project']['backendUrl']
         );
         $this->assertArrayNotHasKey('domain', $result['configuration']['parameters']);
-        
+
+        $this->assertArrayHasKey('d1', $result['configuration']['parameters']['dimensions']);
+        $this->assertArrayNotHasKey('customTemplate', $result['configuration']['parameters']['dimensions']['d1']);
+
         $this->assertArrayHasKey('tables', $result['configuration']['parameters']);
         $this->assertCount(3, $result['configuration']['parameters']['tables']);
         $this->assertArrayHasKey('columns', $result['configuration']['parameters']['tables']['t1']);

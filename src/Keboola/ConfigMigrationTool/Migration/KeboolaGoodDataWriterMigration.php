@@ -159,6 +159,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
         if (isset($newConfig['configuration']['parameters']['dimensions'])) {
             foreach ($newConfig['configuration']['parameters']['dimensions'] as $dimensionId => $dim) {
                 unset($newConfig['configuration']['parameters']['dimensions'][$dimensionId]['isExported']);
+                unset($newConfig['configuration']['parameters']['dimensions'][$dimensionId]['customTemplate']);
             }
         }
         if (!empty($oldConfig['rows'])) {
