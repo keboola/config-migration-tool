@@ -91,6 +91,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
+                    $oldConfiguration->setChangeDescription('migration status updated');
                     $this->saveConfigurationOptions($oldConfiguration, ['migrationStatus' => 'success']);
                 } catch (\Throwable $e) {
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
