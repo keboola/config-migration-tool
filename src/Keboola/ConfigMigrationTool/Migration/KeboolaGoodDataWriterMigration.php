@@ -183,6 +183,8 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 
                 if (!empty($r['configuration']['grain'])) {
                     $r['configuration']['grain'] = explode(',', $r['configuration']['grain']);
+                } else {
+                    unset($r['configuration']['grain']);
                 }
 
                 unset($r['configuration']['export']);

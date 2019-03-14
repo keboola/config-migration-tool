@@ -121,6 +121,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $tableConfiguration2 = [
             'title' => uniqid(),
             'export' => 1,
+            'grain' => '',
             'columns' => [
                 'ignoredColumn' => [
                     'type' => 'IGNORE',
@@ -230,6 +231,8 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
         $this->assertArrayHasKey('grain', $result['configuration']['parameters']['tables']['t1']);
         $this->assertEquals(['c1', 'c2', 'c3'], $result['configuration']['parameters']['tables']['t1']['grain']);
+
+        $this->assertArrayNotHasKey('grain', $result['configuration']['parameters']['tables']['t2']);
 
         $this->assertArrayHasKey('storage', $result['configuration']);
         $this->assertArrayHasKey('input', $result['configuration']['storage']);
