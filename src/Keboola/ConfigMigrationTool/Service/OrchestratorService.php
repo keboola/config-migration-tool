@@ -123,6 +123,10 @@ class OrchestratorService
                     $task['component'] = $newConfiguration->getComponentId();
                     $update = true;
                 }
+
+                if ($oldComponentId == 'gooddata-writer') {
+                    $task['action'] = 'run';
+                }
             }
         }
 
