@@ -56,7 +56,7 @@ class GenericCopyMigrationTest extends TestCase
         $c->setConfigurationId($id);
         $c->setName($id);
         $c->setDescription('Migrate this account');
-        $c->setConfiguration(['a' => uniqid(), 'b' => uniqid(), 'c' => uniqid()]);
+        $c->setConfiguration(['a' => uniqid(), 'b' => uniqid(), 'c' => uniqid(), '#encrypted' => 'encrypted']);
         $this->components->addConfiguration($c);
 
         $row = new ConfigurationRow($c);
@@ -96,6 +96,8 @@ class GenericCopyMigrationTest extends TestCase
         $this->assertEquals('success', $originConfig['configuration']['migrationStatus']);
         $this->assertNotEmpty($destConfig);
         unset($originConfig['configuration']['migrationStatus']);
+        unset($originConfig['configuration']['#encrypted']);
+        unset($destConfig['configuration']['#encrypted']);
         $this->assertEquals($originConfig['configuration'], $destConfig['configuration']);
         $this->assertCount(2, $originConfig['rows']);
         $this->assertCount(2, $destConfig['rows']);
@@ -156,6 +158,39 @@ class GenericCopyMigrationTest extends TestCase
 
         // cleanup
         $orchestratorService->request('delete', sprintf('orchestrations/%s', $orchestration['id']));
+    }
+
+    public function testSkipEncryption() : void
+    {
+        $migration = new class (new Logger(APP_NAME)) extends GenericCopyMigration {
+            public function execute() : array
+            {
+                return parent::doExecute(null, parent::SKIP_ENCRYPTION);
+            }
+        };
+
+        $migration
+            ->setOriginComponentId($this->originComponentId)
+            ->setDestinationComponentId($this->destinationComponentId);
+
+        $createdConfigurations = $migration->execute();
+
+        $this->assertNotEmpty($createdConfigurations);
+        $this->assertEquals('encrypted', $createdConfigurations[0]->getConfiguration()['#encrypted']);
+    }
+
+    public function testForceEncryption() : void
+    {
+        $migration = new GenericCopyMigration(new Logger(APP_NAME));
+
+        $migration
+            ->setOriginComponentId($this->originComponentId)
+            ->setDestinationComponentId($this->destinationComponentId);
+
+        $createdConfigurations = $migration->execute();
+
+        $this->assertNotEmpty($createdConfigurations);
+        $this->assertStringContainsString('KBC::ProjectSecure::', $createdConfigurations[0]->getConfiguration()['#encrypted']);
     }
 
     private function assertOrchestration(

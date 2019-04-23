@@ -52,12 +52,13 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
 
     /**
      * @param callable|null $migrationHook Optional callback to adjust configuration object before saving
+     * @param bool|null $encryption
      * @return array
      * @throws ApplicationException
      * @throws UserException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function doExecute(?callable $migrationHook = null): array
+    protected function doExecute(?callable $migrationHook = null, ?bool $encryption = parent::FORCE_ENCRYPTION): array
     {
         $pidsForExtractor = [];
         $createdConfigurations = [];

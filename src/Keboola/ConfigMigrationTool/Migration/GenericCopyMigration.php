@@ -13,6 +13,9 @@ use Keboola\StorageApi\ClientException;
 class GenericCopyMigration extends DockerAppMigration
 {
 
+    public const SKIP_ENCRYPTION = true;
+    public const FORCE_ENCRYPTION = false;
+
     public function execute() : array
     {
         return $this->doExecute();
@@ -20,11 +23,12 @@ class GenericCopyMigration extends DockerAppMigration
 
     /**
      * @param callable|null $migrationHook Optional callback to adjust configuration object before saving
+     * @param bool|null $encryption
      * @return array
      * @throws ApplicationException
      * @throws UserException
      */
-    protected function doExecute(?callable $migrationHook = null) : array
+    protected function doExecute(?callable $migrationHook = null, ?bool $encryption = self::FORCE_ENCRYPTION) : array
     {
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
@@ -39,7 +43,12 @@ class GenericCopyMigration extends DockerAppMigration
                     $c = $configuration->getConfiguration();
                     unset($c['authorization']);
                     $configuration->setConfiguration($c);
-                    $this->storageApiService->encryptAndSaveConfiguration($configuration);
+
+                    if ($encryption === self::SKIP_ENCRYPTION) {
+                        $this->storageApiService->saveConfiguration($configuration);
+                    } else {
+                        $this->storageApiService->encryptAndSaveConfiguration($configuration);
+                    }
 
                     if (!empty($oldConfig['rows'])) {
                         foreach ($oldConfig['rows'] as $r) {
