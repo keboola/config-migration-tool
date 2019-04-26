@@ -128,11 +128,26 @@ class KeboolaGoogleBigQueryWriterMigrationFunctionalTest extends TestCase
         $this->assertEquals($configId, $configurations[0]['id']);
 
         $configuration = $components->getConfiguration(self::REPLACEMENT_COMPONENT_ID, $configurations[0]['id']);
+        $configurationData = $configuration['configuration'];
+        $this->assertStringContainsString('KBC::ProjectSecure::', $configurationData['parameters']['service_account']['#private_key']);
+        $configurationData['parameters']['service_account']['#private_key'] = '';
         $this->assertEquals([
             'parameters' => [
+                'service_account' => [
+                    '#private_key' => '',
+                    'project_id' => '',
+                    'token_uri' => '',
+                    'client_email' => '',
+                    'client_id' => '',
+                    'auth_uri' => '',
+                    'auth_provider_x509_cert_url' => '',
+                    'private_key_id' => '',
+                    'client_x509_cert_url' => '',
+                    'type' => '',
+                ],
                 'dataset' => 'travis_test',
             ],
-        ], $configuration['configuration']);
+        ], $configurationData);
 
         $this->assertCount(2, $configuration['rows']);
 

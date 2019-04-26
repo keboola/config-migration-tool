@@ -34,6 +34,18 @@ class KeboolaGoogleBigQueryWriterMigrationTest extends TestCase
                 ],
             ],
             'parameters' => [
+                'service_account' => [
+                    '#private_key' => '',
+                    'project_id' => '',
+                    'token_uri' => '',
+                    'client_email' => '',
+                    'client_id' => '',
+                    'auth_uri' => '',
+                    'auth_provider_x509_cert_url' => '',
+                    'private_key_id' => '',
+                    'client_x509_cert_url' => '',
+                    'type' => '',
+                ],
                 'dataset' => 'travis_test',
             ],
         ], $result->getConfiguration());

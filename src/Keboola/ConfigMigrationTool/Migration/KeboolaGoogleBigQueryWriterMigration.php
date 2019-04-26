@@ -21,6 +21,18 @@ class KeboolaGoogleBigQueryWriterMigration extends GenericCopyMigration
         if (isset($configurationData["parameters"]["project"])) {
             unset($configurationData["parameters"]["project"]);
         }
+        $configurationData["parameters"]["service_account"] = [
+            "#private_key" => "",
+            "project_id" => "",
+            "token_uri" => "",
+            "client_email" => "",
+            "client_id" => "",
+            "auth_uri" => "",
+            "auth_provider_x509_cert_url" => "",
+            "private_key_id" => "",
+            "client_x509_cert_url" => "",
+            "type" => "",
+        ];
         $configuration->setConfiguration($configurationData);
         return $configuration;
     }
