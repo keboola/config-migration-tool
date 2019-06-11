@@ -32,14 +32,15 @@ class GenericCopyMigration extends DockerAppMigration
                 || $oldConfig['configuration']['migrationStatus'] != 'success') {
                 try {
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $oldConfig);
-                    $this->storageApiService->createConfiguration($configuration);
                     if ($migrationHook) {
                         $configuration = $migrationHook($configuration);
                     }
                     $c = $configuration->getConfiguration();
                     unset($c['authorization']);
                     $configuration->setConfiguration($c);
-                    $this->storageApiService->encryptAndSaveConfiguration($configuration);
+
+                    $configuration->setConfiguration($this->storageApiService->encryptConfiguration($configuration));
+                    $this->storageApiService->createConfiguration($configuration);
 
                     if (!empty($oldConfig['rows'])) {
                         foreach ($oldConfig['rows'] as $r) {

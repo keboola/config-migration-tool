@@ -16,6 +16,7 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -172,6 +173,14 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
         $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->storageApiClient);
+
+        // Storage Cleanup
+        $oldConfigs = $this->components->listComponentConfigurations(
+            ((new ListComponentConfigurationsOptions())->setComponentId($this->originComponentId))
+        );
+        foreach ($oldConfigs as $oldConfig) {
+            $this->components->deleteConfiguration($this->originComponentId, $oldConfig['id']);
+        }
 
         $c = new Configuration();
         $c->setComponentId($this->originComponentId);
@@ -388,7 +397,6 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
     {
         $mock = $this->createMock(LegacyGoodDataWriterService::class);
         $mock->method('listUsers')->willReturn($listUsersResult);
-        $mock->expects($this->once())->method('listUsers');
         return $mock;
     }
 
