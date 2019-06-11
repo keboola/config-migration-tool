@@ -66,16 +66,15 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 || $oldConfig['configuration']['migrationStatus'] != 'success') {
                 try {
                     $newConfig = $this->transformConfiguration($oldConfig);
-                    $configuration = $this->buildConfigurationObject($this->destinationComponentId, $newConfig);
-
                     $this->checkGoodDataConfiguration($newConfig);
                     $this->addProjectToProvisioning($this->provisioning, $newConfig);
                     $this->addUsersToProvisioning($this->provisioning, $this->legacyWriter, $newConfig);
 
                     $pidsForExtractor[$newConfig['id']] = $newConfig['configuration']['parameters']['project']['pid'];
 
+                    $configuration = $this->buildConfigurationObject($this->destinationComponentId, $newConfig);
+                    $configuration->setConfiguration($this->storageApiService->encryptConfiguration($configuration));
                     $this->storageApiService->createConfiguration($configuration);
-                    $this->storageApiService->encryptAndSaveConfiguration($configuration);
 
                     $this->logger->info(sprintf(
                         "Configuration '%s' has been migrated",
