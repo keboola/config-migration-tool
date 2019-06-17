@@ -111,6 +111,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
                 'c4' => [
                     'type' => 'DATE',
                     'format' => 'yyyy-MM-dd HH:mm:ss',
+                    'identifierTime' => 'shouldBeSkipped',
                     'dateDimension' => 'd1',
                 ],
                 'c5' => [
