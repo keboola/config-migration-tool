@@ -169,6 +169,10 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 $r['configuration']['columns'] = array_filter($r['configuration']['columns'], function ($column) {
                     return $column['type'] !== 'IGNORE' && $column['type'] !== 'ignore';
                 });
+                $r['configuration']['columns'] = array_map(function ($column) {
+                    unset($column['identifierTime']);
+                    return $column;
+                }, $r['configuration']['columns']);
                 $mapping = [
                     'source' => $r['id'],
                     'columns' => array_keys($r['configuration']['columns']),
