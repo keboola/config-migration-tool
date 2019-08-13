@@ -187,6 +187,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 }
                 if (empty($r['configuration']['export'])) {
                     $mapping['limit'] = 1;
+                    $r['configuration']['disabled'] = true;
                 }
                 $newConfig['configuration']['storage']['input']['tables'][] = $mapping;
 
