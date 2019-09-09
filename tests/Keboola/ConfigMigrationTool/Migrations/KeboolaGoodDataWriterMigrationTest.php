@@ -113,6 +113,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
                     'format' => 'yyyy-MM-dd HH:mm:ss',
                     'identifierTime' => 'shouldBeSkipped',
                     'dateDimension' => 'd1',
+                    'identifierDateFact' => 'xxx',
                 ],
                 'c5' => [
                     'type' => 'REFERENCE',
@@ -238,6 +239,11 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->assertArrayHasKey('columns', $result['configuration']['parameters']['tables']['t2']);
         $this->assertCount(2, $result['configuration']['parameters']['tables']['t2']['columns']);
         $this->assertCount(0, $result['rows']);
+
+        $this->assertArrayNotHasKey(
+            'identifierDateFact',
+            $result['configuration']['parameters']['tables']['t1']['columns']['c4']
+        );
 
         $this->assertArrayHasKey('grain', $result['configuration']['parameters']['tables']['t1']);
         $this->assertEquals(['c1', 'c2', 'c3'], $result['configuration']['parameters']['tables']['t1']['grain']);
