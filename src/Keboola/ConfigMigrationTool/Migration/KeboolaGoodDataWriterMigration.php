@@ -171,6 +171,7 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                 });
                 $r['configuration']['columns'] = array_map(function ($column) {
                     unset($column['identifierTime']);
+                    unset($column['identifierDateFact']);
                     return $column;
                 }, $r['configuration']['columns']);
                 $mapping = [
