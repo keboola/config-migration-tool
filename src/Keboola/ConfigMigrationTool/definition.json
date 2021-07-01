@@ -18,5 +18,9 @@
   "keboola.wr-google-bigquery": {
     "destinations": ["keboola.wr-google-bigquery-v2"],
     "migration": "KeboolaGoogleBigQueryWriter"
+  },
+  "htns.ex-salesforce": {
+    "destinations": ["kds-team.ex-salesforce-v2"],
+    "migration": "SalesforceExtractorV2"
   }
 }

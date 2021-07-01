@@ -92,6 +92,11 @@ class StorageApiService
         return $this->components->addConfigurationRow($row);
     }
 
+    public function addConfigurationRowObject(ConfigurationRow $row) : array
+    {
+        return $this->components->addConfigurationRow($row);
+    }
+
     public function getServiceUrl(string $serviceName) : string
     {
         $services = $this->client->indexAction()['services'];
