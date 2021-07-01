@@ -22,5 +22,9 @@
   "keboola.ex-google-analytics-v4": {
     "destinations": ["keboola.ex-google-analytics-v6"],
     "migration": "KeboolaExGoogleAnalyticsV4"
+  },
+  "htns.ex-salesforce": {
+    "destinations": ["kds-team.ex-salesforce-v2"],
+    "migration": "SalesforceExtractorV2"
   }
 }
