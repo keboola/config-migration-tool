@@ -109,4 +109,10 @@ class SalesforceExtractorV2Migration extends GenericCopyMigrationWithRows
         }
         return $row;
     }
+
+    protected function updateOrchestrations(string $componentId, Configuration $configuration): void
+    {
+        $this->logger->info("Orchestration tasks will not be updated. 
+        Please change replace the old configuration tasks manually.");
+    }
 }

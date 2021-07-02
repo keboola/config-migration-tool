@@ -12,6 +12,12 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 
+/**
+ * Class GenericCopyMigrationWithRows
+ * Copies whole configuration including rows and states
+ *
+ * @package Keboola\ConfigMigrationTool\Migration
+ */
 class GenericCopyMigrationWithRows extends DockerAppMigration
 {
     public function execute(): array
@@ -56,12 +62,7 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
                         $configuration->getName()
                     ));
 
-                    $this->orchestratorService->updateOrchestrations($this->originComponentId, $configuration);
-
-                    $this->logger->info(sprintf(
-                        "Orchestration task for configuration '%s' has been updated",
-                        $configuration->getName()
-                    ));
+                    $this->updateOrchestrations($this->originComponentId, $configuration);
 
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
@@ -90,6 +91,15 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
             }
         }
         return $createdConfigurations;
+    }
+
+    protected function updateOrchestrations(string $componentId, Configuration $configuration): void
+    {
+        $this->orchestratorService->updateOrchestrations($componentId, $configuration);
+        $this->logger->info(sprintf(
+            "Orchestration task for configuration '%s' has been updated",
+            $configuration->getName()
+        ));
     }
 
     /**
