@@ -34,8 +34,7 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
     {
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
-            if (!isset($oldConfig['configuration']['migrationStatus'])
-                || $oldConfig['configuration']['migrationStatus'] != 'success') {
+            if (!$this->isConfigurationMigrated($oldConfig)) {
                 try {
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $oldConfig);
                     $configurationRows = $this->buildConfigurationRowObjects($configuration, $oldConfig['rows']);
@@ -66,12 +65,13 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
 
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
-                    $this->saveConfigurationOptions($oldConfiguration, ['migrationStatus' => 'success']);
+                    $oldConfiguration->setChangeDescription("Update migration status");
+                    $this->saveConfigurationOptions($oldConfiguration, ['runtime' => ['migrationStatus' => 'success']]);
                 } catch (\Throwable $e) {
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions(
                         $oldConfiguration,
-                        ['migrationStatus' => "error: {$e->getMessage()}"]
+                        ['runtime' => ['migrationStatus' => "error: {$e->getMessage()}"]]
                     );
                     $this->storageApiService->deleteConfiguration($this->destinationComponentId, $oldConfig['id']);
                     if ($e instanceof ClientException || $e instanceof UserException) {
@@ -107,7 +107,7 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
      * @param array $rowConfigurations
      * @return array - ["configuration" => Configuration $configuration, "rows" => array $rowConfigurations]
      */
-    protected function transformConfiguration(Configuration $configuration, array $rowConfigurations): array
+    public function transformConfiguration(Configuration $configuration, array $rowConfigurations): array
     {
         return ["configuration" => $configuration, "rows" => $rowConfigurations];
     }
@@ -141,8 +141,8 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
                 $rowObject->setState($r['state']);
                 $row_objects[] = $rowObject;
             }
-            return $row_objects;
         }
+        return $row_objects;
     }
 
     public function status(): array
@@ -160,8 +160,7 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
                         'configId' => $item['id'],
                         'configName' => $item['name'],
                         'componentId' => $this->originComponentId,
-                        'status' => isset($item['configuration']['migrationStatus'])
-                            ? $item['configuration']['migrationStatus'] : 'n/a',
+                        'status' => $this->getConfigurationStatus($item),
                     ];
                 },
                 $configurations

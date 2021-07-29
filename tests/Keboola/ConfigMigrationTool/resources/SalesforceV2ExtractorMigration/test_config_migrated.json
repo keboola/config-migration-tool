@@ -1,0 +1,183 @@
+{
+    "id": "699408424",
+    "name": "Migration Test",
+    "description": "",
+    "created": "2021-07-27T15:49:29+0200",
+    "creatorToken": {
+        "id": 148419,
+        "description": "david@keboola.com"
+    },
+    "version": 32,
+    "changeDescription": "Row Contact Incremental updated",
+    "isDeleted": false,
+    "configuration": {
+        "parameters": {
+            "sandbox": false,
+            "username": "adam.bako@keboola.com",
+            "#password": "KBC::ProjectSecure::xxxxx",
+            "api_version": "39.0",
+            "#security_token": "KBC::ProjectSecure::aaaaa"
+        }
+    },
+    "rowsSortOrder": [],
+    "rows": [{
+        "id": "699414549",
+        "name": "contacts custom query",
+        "description": "",
+        "isDisabled": true,
+        "version": 5,
+        "created": "2021-07-27T15:49:29+0200",
+        "creatorToken": {
+            "id": 148419,
+            "description": "david@keboola.com"
+        },
+        "changeDescription": "Row 699414549 added",
+        "state": {
+            "component": {
+                "bulkRequests": {
+                    "Contact": 1624960301752
+                }
+            },
+            "storage": {
+                "input": {
+                    "tables": [],
+                    "files": []
+                }
+            }
+        },
+        "configuration": {
+            "parameters": {
+                "is_deleted": false,
+                "bucket_name": "htns-ex-salesforce-699408424",
+                "soql_query": "select Id, FirstnAme,LastName,isdeleted,lastmodifieddate from Contact ",
+                "query_type_selector": "Custom SOQL",
+                "loading_options": {
+                    "pkey": [],
+                    "incremental": 0
+                }
+            }
+        }
+    }, {
+        "id": "712446488",
+        "name": "user",
+        "description": "",
+        "isDisabled": false,
+        "version": 5,
+        "created": "2021-07-27T15:49:30+0200",
+        "creatorToken": {
+            "id": 148419,
+            "description": "david@keboola.com"
+        },
+        "changeDescription": "Row 712446488 added",
+        "state": {
+            "component": {
+                "bulkRequests": {
+                    "user": 1625126389458
+                }
+            },
+            "storage": {
+                "input": {
+                    "tables": [],
+                    "files": []
+                }
+            }
+        },
+        "configuration": {
+            "parameters": {
+                "is_deleted": false,
+                "bucket_name": "htns-ex-salesforce-699408424",
+                "soql_query": "select user.id, user.Email, user.Alias, user.FirstName, user.LastName, user.profile.name, user.Username, user.IsActive, UserRole.Name FROM user, user.profile",
+                "query_type_selector": "Custom SOQL",
+                "loading_options": {
+                    "pkey": [],
+                    "incremental": 0
+                }
+            }
+        }
+    }, {
+        "id": "724665450",
+        "name": "Contact Incremental",
+        "description": "",
+        "isDisabled": false,
+        "version": 6,
+        "created": "2021-07-27T15:49:30+0200",
+        "creatorToken": {
+            "id": 148419,
+            "description": "david@keboola.com"
+        },
+        "changeDescription": "Row Contact Incremental updated",
+        "state": {
+            "component": {
+                "last_run": "2021-07-01T13:23:07.000Z",
+                "prev_output_columns": []
+            },
+            "storage": {
+                "input": {
+                    "tables": [],
+                    "files": []
+                }
+            }
+        },
+        "configuration": {
+            "parameters": {
+                "object": "Contact",
+                "is_deleted": false,
+                "loading_options": {
+                    "pkey": ["Id"],
+                    "incremental": 1,
+                    "incremental_fetch": true,
+                    "incremental_field": "LastModifiedDate"
+                },
+                "query_type_selector": "Object",
+                "bucket_name": "htns-ex-salesforce-699408424"
+            }
+        }
+    }, {
+        "id": "724666024",
+        "name": "user with processors",
+        "description": "",
+        "isDisabled": false,
+        "version": 5,
+        "created": "2021-07-27T15:49:30+0200",
+        "creatorToken": {
+            "id": 148419,
+            "description": "david@keboola.com"
+        },
+        "changeDescription": "Row 724666024 added",
+        "state": {},
+        "configuration": {
+            "parameters": {
+                "is_deleted": false,
+                "bucket_name": "htns-ex-salesforce-699408424",
+                "soql_query": "select user.id, user.Email, user.Alias, user.FirstName, user.LastName, user.profile.name, user.Username, user.IsActive, UserRole.Name FROM user, user.profile",
+                "query_type_selector": "Custom SOQL",
+                "loading_options": {
+                    "pkey": [],
+                    "incremental": 0
+                }
+            },
+            "processors": {
+                "after": [{
+                    "definition": {
+                        "component": "keboola.processor-create-manifest"
+                    },
+                    "parameters": {
+                        "incremental": true,
+                        "primary_key": ["Id"]
+                    }
+                }
+                ]
+            }
+        }
+    }
+    ],
+    "state": {},
+    "currentVersion": {
+        "created": "2021-07-28T16:40:01+0200",
+        "creatorToken": {
+            "id": 333840,
+            "description": "adam.bako@keboola.com"
+        },
+        "changeDescription": "Row Contact Incremental updated"
+    }
+}

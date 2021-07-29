@@ -12,8 +12,7 @@ use Keboola\StorageApi\ClientException;
 
 class GenericCopyMigration extends DockerAppMigration
 {
-
-    public function execute() : array
+    public function execute(): array
     {
         return $this->doExecute();
     }
@@ -24,12 +23,11 @@ class GenericCopyMigration extends DockerAppMigration
      * @throws ApplicationException
      * @throws UserException
      */
-    protected function doExecute(?callable $migrationHook = null) : array
+    protected function doExecute(?callable $migrationHook = null): array
     {
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
-            if (!isset($oldConfig['configuration']['migrationStatus'])
-                || $oldConfig['configuration']['migrationStatus'] != 'success') {
+            if (!$this->isConfigurationMigrated($oldConfig)) {
                 try {
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $oldConfig);
                     if ($migrationHook) {
@@ -62,12 +60,12 @@ class GenericCopyMigration extends DockerAppMigration
 
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
-                    $this->saveConfigurationOptions($oldConfiguration, ['migrationStatus' => 'success']);
+                    $this->saveConfigurationOptions($oldConfiguration, ['runtime' => ['migrationStatus' => 'success']]);
                 } catch (\Throwable $e) {
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions(
                         $oldConfiguration,
-                        ['migrationStatus' => "error: {$e->getMessage()}"]
+                        ['runtime' => ['migrationStatus' => "error: {$e->getMessage()}"]]
                     );
                     $this->storageApiService->deleteConfiguration($this->destinationComponentId, $oldConfig['id']);
                     if ($e instanceof ClientException || $e instanceof UserException) {
@@ -89,7 +87,7 @@ class GenericCopyMigration extends DockerAppMigration
         return $createdConfigurations;
     }
 
-    public function status() : array
+    public function status(): array
     {
         $sapiService = new StorageApiService();
 
@@ -104,8 +102,7 @@ class GenericCopyMigration extends DockerAppMigration
                         'configId' => $item['id'],
                         'configName' => $item['name'],
                         'componentId' => $this->originComponentId,
-                        'status' => isset($item['configuration']['migrationStatus'])
-                            ? $item['configuration']['migrationStatus'] : 'n/a',
+                        'status' => $this->getConfigurationStatus($item),
                     ];
                 },
                 $configurations
