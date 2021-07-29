@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
+use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 
 class SalesforceExtractorV2Migration extends GenericCopyMigrationWithRows
 {
-    protected function transformConfiguration(Configuration $configuration, array $rowConfigurations): array
+    public function transformConfiguration(Configuration $configuration, array $rowConfigurations): array
     {
         //rows
         $newRows = [];
@@ -34,6 +35,9 @@ class SalesforceExtractorV2Migration extends GenericCopyMigrationWithRows
             $configurationData["parameters"]["#security_token"] = $configurationData["parameters"]["#securitytoken"];
             unset($configurationData["parameters"]["#securitytoken"]);
         }
+        // default api version
+        $configurationData["parameters"]["api_version"] = "39.0";
+
         $configuration->setConfiguration($configurationData);
         return ["configuration" => $configuration, "rows" => $newRows];
     }
@@ -44,6 +48,10 @@ class SalesforceExtractorV2Migration extends GenericCopyMigrationWithRows
         $configuration = $row->getConfiguration();
         // default value
         $configuration['parameters']["is_deleted"] = false;
+
+        $configId = $row->getComponentConfiguration()->getConfigurationId();
+        $configuration['parameters']["bucket_name"] = "htns-ex-salesforce-" . $configId;
+
         if (isset($configuration['parameters']['objects'])) {
             if (sizeof($configuration['parameters']['objects']) >= 1) {
                 $configuration = $this->convertSoql($configuration);
@@ -114,5 +122,12 @@ class SalesforceExtractorV2Migration extends GenericCopyMigrationWithRows
     {
         $this->logger->info("Orchestration tasks will not be updated. 
         Please change replace the old configuration tasks manually.");
+    }
+
+    protected function saveConfigurationOptions(Configuration $configuration, array $options): void
+    {
+        $c = $this->updateConfigurationOptions($configuration, $options);
+        $components = new Components($this->storageApiService->getClient());
+        $components->updateConfiguration($c);
     }
 }

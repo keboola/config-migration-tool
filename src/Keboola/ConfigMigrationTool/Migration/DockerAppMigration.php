@@ -18,7 +18,7 @@ abstract class DockerAppMigration implements MigrationInterface
     /** @var string */
     protected $destinationComponentId;
 
-    /** @var Logger  */
+    /** @var Logger */
     protected $logger;
 
     /** @var OrchestratorService */
@@ -39,19 +39,19 @@ abstract class DockerAppMigration implements MigrationInterface
         $this->orchestratorService = new OrchestratorService($orchestratorUrl);
     }
 
-    public function setOriginComponentId(string $id) : DockerAppMigration
+    public function setOriginComponentId(string $id): DockerAppMigration
     {
         $this->originComponentId = $id;
         return $this;
     }
 
-    public function setDestinationComponentId(string $id) : DockerAppMigration
+    public function setDestinationComponentId(string $id): DockerAppMigration
     {
         $this->destinationComponentId = $id;
         return $this;
     }
 
-    protected function buildConfigurationObject(string $componentId, array $config) : Configuration
+    protected function buildConfigurationObject(string $componentId, array $config): Configuration
     {
         $configuration = new Configuration();
         $configuration->setComponentId($componentId);
@@ -63,7 +63,7 @@ abstract class DockerAppMigration implements MigrationInterface
         return $configuration;
     }
 
-    protected function updateConfigurationOptions(Configuration $configuration, array $options) : Configuration
+    protected function updateConfigurationOptions(Configuration $configuration, array $options): Configuration
     {
         $c = $configuration->getConfiguration();
         $c = array_replace_recursive($c, $options);
@@ -71,15 +71,41 @@ abstract class DockerAppMigration implements MigrationInterface
         return $configuration;
     }
 
-    protected function saveConfigurationOptions(Configuration $configuration, array $options) : void
+    protected function saveConfigurationOptions(Configuration $configuration, array $options): void
     {
         $c = $this->updateConfigurationOptions($configuration, $options);
         $components = new Components($this->storageApiService->getClient());
         $components->updateConfiguration($c);
     }
 
-    public function setImageParameters(array $imageParameters) : void
+    public function setImageParameters(array $imageParameters): void
     {
         $this->imageParameters = $imageParameters;
+    }
+
+    public function isConfigurationMigrated(array $configurationObject): bool
+    {
+        if ((!isset($configurationObject['configuration']['runtime']['migrationStatus'])
+                || $configurationObject['configuration']['runtime']['migrationStatus'] != 'success') ||
+            // legacy support
+            (!isset($configurationObject['configuration']['migrationStatus'])
+                || $configurationObject['configuration']['migrationStatus'] != 'success')
+        ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public function getConfigurationStatus(array $configurationObject): string
+    {
+        if (!isset($configurationObject['configuration']['runtime']['migrationStatus'])) {
+            return $configurationObject['configuration']['runtime']['migrationStatus'];
+        } elseif (!isset($configurationObject['configuration']['migrationStatus'])) {
+            // legacy support
+            return $configurationObject['configuration']['migrationStatus'];
+        } else {
+            return 'n/a';
+        }
     }
 }

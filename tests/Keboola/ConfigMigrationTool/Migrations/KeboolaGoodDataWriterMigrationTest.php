@@ -460,8 +460,8 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
         $this->assertGreaterThanOrEqual(1, count($createdConfigurations));
 
         $originConfig1 = $this->components->getConfiguration($this->originComponentId, $this->oldConfig['id']);
-        $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']);
-        $this->assertEquals('success', $originConfig1['configuration']['migrationStatus']);
+        $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']['runtime']);
+        $this->assertEquals('success', $originConfig1['configuration']['migrationStatus']['runtime']);
 
         $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->oldConfig['id']);
         $this->assertNotEmpty($destConfig1);
