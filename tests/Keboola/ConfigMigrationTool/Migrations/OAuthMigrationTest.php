@@ -39,6 +39,7 @@ class OAuthMigrationTest extends TestCase
 
     public function setUp() : void
     {
+        $this->markTestSkipped();
         $this->storageApiClient = new Client(['token' => getenv('KBC_TOKEN'), 'url' => getenv('KBC_URL')]);
         $this->components = new Components($this->storageApiClient);
 
