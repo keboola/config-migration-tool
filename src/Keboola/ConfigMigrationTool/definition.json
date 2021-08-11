@@ -18,5 +18,9 @@
   "keboola.wr-google-bigquery": {
     "destinations": ["keboola.wr-google-bigquery-v2"],
     "migration": "KeboolaGoogleBigQueryWriter"
+  },
+  "keboola.ex-google-analytics-v4": {
+    "destinations": ["keboola.ex-google-analytics-v6"],
+    "migration": "KeboolaExGoogleAnalyticsV4"
   }
 }
