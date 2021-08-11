@@ -1,5 +1,5 @@
 # Config Migration Tool
-[![Build Status](https://travis-ci.org/keboola/config-migration-tool.svg)](https://travis-ci.org/keboola/config-migration-tool)
+[![Build Status](https://travis-ci.com/keboola/config-migration-tool.svg)](https://travis-ci.com/keboola/config-migration-tool)
 
 Tool for migrating users configurations in SYS buckets to [Storage API components configuration](http://docs.keboola.apiary.io/#reference/component-configurations).
 
