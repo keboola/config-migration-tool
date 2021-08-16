@@ -47,6 +47,7 @@ class KeboolaGoodDataWriterMigrationTest extends TestCase
 
     public function setUp() : void
     {
+        $this->markTestSkipped();
         parent::setUp();
 
         $this->originComponentId = 'gooddata-writer';
