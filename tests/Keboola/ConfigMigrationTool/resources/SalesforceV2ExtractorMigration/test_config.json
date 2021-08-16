@@ -1,0 +1,173 @@
+{
+    "id": "699408424",
+    "name": "Migration Test",
+    "description": "",
+    "created": "2021-04-21T15:53:28+0200",
+    "creatorToken": {
+        "id": 333840,
+        "description": "adam.bako@keboola.com"
+    },
+    "version": 57,
+    "changeDescription": "Configuration edited",
+    "isDeleted": false,
+    "configuration": {
+        "parameters": {
+            "loginname": "adam.bako@keboola.com",
+            "#password": "KBC::ProjectSecure::xxxxx",
+            "#securitytoken": "KBC::ProjectSecure::aaaaa",
+            "sandbox": false
+        }
+    },
+    "rowsSortOrder": [],
+    "rows": [{
+        "id": "699414549",
+        "name": "contacts custom query",
+        "description": "",
+        "isDisabled": true,
+        "version": 27,
+        "created": "2021-04-21T16:13:46+0200",
+        "creatorToken": {
+            "id": 333840,
+            "description": "adam.bako@keboola.com"
+        },
+        "changeDescription": "Rollback to version 26 (via configuration rollback to version 53)",
+        "state": {
+            "component": {
+                "bulkRequests": {
+                    "Contact": 1624960301752
+                }
+            },
+            "storage": {
+                "input": {
+                    "tables": [],
+                    "files": []
+                }
+            }
+        },
+        "configuration": {
+            "parameters": {
+                "sinceLast": false,
+                "objects": [{
+                    "name": "Contact",
+                    "soql": "select Id, FirstnAme,LastName,isdeleted,lastmodifieddate from Contact "
+                }
+                ]
+            }
+        }
+    }, {
+        "id": "712446488",
+        "name": "user",
+        "description": "",
+        "isDisabled": false,
+        "version": 12,
+        "created": "2021-05-28T09:34:39+0200",
+        "creatorToken": {
+            "id": 333840,
+            "description": "adam.bako@keboola.com"
+        },
+        "changeDescription": "Rollback to version 11 (via configuration rollback to version 53)",
+        "state": {
+            "component": {
+                "bulkRequests": {
+                    "user": 1625126389458
+                }
+            },
+            "storage": {
+                "input": {
+                    "tables": [],
+                    "files": []
+                }
+            }
+        },
+        "configuration": {
+            "parameters": {
+                "sinceLast": false,
+                "objects": [{
+                    "name": "user",
+                    "soql": "select user.id, user.Email, user.Alias, user.FirstName, user.LastName, user.profile.name, user.Username, user.IsActive, UserRole.Name FROM user, user.profile"
+                }
+                ]
+            }
+        }
+    }, {
+        "id": "724665450",
+        "name": "Contact Incremental",
+        "description": "",
+        "isDisabled": false,
+        "version": 9,
+        "created": "2021-07-01T09:54:16+0200",
+        "creatorToken": {
+            "id": 148419,
+            "description": "david@keboola.com"
+        },
+        "changeDescription": "Rollback to version 8 (via configuration rollback to version 53)",
+        "state": {
+            "component": {
+                "bulkRequests": {
+                    "Contact": 1625145787098
+                }
+            },
+            "storage": {
+                "input": {
+                    "tables": [],
+                    "files": []
+                }
+            }
+        },
+        "configuration": {
+            "parameters": {
+                "sinceLast": true,
+                "objects": [{
+                    "name": "Contact",
+                    "soql": ""
+                }
+                ]
+            }
+        }
+    }, {
+        "id": "724666024",
+        "name": "user with processors",
+        "description": "",
+        "isDisabled": false,
+        "version": 10,
+        "created": "2021-07-01T09:58:26+0200",
+        "creatorToken": {
+            "id": 148419,
+            "description": "david@keboola.com"
+        },
+        "changeDescription": "Rollback to version 9 (via configuration rollback to version 53)",
+        "state": {},
+        "configuration": {
+            "parameters": {
+                "sinceLast": false,
+                "objects": [{
+                    "name": "User",
+                    "soql": "select user.id, user.Email, user.Alias, user.FirstName, user.LastName, user.profile.name, user.Username, user.IsActive, UserRole.Name FROM user, user.profile"
+                }
+                ]
+            },
+            "processors": {
+                "after": [{
+                    "definition": {
+                        "component": "keboola.processor-create-manifest"
+                    },
+                    "parameters": {
+                        "incremental": true,
+                        "primary_key": ["Id"]
+                    }
+                }
+                ]
+            }
+        }
+    }
+    ],
+    "state": {},
+    "currentVersion": {
+        "created": "2021-07-28T11:45:49+0200",
+        "creatorToken": {
+            "id": 148419,
+            "description": "david@keboola.com"
+        },
+        "changeDescription": "Configuration edited"
+    }
+}

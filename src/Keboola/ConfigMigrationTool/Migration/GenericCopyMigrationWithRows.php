@@ -10,8 +10,15 @@ use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ConfigurationRow;
 
-class GenericCopyMigration extends DockerAppMigration
+/**
+ * Class GenericCopyMigrationWithRows
+ * Copies whole configuration including rows and states
+ *
+ * @package Keboola\ConfigMigrationTool\Migration
+ */
+class GenericCopyMigrationWithRows extends DockerAppMigration
 {
     public function execute(): array
     {
@@ -19,21 +26,22 @@ class GenericCopyMigration extends DockerAppMigration
     }
 
     /**
-     * @param callable|null $migrationHook Optional callback to adjust configuration object before saving
      * @return array
      * @throws ApplicationException
      * @throws UserException
      */
-    protected function doExecute(?callable $migrationHook = null): array
+    protected function doExecute(): array
     {
         $createdConfigurations = [];
         foreach ($this->storageApiService->getConfigurations($this->originComponentId) as $oldConfig) {
             if (!$this->isConfigurationMigrated($oldConfig)) {
                 try {
                     $configuration = $this->buildConfigurationObject($this->destinationComponentId, $oldConfig);
-                    if ($migrationHook) {
-                        $configuration = $migrationHook($configuration);
-                    }
+                    $configurationRows = $this->buildConfigurationRowObjects($configuration, $oldConfig['rows']);
+                    $migratedResult = $this->transformConfiguration($configuration, $configurationRows);
+                    $configuration = $migratedResult['configuration'];
+                    $configurationRows = $migratedResult['rows'];
+
                     $c = $configuration->getConfiguration();
                     unset($c['authorization']);
                     $configuration->setConfiguration($c);
@@ -41,22 +49,23 @@ class GenericCopyMigration extends DockerAppMigration
                     $configuration->setConfiguration($this->storageApiService->encryptConfiguration($configuration));
                     $this->storageApiService->createConfiguration($configuration);
 
-                    $this->processConfigRows($configuration, $oldConfig);
+                    if (!empty($configurationRows)) {
+                        foreach ($configurationRows as $r) {
+                            $this->storageApiService
+                                ->createConfigurationRow($r);
+                        }
+                    }
 
                     $this->logger->info(sprintf(
                         "Configuration '%s' has been migrated",
                         $configuration->getName()
                     ));
 
-                    $this->orchestratorService->updateOrchestrations($this->originComponentId, $configuration);
-
-                    $this->logger->info(sprintf(
-                        "Orchestration task for configuration '%s' has been updated",
-                        $configuration->getName()
-                    ));
+                    $this->updateOrchestrations($this->originComponentId, $configuration);
 
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
+                    $oldConfiguration->setChangeDescription("Update migration status");
                     $this->saveConfigurationOptions($oldConfiguration, ['runtime' => ['migrationStatus' => 'success']]);
                 } catch (\Throwable $e) {
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
@@ -84,6 +93,58 @@ class GenericCopyMigration extends DockerAppMigration
         return $createdConfigurations;
     }
 
+    protected function updateOrchestrations(string $componentId, Configuration $configuration): void
+    {
+        $this->orchestratorService->updateOrchestrations($componentId, $configuration);
+        $this->logger->info(sprintf(
+            "Orchestration task for configuration '%s' has been updated",
+            $configuration->getName()
+        ));
+    }
+
+    /**
+     * @param Configuration $configuration
+     * @param array $rowConfigurations
+     * @return array - ["configuration" => Configuration $configuration, "rows" => array $rowConfigurations]
+     */
+    public function transformConfiguration(Configuration $configuration, array $rowConfigurations): array
+    {
+        return ["configuration" => $configuration, "rows" => $rowConfigurations];
+    }
+
+    protected function buildConfigurationObject(string $componentId, array $config): Configuration
+    {
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setConfigurationId($config['id']);
+        $configuration->setName($config['name']);
+        $configuration->setDescription($config['description']);
+        $configuration->setConfiguration($config['configuration']);
+        $configuration->setRowsSortOrder([]);
+        $configuration->setState($config['state']);
+        return $configuration;
+    }
+
+    protected function buildConfigurationRowObjects(Configuration $configurationObject, array $rows): array
+    {
+        $row_objects = [];
+        if (!empty($rows)) {
+            foreach ($rows as $r) {
+                $rowObject = new ConfigurationRow($configurationObject);
+
+                $rowObject->setRowId($r['id']);
+                $rowObject->setConfiguration($r['configuration']);
+                $rowObject->setName($r['name']);
+                $rowObject->setDescription($r['description']);
+                $rowObject->setIsDisabled($r['isDisabled']);
+                $rowObject->setState($r['state']);
+                $rowObject->setState($r['state']);
+                $row_objects[] = $rowObject;
+            }
+        }
+        return $row_objects;
+    }
+
     public function status(): array
     {
         $sapiService = new StorageApiService();
@@ -106,14 +167,5 @@ class GenericCopyMigration extends DockerAppMigration
             ),
             'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId),
         ];
-    }
-
-    protected function processConfigRows(Configuration $configuration, array $oldConfig): void
-    {
-        if (!empty($oldConfig['rows'])) {
-            foreach ($oldConfig['rows'] as $r) {
-                $this->storageApiService->addConfigurationRow($configuration, $r['id'], $r['configuration']);
-            }
-        }
     }
 }

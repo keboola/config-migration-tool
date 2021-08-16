@@ -10,6 +10,10 @@ WORKDIR /code/
 COPY docker/php-prod.ini /usr/local/etc/php/php.ini
 COPY docker/composer-install.sh /tmp/composer-install.sh
 
+# Xdebug
+RUN pecl install xdebug \
+  && docker-php-ext-enable xdebug
+COPY docker/xdebug/xdebug.ini.dist /usr/local/etc/php/conf.d/xdebug.ini
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
@@ -24,7 +28,11 @@ COPY composer.* /code/
 # Download dependencies, but don't run scripts or init autoloaders as the app is missing
 RUN composer install $COMPOSER_FLAGS --no-scripts --no-autoloader
 # copy rest of the app
-COPY . /code/
+# NOTE: code is mounted as volume on container run for debug
+COPY phpcs.xml /code/phpcs.xml
+COPY phpstan.neon /code/phpstan.neon
+COPY phpunit.xml.dist /code/phpunit.xml.dist
+COPY run.php /code/run.php
 # run normal composer - all deps are cached already
 RUN composer install $COMPOSER_FLAGS
 
