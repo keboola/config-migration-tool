@@ -62,7 +62,7 @@ class KeboolaExAdWordsMigrationTest extends TestCase
 
         $originConfig1 = $this->components->getConfiguration($this->originComponentId, $this->configurationId);
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']['runtime']);
-        $this->assertEquals('success', $originConfig1['configuration']['migrationStatus']);
+        $this->assertEquals('success', $originConfig1['configuration']['runtime']['migrationStatus']);
         $destConfig1 = $this->components->getConfiguration($this->destinationComponentId, $this->configurationId);
         $this->assertNotEmpty($destConfig1);
         $this->assertArrayHasKey('migrationStatus', $originConfig1['configuration']['runtime']);

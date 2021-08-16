@@ -95,7 +95,7 @@ class GenericCopyMigrationTest extends TestCase
         $this->assertArrayHasKey('migrationStatus', $originConfig['configuration']['runtime']);
         $this->assertEquals('success', $originConfig['configuration']['runtime']['migrationStatus']);
         $this->assertNotEmpty($destConfig);
-        unset($originConfig['configuration']['runtime']['migrationStatus']);
+        unset($originConfig['configuration']['runtime']);
         $this->assertEquals($originConfig['configuration'], $destConfig['configuration']);
         $this->assertCount(2, $originConfig['rows']);
         $this->assertCount(2, $destConfig['rows']);
