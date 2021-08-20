@@ -75,4 +75,16 @@ class ApplicationTest extends TestCase
         $this->assertCount(1, $res['ex-adwords-v2']);
         $this->assertContains('keboola.ex-adwords-v201705', $res['ex-adwords-v2']);
     }
+
+    public function testApplicationStatus() : void
+    {
+        $res = $this->application->action($this->getConfig([
+            'action' => 'status',
+            'parameters' => [
+                'origin' => 'keboola.ex-google-adwords-reports-v201802',
+                'destination' => 'keboola.ex-google-adwords-reports-v201809',
+            ],
+        ]));
+        $this->assertArrayHasKey('configurations', $res);
+    }
 }
