@@ -6,7 +6,6 @@ namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
-use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -61,8 +60,6 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
                         $configuration->getName()
                     ));
 
-                    $this->updateOrchestrations($this->originComponentId, $configuration);
-
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $oldConfiguration->setChangeDescription("Update migration status");
@@ -91,15 +88,6 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
             }
         }
         return $createdConfigurations;
-    }
-
-    protected function updateOrchestrations(string $componentId, Configuration $configuration): void
-    {
-        $this->orchestratorService->updateOrchestrations($componentId, $configuration);
-        $this->logger->info(sprintf(
-            "Orchestration task for configuration '%s' has been updated",
-            $configuration->getName()
-        ));
     }
 
     /**
@@ -149,9 +137,6 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
     {
         $sapiService = new StorageApiService();
 
-        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
-        $orchestratorService = new OrchestratorService($orchestratorUrl);
-
         $configurations = $sapiService->getConfigurations($this->originComponentId);
         return [
             'configurations' => array_map(
@@ -165,7 +150,6 @@ class GenericCopyMigrationWithRows extends DockerAppMigration
                 },
                 $configurations
             ),
-            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId),
         ];
     }
 }
