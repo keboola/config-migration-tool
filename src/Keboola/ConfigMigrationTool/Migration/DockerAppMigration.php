@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\ConfigMigrationTool\Migration;
 
-use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Monolog\Logger;
 use Keboola\StorageApi\Components;
@@ -21,9 +20,6 @@ abstract class DockerAppMigration implements MigrationInterface
     /** @var Logger */
     protected $logger;
 
-    /** @var OrchestratorService */
-    protected $orchestratorService;
-
     /** @var  StorageApiService */
     protected $storageApiService;
 
@@ -34,9 +30,6 @@ abstract class DockerAppMigration implements MigrationInterface
     {
         $this->logger = $logger;
         $this->storageApiService = new StorageApiService();
-
-        $orchestratorUrl = $this->storageApiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
-        $this->orchestratorService = new OrchestratorService($orchestratorUrl);
     }
 
     public function setOriginComponentId(string $id): DockerAppMigration

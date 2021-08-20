@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Keboola\ConfigMigrationTool\Test\Migrations;
 
 use Keboola\ConfigMigrationTool\Migration\GenericCopyMigration;
-use Keboola\ConfigMigrationTool\Service\OrchestratorService;
-use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -102,100 +100,6 @@ class GenericCopyMigrationTest extends TestCase
         foreach ($originConfig['rows'] as $i => $r) {
             $this->assertEquals($r['id'], $destConfig['rows'][$i]['id']);
             $this->assertEquals($r['configuration'], $destConfig['rows'][$i]['configuration']);
-        }
-    }
-
-    public function testOrchestrationUpdate() : void
-    {
-        $sapiService = new StorageApiService();
-        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
-        $orchestratorService = new OrchestratorService($orchestratorUrl);
-        $oldComponentId = 'keboola.ex-google-adwords-v201710';
-        $newComponentId = 'keboola.ex-google-adwords-reports-v201802';
-
-        // create orchestration
-        $orchestration = $orchestratorService->request('post', 'orchestrations', [
-            'json' => [
-                "tokenId" => getenv('KBC_TOKEN_ID'),
-                "name" => "Adwords Migration Test",
-                "tasks" => [
-                    [
-                        "component" => $oldComponentId,
-                        "action" => "run",
-                        "actionParameters" => [
-                            "config" => "testing",
-                        ],
-                        "continueOnFailure" => false,
-                        "timeoutMinutes" => null,
-                        "active" => true,
-                    ],
-                ],
-            ],
-        ]);
-
-        // test affected orchestrations
-        $orchestrations = $orchestratorService->getOrchestrations($oldComponentId, $newComponentId);
-        self::assertNotEmpty($orchestrations);
-        $orchestrationIsBetweenAffected = false;
-        foreach ($orchestrations as $affected) {
-            if ($affected['id'] == $orchestration['id']) {
-                self::assertTrue($affected['hasOld']);
-                $orchestrationIsBetweenAffected = true;
-            }
-        }
-        self::assertTrue($orchestrationIsBetweenAffected);
-
-        // test update orchestration
-        $newConfiguration = new Configuration();
-        $newConfiguration->setComponentId($newComponentId);
-        $newConfiguration->setConfigurationId('testing');
-        $newConfiguration->setName('testing');
-
-        $updatedOrchestrations = $orchestratorService->updateOrchestrations($oldComponentId, $newConfiguration);
-        $this->assertOrchestration($orchestratorService, $updatedOrchestrations, $orchestration, $oldComponentId, $newComponentId);
-
-        // cleanup
-        $orchestratorService->request('delete', sprintf('orchestrations/%s', $orchestration['id']));
-    }
-
-    private function assertOrchestration(
-        OrchestratorService $orchestratorService,
-        array $updatedOrchestrations,
-        array $orchestration,
-        string $oldComponentId,
-        string $newComponentId
-    ) : void {
-        $this->assertNotEmpty($updatedOrchestrations);
-        $orchestrationIsUpdated = false;
-
-        foreach ($updatedOrchestrations as $updated) {
-            // is updated?
-            if ($updated['id'] == $orchestration['id']) {
-                $orchestrationIsUpdated = true;
-            }
-            // get tasks
-            $tasks = $orchestratorService->getTasks((string)$updated['id']);
-
-            $this->assertNotEmpty($tasks);
-            $newComponentTaskExists = false;
-            foreach ($tasks as $task) {
-                if (isset($task['component']) && $task['component'] == $newComponentId) {
-                    $this->assertNotEmpty($task['actionParameters']['config']);
-                    $newComponentTaskExists = true;
-                    break;
-                }
-            }
-            $this->assertTrue($newComponentTaskExists);
-        }
-        $this->assertTrue($orchestrationIsUpdated);
-
-        // check affected orchestration after migration
-        $affectedOrchestrations = $orchestratorService->getOrchestrations($oldComponentId, $newComponentId);
-        $this->assertNotEmpty($affectedOrchestrations);
-        foreach ($affectedOrchestrations as $affected) {
-            if ($affected['id'] == $orchestration['id']) {
-                $this->assertTrue($affected['hasNew']);
-            }
         }
     }
 

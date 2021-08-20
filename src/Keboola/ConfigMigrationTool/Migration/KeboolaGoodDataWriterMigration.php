@@ -81,13 +81,6 @@ class KeboolaGoodDataWriterMigration extends GenericCopyMigration
                         $configuration->getName()
                     ));
 
-                    $this->orchestratorService->updateOrchestrations($this->originComponentId, $configuration);
-
-                    $this->logger->info(sprintf(
-                        "Orchestration task for configuration '%s' has been updated",
-                        $configuration->getName()
-                    ));
-
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $oldConfiguration->setChangeDescription('migration status updated');

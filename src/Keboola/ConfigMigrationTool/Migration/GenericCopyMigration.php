@@ -6,7 +6,6 @@ namespace Keboola\ConfigMigrationTool\Migration;
 
 use Keboola\ConfigMigrationTool\Exception\ApplicationException;
 use Keboola\ConfigMigrationTool\Exception\UserException;
-use Keboola\ConfigMigrationTool\Service\OrchestratorService;
 use Keboola\ConfigMigrationTool\Service\StorageApiService;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -48,13 +47,6 @@ class GenericCopyMigration extends DockerAppMigration
                         $configuration->getName()
                     ));
 
-                    $this->orchestratorService->updateOrchestrations($this->originComponentId, $configuration);
-
-                    $this->logger->info(sprintf(
-                        "Orchestration task for configuration '%s' has been updated",
-                        $configuration->getName()
-                    ));
-
                     $createdConfigurations[] = $configuration;
                     $oldConfiguration = $this->buildConfigurationObject($this->originComponentId, $oldConfig);
                     $this->saveConfigurationOptions($oldConfiguration, ['runtime' => ['migrationStatus' => 'success']]);
@@ -88,9 +80,6 @@ class GenericCopyMigration extends DockerAppMigration
     {
         $sapiService = new StorageApiService();
 
-        $orchestratorUrl = $sapiService->getServiceUrl(StorageApiService::SYRUP_SERVICE) . '/orchestrator/';
-        $orchestratorService = new OrchestratorService($orchestratorUrl);
-
         $configurations = $sapiService->getConfigurations($this->originComponentId);
         return [
             'configurations' => array_map(
@@ -104,7 +93,6 @@ class GenericCopyMigration extends DockerAppMigration
                 },
                 $configurations
             ),
-            'orchestrations' => $orchestratorService->getOrchestrations($this->originComponentId, $this->destinationComponentId),
         ];
     }
 
