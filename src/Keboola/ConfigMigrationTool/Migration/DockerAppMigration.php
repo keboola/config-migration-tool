@@ -92,9 +92,9 @@ abstract class DockerAppMigration implements MigrationInterface
 
     public function getConfigurationStatus(array $configurationObject): string
     {
-        if (!isset($configurationObject['configuration']['runtime']['migrationStatus'])) {
+        if (isset($configurationObject['configuration']['runtime']['migrationStatus'])) {
             return $configurationObject['configuration']['runtime']['migrationStatus'];
-        } elseif (!isset($configurationObject['configuration']['migrationStatus'])) {
+        } elseif (isset($configurationObject['configuration']['migrationStatus'])) {
             // legacy support
             return $configurationObject['configuration']['migrationStatus'];
         } else {
