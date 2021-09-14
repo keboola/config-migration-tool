@@ -28,36 +28,14 @@ class Application
         $this->logger = $logger;
     }
 
-    public function validateImageParameters(array $config) : void
-    {
-        $required = [
-            '#demo_token',
-            '#manage_token',
-            '#production_token',
-            'gooddata_provisioning_url',
-            'gooddata_url',
-            'gooddata_writer_url',
-            'project_access_domain',
-        ];
-        foreach ($required as $r) {
-            if (!isset($config['image_parameters'][$r])) {
-                throw new \Exception("Parameter $r is missing from image parameters");
-            }
-        }
-    }
-
     public function run(array $config) : void
     {
-        $this->validateImageParameters($config);
-
         $migration = $this->getMigration($config);
         $migration->execute();
     }
 
     public function action(array $config) : array
     {
-        $this->validateImageParameters($config);
-
         $action = $config['action'];
         if ($action == 'supported-migrations') {
             return $this->getSupportedMigrations();
