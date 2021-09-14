@@ -36,8 +36,6 @@ class Application
 
     public function action(array $config) : array
     {
-        $this->validateImageParameters($config);
-
         $action = $config['action'];
         if ($action == 'supported-migrations') {
             return $this->getSupportedMigrations();
