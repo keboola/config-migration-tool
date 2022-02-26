@@ -832,16 +832,16 @@
         },
         {
             "name": "pear/console_commandline",
-            "version": "v1.2.3",
+            "version": "v1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pear/Console_CommandLine.git",
-                "reference": "331b295d00c9fa2dae30fe14538d430d72d954c6"
+                "reference": "cce06166765c5da31f3e8c1acf42512c64344cdb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pear/Console_CommandLine/zipball/331b295d00c9fa2dae30fe14538d430d72d954c6",
-                "reference": "331b295d00c9fa2dae30fe14538d430d72d954c6",
+                "url": "https://api.github.com/repos/pear/Console_CommandLine/zipball/cce06166765c5da31f3e8c1acf42512c64344cdb",
+                "reference": "cce06166765c5da31f3e8c1acf42512c64344cdb",
                 "shasum": ""
             },
             "require": {
@@ -884,20 +884,24 @@
             "keywords": [
                 "console"
             ],
-            "time": "2020-04-16T15:04:15+00:00"
+            "support": {
+                "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=Console_CommandLine",
+                "source": "https://github.com/pear/Console_CommandLine"
+            },
+            "time": "2021-11-15T19:53:25+00:00"
         },
         {
             "name": "pear/crypt_gpg",
-            "version": "v1.6.5",
+            "version": "v1.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pear/Crypt_GPG.git",
-                "reference": "b831a3b5e2bc77b3bf2ee27aaf121aa5b62d069a"
+                "reference": "29c0fbe96d0d4063ecd5c9a4644cb65a7fb7cc4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pear/Crypt_GPG/zipball/b831a3b5e2bc77b3bf2ee27aaf121aa5b62d069a",
-                "reference": "b831a3b5e2bc77b3bf2ee27aaf121aa5b62d069a",
+                "url": "https://api.github.com/repos/pear/Crypt_GPG/zipball/29c0fbe96d0d4063ecd5c9a4644cb65a7fb7cc4e",
+                "reference": "29c0fbe96d0d4063ecd5c9a4644cb65a7fb7cc4e",
                 "shasum": ""
             },
             "require": {
@@ -907,7 +911,7 @@
                 "php": ">=5.4.8"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8.36 || ^5.7.21 || ^6 || ^7"
+                "phpunit/phpunit": "^9"
             },
             "suggest": {
                 "ext-posix": "May require the posix PHP extension"
@@ -950,7 +954,11 @@
                 "gnupg",
                 "gpg"
             ],
-            "time": "2021-03-16T17:23:57+00:00"
+            "support": {
+                "issues": "https://pear.php.net/bugs/search.php?cmd=display&package_name[]=Crypt_GPG",
+                "source": "https://github.com/pear/Crypt_GPG"
+            },
+            "time": "2022-02-16T17:39:00+00:00"
         },
         {
             "name": "pear/pear_exception",
@@ -1005,6 +1013,10 @@
             "keywords": [
                 "exception"
             ],
+            "support": {
+                "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=PEAR_Exception",
+                "source": "https://github.com/pear/PEAR_Exception"
+            },
             "time": "2021-03-21T15:43:46+00:00"
         },
         {
@@ -3661,5 +3673,6 @@
     "platform": {
         "php": ">=7.1"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
 }
