@@ -7,6 +7,7 @@ namespace Keboola\ConfigMigrationTool\Migration;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApi\Options\Components\ConfigurationState;
 
 class SalesforceExtractorV2Migration extends GenericCopyMigrationWithRows
 {
@@ -122,6 +123,14 @@ class SalesforceExtractorV2Migration extends GenericCopyMigrationWithRows
     {
         $c = $this->updateConfigurationOptions($configuration, $options);
         $components = new Components($this->storageApiService->getClient());
+        if (!is_null($c->getState())) {
+            $configState = new ConfigurationState();
+            $configState->setComponentId($c->getComponentId());
+            $configState->setConfigurationId($c->getConfigurationId());
+            $configState->setState($c->getState());
+            $components->updateConfigurationState($configState);
+            $c->setState(null);
+        }
         $components->updateConfiguration($c);
     }
 }
