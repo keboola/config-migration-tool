@@ -12,7 +12,7 @@ env:
   KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
 
   # DockerHub login
-  DOCKERHUB_USER: "{{env(DOCKERHUB_USER)}}"
+  DOCKERHUB_USER: "keboolabot"
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   # Test KBC project
