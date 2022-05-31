@@ -111,3 +111,7 @@ In the future we will also add support for `dimensionFilterClauses` and `metricF
 If **segment** is defined in the query configuration, **segment** dimension will be added to the query during migration. 
 This is because the new extractor supports multiple segments per query.
 
+
+## License
+
+MIT licensed, see [LICENSE](./LICENSE) file.
