@@ -112,6 +112,7 @@ If **segment** is defined in the query configuration, **segment** dimension will
 This is because the new extractor supports multiple segments per query.
 
 
+
 ## License
 
 MIT licensed, see [LICENSE](./LICENSE) file.
