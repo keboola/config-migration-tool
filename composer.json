@@ -3,24 +3,22 @@
   "description": "Tool to migrate configurations of deprecated components",
   "license": "MIT",
   "require": {
-    "php": ">=7.1",
-    "guzzlehttp/guzzle": "^6.3",
+    "php": ">=7.4",
+    "guzzlehttp/guzzle": "^6.3|^7.0",
     "keboola/csv": "^1.1",
-    "keboola/gooddata-php-client": "^2.9",
-    "keboola/gooddata-writer-php-client": "^3.0",
     "keboola/kbc-manage-api-php-client": "^2.2",
     "keboola/orchestrator-php-client": "^1.2",
     "keboola/storage-api-client": "^12.0",
-    "monolog/monolog": "^1.23",
-    "symfony/config": "^4.0",
-    "symfony/serializer": "^4.0"
+    "monolog/monolog": "^1.23|^2.0|^3.0",
+    "symfony/config": "^4.0|^5.0|^6.0",
+    "symfony/serializer": "^4.0|^5.0|^6.0"
   },
   "require-dev": {
     "jakub-onderka/php-parallel-lint": "^1.0",
-    "keboola/coding-standard": "^1.0",
-    "phpstan/phpstan-shim": "^0.9.2",
-    "phpunit/phpunit": "^7.0",
-    "squizlabs/php_codesniffer": "~3.2"
+    "keboola/coding-standard": "^7.0",
+    "phpstan/phpstan": "^0.12",
+    "phpunit/phpunit": "^8.0",
+    "squizlabs/php_codesniffer": "^3.5"
   },
   "authors": [
     {

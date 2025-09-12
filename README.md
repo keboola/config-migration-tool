@@ -2,6 +2,9 @@
 
 Tool for migrating users configurations in SYS buckets to [Storage API components configuration](http://docs.keboola.apiary.io/#reference/component-configurations).
 
+## Note
+GoodData Writer migrations have been removed due to deprecated dependencies. The tool now focuses on active components like Meta (Facebook/Instagram) extractors.
+
 ## Migration between docker apps
 
 If you need to create a new app for the same service but differing e.g. only in version of the API, you can migrate configurations using built-in helpers.
