@@ -22,7 +22,7 @@ try {
     if (!file_exists($configFile)) {
         throw new \Exception("Config file not found at path $configFile");
     }
-    $jsonDecode = new JsonDecode(true);
+    $jsonDecode = new JsonDecode(['json_decode_associative' => true]);
     $config = $jsonDecode->decode(file_get_contents($configFile), JsonEncoder::FORMAT);
 
     $app = new Application($logger);
