@@ -98,8 +98,7 @@ class MetaComponentsMigrationTest extends TestCase
         // Kontrola, že byla přidána custom-bucket parametr
         $this->assertArrayHasKey('custom-bucket', $destConfig['configuration']['parameters']);
         $expectedComponentId = str_replace(['_', '.'], '-', $this->destinationComponentId);
-        $expectedConfigurationId = str_replace(['_', '.'], '-', $configurationId);
-        $expectedCustomBucket = 'c-' . $expectedComponentId . '-' . $expectedConfigurationId;
+        $expectedCustomBucket = 'in.c-' . $expectedComponentId . '-' . $configurationId;
         $this->assertEquals($expectedCustomBucket, $destConfig['configuration']['parameters']['custom-bucket']);
         
         // Kontrola, že ostatní parametry zůstaly zachovány
